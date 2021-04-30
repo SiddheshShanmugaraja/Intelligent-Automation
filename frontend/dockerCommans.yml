@@ -1,0 +1,41 @@
+
+IP: 3.218.196.33
+Username: balaji
+Password: B@lajj!
+
+Frontend server :
+*****************
+#to build locally
+sudo docker build --rm -f Dockerfile -t optisolbusiness/trevor:automation_frontend_dev .
+docker push optisolbusiness/trevor:automation_frontend_dev
+
+
+sudo docker stop automation_frontend_dev
+sudo docker rm automation_frontend_dev
+sudo docker pull optisolbusiness/trevor:automation_frontend_dev
+sudo docker run -it -d -p 8001:8001 --name automation_frontend_dev optisolbusiness/trevor:automation_frontend_dev
+--------------------------------------------------------------------------------------------------------
+
+Backend server :
+****************
+#to build locally
+sudo docker build --rm -f Dockerfile -t optisolbusiness/trevor:automation_backend_dev .
+docker push optisolbusiness/trevor:automation_backend_dev
+
+
+sudo docker stop automation_backend_dev
+sudo docker rm automation_backend_dev
+sudo docker pull optisolbusiness/trevor:automation_backend_dev
+sol--------------------------------------------------------------------------------------------------------
+Aws access
+
+  aws ec2 describe-instance-status --instance-ids i-0b3a3eddd729dc7e0
+  aws ec2 stop-instances --instance-ids i-0b3a3eddd729dc7e0
+  aws ec2 start-instances --instance-ids i-0b3a3eddd729dc7e0
+
+# To restart docker
+*******************
+  sudo docker start automation_frontend_dev
+  sudo docker start automation_backend_dev
+
+  ---------------------------------------------------------------------------------------------------------

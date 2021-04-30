@@ -1,0 +1,102 @@
+
+
+.own-sidemenu-main{
+    // width:200px;
+    // position: fixed;
+    // background-color: $purple1;
+    // z-index: 1000;
+    // margin-top: 56px;
+    // box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2), 0 4px 20px 0 rgba(0,0,0,0.19);
+
+
+    .menu-icon{
+        @extend .ml4 ; 
+        float: left;
+    }
+    .menu-txt{
+       @extend .ml23 ;
+    }
+
+
+    &.closed{
+        width:65px;
+        .menu-title{
+            span{
+                display: $none;
+            }
+        }
+        .sidebar-title{
+            display: $none;
+        }
+        .nano-content{
+            .sidebar-widget{
+                display: $none;
+            }
+        }
+
+    }
+
+    .list-group{
+        
+        height:100vh;
+        background: $purple1;
+        
+      a{
+        @extend .fs14 ;
+        @extend .p15 ;
+        display: $block;
+        background: $purple1;
+      }  
+      span{
+          display: $inline-block;
+          color: $grey2;
+      }
+
+      
+        .list-group-item{  
+            border: $none;
+            padding: 0px;
+            a{
+              color: $grey2;
+            }
+        }
+
+
+
+
+    }
+    .list-group-item:hover,
+    .list-group-item.active{
+        a{
+            background: $purple2;
+        }
+        
+        border-radius: 0px;
+        span{
+            color: $white;
+        }
+    }
+
+ 
+   
+
+    
+    
+
+
+}
+
+
+#overlay {
+    position: fixed; 
+    width: 100%; 
+    height: 100%;
+    display: none;
+    top: 0; 
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5); 
+    z-index: 2; 
+    cursor: pointer; 
+}

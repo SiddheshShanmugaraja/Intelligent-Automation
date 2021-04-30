@@ -1,0 +1,14 @@
+.header-nav-main{
+  nav{
+    li{   
+      a{
+        &:hover{
+          text-decoration: none;
+        }
+        &.menu-active{
+          background: #0088cc !important;
+        }
+      }    
+    }
+  }
+}

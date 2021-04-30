@@ -1,0 +1,20 @@
+
+
+/********* font size **********/
+$spaceamounts: (10, 11, 12, 13, 14, 15, 16); // Adjust this to include the pixel amounts you need.
+$sides: (size); // Leave this variable alone
+ 
+@each $size in $spaceamounts {
+@each $side in $sides {
+.f#{str-slice($side, 0, 1)}#{$size} {
+font-#{$side}: #{$size}px;
+}
+}
+}
+
+/********* font size **********/
+
+
+.font-size-p9{
+    font-size: 0.9em;
+  }
