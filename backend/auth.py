@@ -55,3 +55,27 @@ def login():
         message = f"No account registered with username: '{username}'!"
         data = None
     return return_response(status, message, data)
+
+@auth.route('/change-password', methods=['POST'])
+@cross_origin()
+def change_password():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
+    username = request.form.get('username')
+    old_password = request.form.get('old_password')
+    new_password = request.form.get('new_password')
+    user = User.query.filter_by(username=username).first()
+    if check_password_hash(user.password, old_password):
+        user.password = new_password
+        db.session.commit()
+        status = 200
+        message = "Password update successful!"
+        data = {"username": user.username, "user_id": user.id}
+    else:
+        status = 400
+        message = "Incorrect Password!"
+        data = None
+    return return_response(status, message, data)

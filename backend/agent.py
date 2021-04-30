@@ -1,5 +1,4 @@
 import pandas as pd
-import os, re, time, json, subprocess
 from rq import Queue
 from rq.job import Job
 from yaml import load, dump
@@ -7,6 +6,7 @@ from urllib.parse import urlparse
 from . import db, return_response
 from flask_cors import cross_origin
 from flask import Blueprint, request
+import os, re, time, json, subprocess
 from .crawler import main as crawlerMain
 from .models import User, Project, Page, Goal
 from typing import List, Dict, Tuple, Optional

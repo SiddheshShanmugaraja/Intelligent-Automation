@@ -18,8 +18,8 @@ class Project(db.Model):
     url = db.Column(db.String(200), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    pages = db.relationship('Page', backref='project', lazy=True)
-    goals = db.relationship('Goal', backref='goal', lazy=True)
+    pages = db.relationship('Page', backref='task', lazy=True)
+    goals = db.relationship('Goal', backref='priority', lazy=True)
 
     def __repr__(self):
         return f"Project(Project ID: '{self.id}', Creator ID: '{self.user_id}', Project Name: '{self.name}', Project URL: '{self.url}', Date Created: '{self.date_created}')"
@@ -29,7 +29,7 @@ class Page(db.Model):
     name = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(200), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
-    goals = db.relationship('Goal', backref='goal', lazy=True)
+    goals = db.relationship('Goal', backref='target', lazy=True)
 
     def __repr__(self):
         return f"Page(Page ID: '{self.id}', Project ID: '{self.project_id}', Page Name: '{self.name}', Page URL: '{self.url}')"
