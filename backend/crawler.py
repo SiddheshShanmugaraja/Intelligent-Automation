@@ -5,6 +5,12 @@ from selenium import webdriver
 from urllib.parse import urlparse
 from selenium.webdriver.chrome.options import Options
 
+with open("backend/config.json", "r") as f:
+    config = json.load(f)
+
+EXCEL_DIR = config.get("EXCEL_DIR") 
+CHROME_DRIVER = config.get("CHROME_DRIVER")
+
 def crawl_urls(url_list, crawled_urls, driver, url):
     """Get a set of urls and crawl each url recursively
 
@@ -121,11 +127,11 @@ def main(url):
     global sheet_name
     parent_url = url
     domain = urlparse(parent_url).netloc
-    xl_name = url.split('.com')[0].split(".")[-1]+".xlsx"
+    xl_name = os.path.join(EXCEL_DIR, url.split('.com')[0] + ".xlsx")
     sheet_name = "URLs"
     options = Options()
     options.headless = True
-    driver = webdriver.Chrome(executable_path="backend/chromedriver", options=options)
+    driver = webdriver.Chrome(executable_path=CHROME_DRIVER, options=options)
 
     url_list = list()
     crawled_urls = list()

@@ -9,6 +9,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 
 INPUT_DATA_FILE = "../data/input_data.txt"
+CHROME_DRIVER = "backend/chromedriver"
 
 class Auto():
     """docstring for Auto"""
@@ -21,7 +22,7 @@ class Auto():
             contents = f.read()
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
-        self.driver = webdriver.Chrome(executable_path="backend/chromedriver", chrome_options=chrome_options)
+        self.driver = webdriver.Chrome(executable_path=CHROME_DRIVER, chrome_options=chrome_options)
         self.site = site
         self.action_space = contents.split('\n')
         self.action_space.append('submit')
