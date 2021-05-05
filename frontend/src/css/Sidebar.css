@@ -1,0 +1,39 @@
+.sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 100%;
+  background-color: rgb(43, 44, 65);
+  padding: 20px;
+  transition: 0.5s ease-in;
+}
+.sidebar a,
+.side-bar-hidden a {
+  text-decoration: none;
+  color: #fff;
+}
+.side-bar-list {
+  margin-top: 70px;
+  list-style: none;
+  position: relative;
+}
+.side-bar-list li {
+  height: 60px;
+}
+.side-bar-hidden {
+  width: 120px;
+  height: 100%;
+  background-color: rgb(43, 44, 65);
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: -5.5%;
+  transition: 0.5s ease-in;
+  opacity: 0.6;
+}
+
+.side-bar-button {
+  position: absolute;
+  left: 75px;
+}

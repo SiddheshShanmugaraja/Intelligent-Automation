@@ -1,0 +1,28 @@
+.navbar {
+    background-color: rgb(43, 44, 65);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+    padding-left: 40px;
+    padding-right: 20px;
+  }
+  .navbar-right-items {
+    width: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+  }
+  .navbar-right-items-profile {
+    width: 160px;
+    display: flex;
+    align-items: center;
+  }
+  .navbar-profile-name {
+      padding: 5px;
+  }
+  .cpointer {
+      cursor: pointer;
+  }

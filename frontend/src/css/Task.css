@@ -1,0 +1,244 @@
+
+.task-management-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 40px;
+  height: 220px;
+}
+
+.search-management-header {
+  width: 100%;
+  display: flex;
+  padding: 50px;
+  height: 220px;
+}
+.task-management-header p {
+  font-size: 25px;
+}
+.task-management-header-right-items {
+  display: flex;
+  width: 400px;
+  align-items: center;
+  justify-content: space-between;
+}
+.task-management-header-right-items button {
+  background-color: rgb(12, 165, 160);
+  border-radius: 4px;
+  color: #fff;
+  outline: none;
+  border: none;
+  height: 30px;
+  width: 170px;
+  padding: 5px;
+  font-size: 11px;
+}
+
+.task-management-search {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: fit-content;
+  padding: 10px;
+  height: 30px;
+  border: 1px solid lightgrey;
+  border-radius: 4px;
+}
+
+.search-management-search {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: fit-content;
+  padding: 10px;
+  height: 30px;
+  border: 1px solid lightgrey;
+  border-radius: 4px;
+}
+
+.task-management-search > input {
+  height: 20px;
+  background-color: rgb(58, 59, 87);
+  border: none;
+  padding: 10px;
+  outline-width: 0;
+  color: #fff;
+}
+.search-management-search > input {
+  height: 20px;
+  background-color: rgb(58, 59, 87);
+  border: none;
+  padding: 10px;
+  outline-width: 0;
+  color: #fff;
+}
+.Modal {
+  background-color: #3a3b57;
+  width: 700px;
+  margin: 0 auto;
+  margin-top: 100px;
+  border: none;
+  outline: none;
+  padding: 20px;
+}
+.Modal-header {
+  text-align: center;
+}
+.modal-title input {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: 2px solid #fff;
+  outline: none;
+  background-color: rgb(58, 59, 87);
+  border-radius: 4px;
+  color: #fff;
+}
+.modal-description input {
+  width: 100%;
+  height: 90px;
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: 2px solid #fff;
+  outline: none;
+  background-color: rgb(58, 59, 87);
+  border-radius: 4px;
+  color: #fff;
+}
+
+.modal-date-type-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+.modal-date-container {
+  width: 50%;
+}
+.modal-date {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: space-between;
+
+  width: 100%;
+
+  /* max-width: 300px; */
+  padding: 20px;
+  height: 30px;
+  border: 1px solid lightgrey;
+  border-radius: 4px;
+  color: #fff;
+}
+.modal-date > input {
+  height: 20px;
+  background-color: rgb(58, 59, 87);
+  border: none;
+  padding: 10px;
+  outline-width: 0;
+  color: #fff;
+}
+.modal-type-container {
+  width: 40%;
+  height: 95px;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 20px;
+}
+.modal-type-container input {
+  background-color: rgb(58, 59, 87);
+}
+.modal-priority-label-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+.modal-priority-container {
+  width: 50%;
+}
+.modal-priority-container select {
+  background-color: rgb(58, 59, 87);
+  color: #fff;
+  border: 1px solid #fff;
+  outline: none;
+  padding: 10px;
+  width: 100%;
+}
+.modal-buttons {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+.modal-buttons button {
+  width: 80px;
+  padding: 10px;
+  background-color: rgb(12, 165, 160);
+  border: none;
+  outline: none;
+  border-radius: 4px;
+  color: #fff;
+}
+button.modal-button-cancel {
+  margin-right: 5px;
+  background-color: rgb(58, 59, 87);
+  border: 1px solid rgb(12, 165, 160);
+}
+
+.task-management-body {
+  width: 1200px;
+  margin: 0 auto;
+}
+
+.task-management-body table {
+  width: 100%;
+  text-align: center;
+  border: none;
+  list-style: none;
+
+  border-collapse: collapse;
+}
+.task-management-body table th {
+  height: 40px;
+  font-size: 14px;
+}
+.task-management-body table td {
+  height: 40px;
+  font-size: 12px;
+}
+
+.task-management-body table tr:nth-child(2n + 3) {
+  background-color: rgb(43, 44, 65);
+}
+.task-management-table-action {
+  color: rgb(12, 165, 160);
+}
+
+.task-management-footer {
+  position: fixed;
+  bottom: 0px;
+  height: 100px;
+  width: 90%;
+  margin-left: 5%;
+  margin-right: 5%;
+  margin-bottom: -10px;
+  border-top: 1px solid #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.items-per-page-container {
+  width: 100%;
+  display: flex;
+}
+.items-per-page-items {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 50px;
+  align-items: center;
+}
+
