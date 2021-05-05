@@ -6,11 +6,19 @@ from sqlalchemy.sql import func
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(500), nullable=False)
+    email = db.Column(db.String(500), unique=True, nullable=False)
+    dob = db.Column(db.Date, nullable=True)
+    gender = db.Column(db.String(10), nullable=True)
+    device = db.Column(db.String(50), nullable=True)
+    phone = db.column(db.String(15), nullable=True)
+    about = db.Column(db.String(1000), nullable=True)
+    photo = db.Column(db.String, nullable=False, default="./static/profile_pictures/default.jpg")
+    password = db.Column(db.String(94), nullable=False)
+    is_admin = db.Column(db.Boolean, nullable=False, default=False)
     projects = db.relationship('Project', backref='creator', lazy=True)
 
     def __repr__(self):
-        return f"User(User ID: '{self.id}', Username: '{self.username}')"
+        return f"User(User ID: '{self.id}', Username: '{self.username}', Email: '{self.email}', Gender: '{self.gender}', is_Admin: {user.is_admin})"
 
 class Project(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)

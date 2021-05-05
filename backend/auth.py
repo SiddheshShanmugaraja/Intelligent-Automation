@@ -1,10 +1,27 @@
 from .models import User
+from datetime import date
 from . import db, return_response
 from flask_cors import cross_origin
 from flask import Blueprint, request
 from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint('auth', __name__)
+
+################################################################################################################
+
+def calculate_age(born):
+    """[summary]
+
+    Args:
+        born ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+################################################################################################################
 
 @auth.route('/sign-up', methods=['POST'])
 @cross_origin()
@@ -22,7 +39,7 @@ def sign_up():
         message = "Username already exists!"
         data = None
     else:
-        new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
+        new_user = User(username=username, password=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
         status = 200
