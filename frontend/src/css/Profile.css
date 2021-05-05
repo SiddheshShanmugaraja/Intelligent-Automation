@@ -1,0 +1,119 @@
+.profile-navbar {
+  background-color: rgb(43, 44, 65);
+
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+  padding-left: 40px;
+  padding-right: 20px;
+}
+.profile-navbar-right-items {
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-right: 20px;
+}
+.profile-container {
+  width: 400px;
+  margin: 10px auto;
+
+  color: #fff;
+}
+.profile-container h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 630;
+  margin-top: 20px;
+}
+
+.profile-text input {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: 2px solid #fff;
+  outline: none;
+  background-color: rgb(58, 59, 87);
+  border-radius: 4px;
+  color: #fff;
+}
+
+.profile-text TextField {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: 2px solid #fff;
+  outline: none;
+  background-color: rgb(58, 59, 87);
+  border-radius: 4px;
+  color: #fff;
+}
+.profile-text{
+  margin-bottom: 10px;
+}
+.profile-text p {
+  margin-bottom: 5px
+}
+
+.profile-text textarea {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: 2px solid #fff;
+  outline: none;
+  background-color: rgb(58, 59, 87);
+  border-radius: 4px;
+  color: #fff;
+  resize: none;
+
+}
+.profile-text-select  {
+  width: 100%;
+  padding: 5px 20px;
+  margin: 8px 0;
+  border: 2px solid #fff;
+  outline: none;
+  background-color: rgb(58, 59, 87);
+  border-radius: 4px;
+  color: #fff ;
+  resize: none;
+
+}
+.profile-text-select .MuiInputBase-input
+{
+  color: #fff ;
+
+}
+.profile-text-select .MuiSelect-select:not([multiple]) option, .MuiSelect-select:not([multiple]) optgroup {
+  color : #000;
+  font-size: large;
+}
+
+.profile-avatar {
+font-size: 20px;
+text-align: center;
+}
+
+.dropzone-outer {
+padding: 10px;
+background: white;
+color:black;
+height: 145px
+
+}
+
+.dropzone-inner {
+height: 125px;
+text-align : center;
+position: relative;
+
+}
+.dropzone-inner p{
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

@@ -1,0 +1,27 @@
+.search-text-select  {
+    height: 20px;
+    background-color: rgb(58, 59, 87);
+    border: none;
+    padding: 10px;
+    outline-width: 0;
+    color: #fff;
+  background-color: rgb(58, 59, 87);
+  border: none;
+  padding: 10px;
+  outline-width: 0;
+  color: #fff;
+  }
+  .search-text-select .MuiInputBase-input
+  {
+    color: #fff ;
+  
+  }
+  .search-text-select .MuiSelect-select:not([multiple]) option, .MuiSelect-select:not([multiple]) optgroup {
+    color : #000;
+    font-size: large;
+  }
+
+  .search-text-select .MuiSelect-icon  {
+
+    color: white
+  }
