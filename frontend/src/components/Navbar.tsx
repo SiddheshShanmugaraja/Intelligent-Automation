@@ -4,9 +4,8 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import Avatar from 'react-avatar';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import Sidebar from './Sidebar';
-import andy from '../img/andy.jpg'
 import { useHistory } from 'react-router-dom';
-import "../css/Navbar.css"
+import "../assets/css/Navbar.css"
 const Navbar = (props: any) => {
     const history = useHistory();
     let loggeduser = JSON.parse(sessionStorage.getItem('loggeduser') || '{}')
@@ -26,7 +25,7 @@ const Navbar = (props: any) => {
                 {loggeduser &&
                     <div className="navbar-right-items">
                         <div className="navbar-right-items-profile cpointer" onClick={() => history.push('/profile')}  >
-                            <Avatar name={loggeduser['username']} src={andy} size="40" round={true} color="#009999" />
+                            <Avatar name={loggeduser['username']} src={loggeduser['photo']} size="40" round={true} color="#009999" />
                             <p className="navbar-profile-name">{loggeduser['username']}</p>
                         </div>
                         <SettingsIcon className="cpointer" onClick={() => history.push('/settings')} />

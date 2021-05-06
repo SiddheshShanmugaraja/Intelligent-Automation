@@ -18,7 +18,7 @@
 }
 .task-management-header-right-items {
   display: flex;
-  width: 400px;
+  width: 520px;
   align-items: center;
   justify-content: space-between;
 }
@@ -188,8 +188,8 @@ button.modal-button-cancel {
 }
 
 .task-management-body {
-  width: 1200px;
-  margin: 0 auto;
+
+  margin: 0 35px;
 }
 
 .task-management-body table {
@@ -197,16 +197,20 @@ button.modal-button-cancel {
   text-align: center;
   border: none;
   list-style: none;
+  font-size: large;
 
   border-collapse: collapse;
 }
 .task-management-body table th {
   height: 40px;
-  font-size: 14px;
+  border : 1px solid;
 }
+
 .task-management-body table td {
   height: 40px;
   font-size: 12px;
+  border : 1px solid;
+
 }
 
 .task-management-body table tr:nth-child(2n + 3) {
