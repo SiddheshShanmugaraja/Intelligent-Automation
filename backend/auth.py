@@ -1,3 +1,4 @@
+from PIL import Image
 from .models import User
 from datetime import date
 from . import db, return_response
@@ -31,20 +32,26 @@ def sign_up():
     Returns:
         [type]: [description]
     """
+    email = request.form.get('email')
     username = request.form.get('username')
     password = request.form.get('password')
-    user = User.query.filter_by(username=username).first()
-    if user:
+    user1 = User.query.filter_by(email=email).first()
+    user2 = User.query.filter_by(username=username).first()
+    if user1:
+        status = 400
+        message = "Email already exists!"
+        data = None
+    elif user2:
         status = 400
         message = "Username already exists!"
         data = None
     else:
-        new_user = User(username=username, password=generate_password_hash(password))
+        new_user = User(email=email, username=username, password=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
         status = 200
         message = "Account created successfully!"
-        data = {"username": f"{new_user.username}", "user_id": user.id}
+        data = new_user.to_dict()
     return return_response(status, message, data)
 
 @auth.route('/login', methods=['POST'])
@@ -62,7 +69,7 @@ def login():
         if check_password_hash(user.password, password):
             status = 200
             message = "Login successful!"
-            data = {"username": user.username, "user_id": user.id}
+            data = user.to_dict()
         else:
             status = 400
             message = "Incorrect Password!"
@@ -90,9 +97,46 @@ def change_password():
         db.session.commit()
         status = 200
         message = "Password update successful!"
-        data = {"username": user.username, "user_id": user.id}
+        data = user.to_dict()
     else:
         status = 400
         message = "Incorrect Password!"
+        data = None
+    return return_response(status, message, data)
+
+@auth.route('/update-profile', methods=['POST'])
+@cross_origin()
+def update_profile():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
+    username = request.form.get('username')
+    user = User.query.filter_by(username=username).first()
+    if user:
+        user_info = dict(
+                        dob = request.form.get('dob'),
+                        country = request.form.get('country'),
+                        gender = request.form.get('gender'),
+                        device = request.form.get('device'),
+                        phone = request.form.get('phone'),
+                        about = request.form.get('about'),
+                    )
+        for u in user_info:
+            exec(f"user.{u} = user_info[u]")
+        photo = request.files.get('photo')
+        if photo:
+            photo_path = f"static/profile_pictures/{username}.jpg"
+            photo = Image.open(photo.stream)
+            photo.save(photo_path)
+            user.photo = photo_path
+        db.session.commit()
+        status = 200
+        message = "Profile update successful!"
+        data = user.to_dict()
+    else:
+        status = 400
+        message = f"No user with username: '{username}'!"
         data = None
     return return_response(status, message, data)

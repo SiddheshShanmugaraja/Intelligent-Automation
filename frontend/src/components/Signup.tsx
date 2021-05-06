@@ -26,7 +26,8 @@ const Signup = () => {
     const formData = new FormData();
     let obj = validate();
     if (Object.values(obj).every(item => item === "")) {
-      formData.append('username', email)
+      formData.append('email', email)
+      formData.append('username', name)
       formData.append('password', password)
       axios.post(baseUrl + '/sign-up', formData).then(res => {
         if (res.data.status === 200) {
@@ -66,7 +67,7 @@ const Signup = () => {
       <div className="signup-container">
         <div> <h1>Signup</h1> </div>
         <div className="signup-email">
-          <p>Name</p>
+          <p>Username</p>
           <input
             type="text"
             name='name'
@@ -75,7 +76,7 @@ const Signup = () => {
           {error.name && <p className="Error-text"> {error.name}</p>}
         </div>
         <div className="signup-email">
-          <p>Email Id</p>
+          <p>Email</p>
           <input
             type="text"
             name='email'

@@ -11,6 +11,6 @@ export const headers = { headers: { Authorization: "JWT " + localStorage.getItem
 // export const baseUrlMl = 'http://3.218.196.33:8002';
 // export const baseUrlMl ='http://192.168.1.245:5000'
 export const baseUrlMl = 'http://0.0.0.0:5000'
-let baseUrl = 'http://00e2ef08f22b.in.ngrok.io'
+let baseUrl = 'http://0.0.0.0:5000'
 
 export { baseUrl }

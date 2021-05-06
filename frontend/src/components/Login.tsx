@@ -7,13 +7,15 @@ import { toast } from 'react-toastify';
 
 const Login = () => {
   const history = useHistory();
-  const [email, setEmail] = useState('')
+  // const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState({} as any)
 
   const validate = () => {
     let valid = {} as any
-    valid.email = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email) ? "" : " Enter a valid email"
+    valid.name = name.length > 0 ? "" : "*Name is Required"
+    // valid.email = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email) ? "" : " Enter a valid email"
     valid.password = password.length >= 5 && password.length < 10 ? "" : " password should be between 5 to 10 characters"
     return valid;
   }
@@ -22,7 +24,7 @@ const Login = () => {
     const formData = new FormData();
     let obj = validate();
     if (Object.values(obj).every(item => item === "")) {
-      formData.append('username', email)
+      formData.append('username', name)
       formData.append('password', password)
       axios.post(baseUrl + '/login', formData).then(res => {
         if (res.data.status === 200) {
@@ -75,14 +77,14 @@ const Login = () => {
         <div> <h1>Intelligent Automation</h1> </div>
         <div> <h1>Login</h1> </div>
         <div className="login-email">
-          <p>Email Id</p>
+          <p>Username</p>
           <input
             type="text"
-            name='email'
+            name='name'
             autoComplete='on'
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
           />
-          {error.email && <p className="Error-text"> {error.email}</p>}
+          {error.name && <p className="Error-text"> {error.name}</p>}
         </div>
         <div className="login-password">
           <p>Password</p>

@@ -5,20 +5,37 @@ from sqlalchemy.sql import func
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
-    username = db.Column(db.String(255), unique=True, nullable=False)
+    username = db.Column(db.String(25), unique=True, nullable=False)
     email = db.Column(db.String(500), unique=True, nullable=False)
     dob = db.Column(db.Date, nullable=True)
+    country = db.Column(db.String(50), nullable=True)
     gender = db.Column(db.String(10), nullable=True)
     device = db.Column(db.String(50), nullable=True)
-    phone = db.column(db.String(15), nullable=True)
+    phone = db.Column(db.String(15), nullable=True)
     about = db.Column(db.String(1000), nullable=True)
-    photo = db.Column(db.String, nullable=False, default="./static/profile_pictures/default.jpg")
+    photo = db.Column(db.String(55), default="static/profile_pictures/default.jpg")
     password = db.Column(db.String(94), nullable=False)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     projects = db.relationship('Project', backref='creator', lazy=True)
 
     def __repr__(self):
-        return f"User(User ID: '{self.id}', Username: '{self.username}', Email: '{self.email}', Gender: '{self.gender}', is_Admin: {user.is_admin})"
+        return f"User(User ID: '{self.id}', Username: '{self.username}', Email: '{self.email}', Gender: '{self.gender}', Device: '{self.device}', is_Admin: {user.is_admin})"
+
+    def to_dict(self):
+        return {
+                "id": self.id,
+                "username": self.username,
+                "email": self.email,
+                "dob": self.dob,
+                "country": self.country,
+                "gender": self.gender,
+                "device": self.device,
+                "phone": self.phone,
+                "about": self.about,
+                "photo": self.photo,
+                "is_admin": self.is_admin,
+                "projects": list(map(lambda x: x.to_dict(), self.projects))
+            }
 
 class Project(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
@@ -32,6 +49,17 @@ class Project(db.Model):
     def __repr__(self):
         return f"Project(Project ID: '{self.id}', Creator ID: '{self.user_id}', Project Name: '{self.name}', Project URL: '{self.url}', Date Created: '{self.date_created}')"
 
+    def to_dict(self):
+        return {
+                "id": self.id,
+                "name": self.name,
+                "url": self.url,
+                "user_id": self.user_id,
+                "date_created": self.date_created,
+                "pages": list(map(lambda x: x.to_dict(), self.pages)),
+                "goals": list(map(lambda x: x.to_dict(), self.goals))
+            }
+
 class Page(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -42,6 +70,15 @@ class Page(db.Model):
     def __repr__(self):
         return f"Page(Page ID: '{self.id}', Project ID: '{self.project_id}', Page Name: '{self.name}', Page URL: '{self.url}')"
 
+    def to_dict(self):
+        return {
+                "id": self.id,
+                "name": self.name,
+                "url": self.url,
+                "project_id": self.project_id,
+                "goals": list(map(lambda x: x.to_dict(), self.goals))
+            }
+
 class Goal(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -51,3 +88,12 @@ class Goal(db.Model):
 
     def __repr__(self):
         return f"Goal(Goal ID: '{self.id}', Project ID: '{self.project_id}', Page ID: '{self.page_id}',  Goal Name: '{self.name}', Training Status: {self.training_status})"
+
+    def to_dict(self):
+        return {
+                "id": self.id,
+                "name": self.name,
+                "training_status": self.training_status,
+                "project_id": self.project_id,
+                "page_id": self.page_id,
+            }
