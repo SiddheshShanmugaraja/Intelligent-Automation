@@ -9,11 +9,12 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(500), unique=True, nullable=False)
     dob = db.Column(db.Date, nullable=True)
     country = db.Column(db.String(50), nullable=True)
+    credit = db.Column(db.Integer, nullable=False, default=100)
     gender = db.Column(db.String(10), nullable=True)
     device = db.Column(db.String(50), nullable=True)
     phone = db.Column(db.String(15), nullable=True)
     about = db.Column(db.String(1000), nullable=True)
-    photo = db.Column(db.String(55), default="static/profile_pictures/default.jpg")
+    photo = db.Column(db.String(55), nullable=False, default="static/profile_pictures/default.jpg")
     password = db.Column(db.String(94), nullable=False)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     projects = db.relationship('Project', backref='creator', lazy=True)
@@ -26,10 +27,11 @@ class User(db.Model, UserMixin):
                 "id": self.id,
                 "username": self.username,
                 "email": self.email,
-                "dob": self.dob,
+                "dob": self.dob.strftime("%d/%m/%Y") if self.dob is not None else None,
                 "country": self.country,
+                "credit": self.credit,
                 "gender": self.gender,
-                "device": self.device,
+                "device": self.device.split(",") if (self.device is not None) and (self.device != "") else list(),
                 "phone": self.phone,
                 "about": self.about,
                 "photo": self.photo,
