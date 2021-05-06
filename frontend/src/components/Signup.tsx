@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import '../css/Signup.css';
+import '../assets//css/Signup.css';
 import { useHistory } from 'react-router-dom'
 import { baseUrl } from '../config'
 import axios from 'axios';
@@ -31,7 +31,7 @@ const Signup = () => {
       formData.append('password', password)
       axios.post(baseUrl + '/sign-up', formData).then(res => {
         if (res.data.status === 200) {
-          toast.success("Registration Success", {
+          toast.success(res.data.message, {
             position: toast.POSITION.TOP_RIGHT,
             autoClose: 3000,
           });
@@ -43,7 +43,6 @@ const Signup = () => {
             autoClose: 3000,
           });
         }
-
       }).catch((e) => {
         toast.error("Network Error", {
           position: toast.POSITION.TOP_RIGHT,

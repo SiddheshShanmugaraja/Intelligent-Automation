@@ -8,10 +8,15 @@
   padding: 20px;
   transition: 0.5s ease-in;
 }
-.sidebar a,
+.sidebar a{
+  text-decoration: none;
+  color: #fff;
+}
+
 .side-bar-hidden a {
   text-decoration: none;
   color: #fff;
+  display: none;
 }
 .side-bar-list {
   margin-top: 70px;

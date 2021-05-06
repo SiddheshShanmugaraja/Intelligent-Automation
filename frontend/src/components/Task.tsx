@@ -1,5 +1,5 @@
 import React from 'react'
-import '../css/Task.css'
+import '../assets/css/Task.css'
 
 import Navbar from './Navbar'
 

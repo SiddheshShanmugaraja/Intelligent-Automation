@@ -1,5 +1,5 @@
 import { useState } from "react";
-import '../css/Login.css';
+import '../assets//css/Login.css';
 import { useHistory } from 'react-router-dom'
 import { baseUrl } from '../config'
 import axios from 'axios'
@@ -33,31 +33,19 @@ const Login = () => {
             autoClose: 3000,
           });
           sessionStorage.setItem('loggeduser', JSON.stringify(res.data.data))
-          console.log(sessionStorage.getItem('loggeduser'))
           history.push('/home')
         }
         else {
-          toast.error(res.data.data, {
+          toast.error(res.data.message, {
             position: toast.POSITION.TOP_RIGHT,
             autoClose: 3000,
           });
         }
       }).catch((e) => {
-        let user = {
-          is_admin: true,
-          username: 'Andy Warhol'
-        }
-        toast.success("Login Success", {
+        toast.error("Network Error", {
           position: toast.POSITION.TOP_RIGHT,
           autoClose: 3000,
         });
-        sessionStorage.setItem('loggeduser', JSON.stringify(user))
-        console.log(sessionStorage.getItem('loggeduser'))
-        history.push('/home')
-        // toast.error("Network Error", {
-        //   position: toast.POSITION.TOP_RIGHT,
-        //   autoClose: 3000,
-        // });
       })
 
     }

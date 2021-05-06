@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import '../css/Profile.css'
+import '../assets/css/Profile.css'
 import Navbar from './Navbar'
 import { TextField } from '@material-ui/core';
 import Radio from '@material-ui/core/Radio';
@@ -7,8 +7,11 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
-import Select from '@material-ui/core/Select';
 import { useDropzone } from 'react-dropzone';
+import { baseUrl } from '../config'
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import Avatar from 'react-avatar';
 
 
 // import axios from 'axios';
@@ -17,31 +20,47 @@ const Profile = () => {
     const [name, setName] = useState('')
     const [country, setCountry] = useState('')
     const [dob, setdob] = useState('')
+    const [formatdob, setformatdob] = useState('')
     const [gender, setGender] = useState('')
-    const [description, setDescription] = useState('')
-    const [phone, setPhone] = useState('202-555-0173')
+    const [about, setAbout] = useState('')
     const [check, setCheck] = React.useState({
         Mobile: false,
         Computer: false,
         Tablet: false,
     });
-    const [select, setSelect] = useState({ age: '' })
-
-
+    const [photo, setPhoto] = React.useState('')
+    const [phone, setPhone] = useState('')
+    const [file, setFile] = React.useState('')
+    const formatdate = (date: any) => {
+        let month = String(date.getMonth() + 1);
+        let day = String(date.getDate());
+        const year = String(date.getFullYear());
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+        var formated = `${day}/${month}/${year}`;
+        setformatdob(formated)
+    }
 
     useEffect(() => {
-        // axios.get(baseUrl + '/profile-details', userid).then(res => {
-        //     if (res.data.status === 200) {
-        //     }
-        // )
-        setEmail('andy@campbells.com')
-        setName("Andy Warhol")
-        setCountry("United States of America")
-        setdob('1928-08-06')
-        setGender('male')
-        setSelect({ age: "Above 35" })
-        setDescription("Andy Warhol was an American artist, film director, and producer who was a leading figure in the visual art movement known as pop art.")
+        let loggeduser = JSON.parse(sessionStorage.getItem('loggeduser') || '{}')
+        setName(loggeduser['username'])
+        setEmail(loggeduser['email'])
+        setCountry(loggeduser['country'])
+        setGender(loggeduser['gender'])
+        loggeduser['dob'] && setdob(loggeduser['dob'].replaceAll("/", "-").split("-").reverse().join("-"))
+        setAbout(loggeduser['about'])
+        setPhone(loggeduser['phone'])
+        setPhoto(loggeduser['photo'])
+        let device = loggeduser['device']
+        let obj = {
+            Mobile: device.includes("Mobile") ? true : false,
+            Computer: device.includes("Computer") ? true : false,
+            Tablet: device.includes("Tablet") ? true : false,
+        }
+        setCheck(obj)
     }, []);
+
+
     const baseStyle = React.useMemo(() =>
     ({
         flex: 1,
@@ -81,8 +100,20 @@ const Profile = () => {
         isDragReject
     } = useDropzone({
         accept: 'image/*',
-        onDrop: files => console.log(files)
+        multiple: false,
+        onDrop: files => handleDrop(files)
     });
+
+    const handleDrop = (files: any) => {
+        let reader = new FileReader()
+        reader.readAsDataURL(files[0])
+        setFile(files[0])
+
+        reader.onload = () => {
+            setPhoto(reader.result as string)
+        }
+
+    }
 
     const style = React.useMemo(() => ({
         ...baseStyle,
@@ -91,7 +122,43 @@ const Profile = () => {
         ...(isDragReject ? rejectStyle : {})
     }), [isDragActive, isDragReject, isDragAccept, acceptStyle, activeStyle, baseStyle, rejectStyle])
 
+    const handleSubmit = () => {
+        const formData = new FormData();
 
+        formData.append('username', name)
+        formData.append('country', country)
+        formData.append('gender', gender)
+        formatdob && formData.append('dob', formatdob)
+        formData.append('about', about)
+        formData.append('phone', phone)
+        formData.append("photo", file);
+        var device = []
+        Object.keys(check).forEach(function (key) {
+            if (check[key] === true)
+                device.push(key)
+        });
+        formData.append('device', device.toString())
+        axios.post(baseUrl + '/update-profile', formData).then(res => {
+            if (res.data.status === 200) {
+                sessionStorage.setItem('loggeduser', JSON.stringify(res.data.data))
+                toast.success(res.data.message, {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+            }
+            else {
+                toast.error(res.data.data, {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+            }
+        }).catch((e) => {
+            toast.error("Network Error", {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+            });
+        })
+    }
     return (
         <>
             <Navbar title={'Profile'} />
@@ -104,7 +171,7 @@ const Profile = () => {
                             value={name}
                             type="text"
                             name='name'
-                            onChange={(e) => setName(e.target.value)}
+                            disabled
                         />
                     </div>
                     <div className="profile-text">
@@ -113,7 +180,7 @@ const Profile = () => {
                             value={email}
                             type="text"
                             name='email'
-                            onChange={(e) => setEmail(e.target.value)}
+                            disabled
                         />
                     </div>
                     <div className="profile-text">
@@ -125,7 +192,9 @@ const Profile = () => {
                             className="profile-text input"
                             InputProps={{ disableUnderline: true }}
                             style={{ width: '100%' }}
-                            onChange={(e) => setdob(e.target.value)}
+                            onChange={(e) => {
+                                formatdate(new Date(e.target.value)); setdob(e.target.value)
+                            }}
                         />
                     </div>
                     <div className="profile-text">
@@ -163,27 +232,6 @@ const Profile = () => {
                         </FormGroup>
                     </div>
                     <div className="profile-text">
-                        <p>Age</p>
-                        <Select
-                            native
-                            value={select['age']}
-                            onChange={(e) => setSelect({ ...select, age: "" + e.target.value })}
-                            inputProps={{
-                                name: 'age',
-                                id: 'age-native-simple',
-                            }}
-                            className="profile-text-select"
-
-                        >
-                            <option aria-label="None" value="select" />
-                            <option value={'under 18'}>Under 18</option>
-                            <option value={'18-25'}>18-25</option>
-                            <option value={'25-30'}>25-30</option>
-                            <option value={'30-35'}>30-35</option>
-                            <option value={'Above 35'}>Above 35</option>
-                        </Select>
-                    </div>
-                    <div className="profile-text">
                         <p>Phone Number</p>
                         <input
                             value={phone}
@@ -193,7 +241,7 @@ const Profile = () => {
                         />
                     </div>
                     <div className="profile-text">
-                        <p>Upload</p>
+                        <p>Upload Profile Picture</p>
                         <div className="container">
                             <div className="dropzone-outer">
                                 <div className="dropzone-inner"{...getRootProps({ style })}>
@@ -203,16 +251,23 @@ const Profile = () => {
                             </div>
                         </div>
                     </div>
+                    {photo &&
+                        <div className="profile-text">
+                            <p>Preview</p>
+                            <div className="profile-preview"> <Avatar name={name} src={photo} size="300" round={true} color="#009999" />
+                            </div>
+                        </div>
+                    }
                     <div className="profile-text">
                         <p>About</p>
                         <textarea name="description" rows={10}
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            value={about}
+                            onChange={(e) => setAbout(e.target.value)}
 
                         >
                         </textarea>
                     </div>
-                    <button className="signup-button" >
+                    <button className="signup-button" onClick={() => handleSubmit()} >
                         Update
           </button>
 
