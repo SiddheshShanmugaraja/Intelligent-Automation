@@ -157,6 +157,7 @@ const Search = () => {
                                 <th className={field === 'id' ? "selected" : "cpointer"} onClick={() => sortTable('id')}>id {field === 'id' ? type ? <ExpandMore /> : <ExpandLess /> : <Sort />} </th>
                                 <th className={field === 'username' ? "selected" : "cpointer"} onClick={() => sortTable('username')}>username{field === 'username' ? type ? <ExpandMore /> : <ExpandLess /> : <Sort />}</th>
                                 <th className={field === 'email' ? "selected" : "cpointer"} onClick={() => sortTable('email')}>email{field === 'email' ? type ? <ExpandMore /> : <ExpandLess /> : <Sort />}</th>
+                                <th className={field === 'credit' ? "selected" : "cpointer"} onClick={() => sortTable('credit')}>credits{field === 'credit' ? type ? <ExpandMore /> : <ExpandLess /> : <Sort />}</th>
                                 <th className={field === 'dob' ? "selected" : "cpointer"} onClick={() => sortTable('dob')} >dob{field === 'dob' ? type ? <ExpandMore /> : <ExpandLess /> : <Sort />}</th>
                                 <th className={field === 'gender' ? "selected" : "cpointer"} onClick={() => sortTable('gender')}>gender{field === 'gender' ? type ? <ExpandMore /> : <ExpandLess /> : <Sort />}</th>
                                 <th className={field === 'device' ? "selected" : "cpointer"} onClick={() => sortTable('device')}>device{field === 'device' ? type ? <ExpandMore /> : <ExpandLess /> : <Sort />}</th>
@@ -171,6 +172,7 @@ const Search = () => {
                                     <td className={field === 'id' ? "selected-values" : ""}>{arr.id}</td>
                                     <td className={field === 'username' ? "selected-values" : ""}>{arr.username}</td>
                                     <td className={field === 'email' ? "selected-values" : ""}>{arr.email}</td>
+                                    <td className={field === 'credit' ? "selected-values" : ""}>{arr.credit}</td>
                                     <td className={field === 'dob' ? "selected-values" : ""}>{arr.dob}</td>
                                     <td className={field === 'gender' ? "selected-values" : ""}>{arr.gender}</td>
                                     <td className={field === 'device' ? "selected-values" : ""}>{arr.device.toString()}</td>
