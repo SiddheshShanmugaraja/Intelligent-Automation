@@ -1,7 +1,7 @@
 from PIL import Image
 from .models import User
-from datetime import date
 from . import db, return_response
+from datetime import datetime, date
 from flask_cors import cross_origin
 from flask import Blueprint, request
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -116,7 +116,6 @@ def update_profile():
     user = User.query.filter_by(username=username).first()
     if user:
         user_info = dict(
-                        dob = request.form.get('dob'),
                         country = request.form.get('country'),
                         gender = request.form.get('gender'),
                         device = request.form.get('device'),
@@ -124,13 +123,17 @@ def update_profile():
                         about = request.form.get('about'),
                     )
         for u in user_info:
-            exec(f"user.{u} = user_info[u]")
+            if eval(f"user_info[u]"):
+                exec(f"user.{u} = user_info[u]")
         photo = request.files.get('photo')
         if photo:
             photo_path = f"static/profile_pictures/{username}.jpg"
             photo = Image.open(photo.stream)
             photo.save(photo_path)
             user.photo = photo_path
+        dob = request.form.get('dob')
+        if dob:
+            user.dob = datetime.strptime(dob, "%d/%m/%Y").date()
         db.session.commit()
         status = 200
         message = "Profile update successful!"
@@ -139,4 +142,20 @@ def update_profile():
         status = 400
         message = f"No user with username: '{username}'!"
         data = None
+    return return_response(status, message, data)
+
+@auth.route('/get-users', methods=['GET'])
+@cross_origin()
+def get_users():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
+    users = User.query.all()
+    data = list()
+    for user in users:
+        data.append(user.to_dict())
+    status = 200
+    message = "Users queried successfully!"
     return return_response(status, message, data)
