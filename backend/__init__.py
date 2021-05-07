@@ -41,7 +41,7 @@ def create_app() -> object:
     from .models import User, Project, Page, Goal
     from .auth import auth
     from .agent import agent
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder=os.path.abspath('./static'))
     CORS(app)
     app.config['SECRET_KEY'] = SECRET_KEY
     app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
