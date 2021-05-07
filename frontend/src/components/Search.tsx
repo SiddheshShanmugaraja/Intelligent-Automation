@@ -8,7 +8,7 @@ import _ from 'lodash'
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import Sort from '@material-ui/icons/UnfoldMore';
-
+import { baseUrl } from "../config"
 const Search = () => {
     const [search, setSearch] = useState('');
     const [select, setSelect] = useState({ field: '' })
@@ -144,7 +144,7 @@ const Search = () => {
                                     <td className={field === 'device' ? "selected-values" : ""}>{arr.device}</td>
                                     <td >{arr.phone}</td>
                                     <td>
-                                        <Avatar name={arr.username} src={arr.photo} size="40" round={true} color="#009999" />
+                                        <Avatar name={arr.username} src={baseUrl + "/" + arr.photo} size="40" round={true} color="#009999" />
                                     </td>
                                     <td className={field === 'is_admin' ? "selected-values" : ""}>{arr.is_admin.toString()}</td>
                                     <td>{arr.projects}</td>
@@ -154,7 +154,6 @@ const Search = () => {
                     </table>
                 </div>
                 <div className="task-management-footer">
-
                     <div className="task-management-footer-left">
                         <p>Copyright @ 2020-2021 | All rights reserved</p>
                     </div>
@@ -162,9 +161,6 @@ const Search = () => {
                         <p>Privacy Policy | Terms and Conditions | Sitemap</p>
                     </div>
                 </div>
-
-
-
             </div>
         </>
     )

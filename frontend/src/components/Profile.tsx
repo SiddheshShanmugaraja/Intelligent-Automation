@@ -52,12 +52,14 @@ const Profile = () => {
         setPhone(loggeduser['phone'])
         setPhoto(loggeduser['photo'])
         let device = loggeduser['device']
-        let obj = {
-            Mobile: device.includes("Mobile") ? true : false,
-            Computer: device.includes("Computer") ? true : false,
-            Tablet: device.includes("Tablet") ? true : false,
+        if (loggeduser['device']) {
+            let obj = {
+                Mobile: device.includes("Mobile") ? true : false,
+                Computer: device.includes("Computer") ? true : false,
+                Tablet: device.includes("Tablet") ? true : false,
+            }
+            setCheck(obj)
         }
-        setCheck(obj)
     }, []);
 
 
@@ -254,7 +256,7 @@ const Profile = () => {
                     {photo &&
                         <div className="profile-text">
                             <p>Preview</p>
-                            <div className="profile-preview"> <Avatar name={name} src={photo} size="300" round={true} color="#009999" />
+                            <div className="profile-preview"> <Avatar name={name} src={baseUrl + "/" + photo} size="300" round={true} color="#009999" />
                             </div>
                         </div>
                     }
