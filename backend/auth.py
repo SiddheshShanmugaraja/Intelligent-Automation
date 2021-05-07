@@ -144,18 +144,26 @@ def update_profile():
         data = None
     return return_response(status, message, data)
 
-@auth.route('/get-users', methods=['GET'])
+@auth.route('/search', methods=['GET', 'POST'])
 @cross_origin()
-def get_users():
+def search():
     """[summary]
 
     Returns:
         [type]: [description]
     """
-    users = User.query.all()
-    data = list()
-    for user in users:
-        data.append(user.to_dict())
+    if request.method == 'GET':
+        users = User.query.all()
+        data = list()
+        for user in users:
+            data.append(user.to_dict())
+    elif request.method == 'POST':
+        search_keyword = request.form.get('search_keyword')
+        search_field = request.form.get('search_field').lower()
+        users = eval(f"User.query.filter(User.{search_field}.contains('{search_keyword}'))")
+        data = list()
+        for user in users:
+            data.append(user.to_dict())
     status = 200
     message = "Users queried successfully!"
     return return_response(status, message, data)
