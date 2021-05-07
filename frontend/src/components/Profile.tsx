@@ -12,10 +12,11 @@ import { baseUrl } from '../config'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Avatar from 'react-avatar';
-
+import { CircularProgress } from '@material-ui/core';
 
 // import axios from 'axios';
 const Profile = () => {
+    const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [name, setName] = useState('')
     const [country, setCountry] = useState('')
@@ -40,7 +41,6 @@ const Profile = () => {
         var formated = `${day}/${month}/${year}`;
         setformatdob(formated)
     }
-
     useEffect(() => {
         let loggeduser = JSON.parse(sessionStorage.getItem('loggeduser') || '{}')
         setName(loggeduser['username'])
@@ -50,7 +50,7 @@ const Profile = () => {
         loggeduser['dob'] && setdob(loggeduser['dob'].replaceAll("/", "-").split("-").reverse().join("-"))
         setAbout(loggeduser['about'])
         setPhone(loggeduser['phone'])
-        setPhoto(loggeduser['photo'])
+        setPhoto(baseUrl + '/' + loggeduser['photo'])
         let device = loggeduser['device']
         if (loggeduser['device']) {
             let obj = {
@@ -91,9 +91,8 @@ const Profile = () => {
 
     const rejectStyle = React.useMemo(() =>
     ({
-        borderColor: '#2196f3'
+        borderColor: '#ff1744'
     }), []);
-
     const {
         getRootProps,
         getInputProps,
@@ -125,8 +124,8 @@ const Profile = () => {
     }), [isDragActive, isDragReject, isDragAccept, acceptStyle, activeStyle, baseStyle, rejectStyle])
 
     const handleSubmit = () => {
+        setLoading(true)
         const formData = new FormData();
-
         formData.append('username', name)
         formData.append('country', country)
         formData.append('gender', gender)
@@ -154,11 +153,13 @@ const Profile = () => {
                     autoClose: 3000,
                 });
             }
+            setLoading(false)
         }).catch((e) => {
             toast.error("Network Error", {
                 position: toast.POSITION.TOP_RIGHT,
                 autoClose: 3000,
             });
+            setLoading(false)
         })
     }
     return (
@@ -256,7 +257,7 @@ const Profile = () => {
                     {photo &&
                         <div className="profile-text">
                             <p>Preview</p>
-                            <div className="profile-preview"> <Avatar name={name} src={baseUrl + "/" + photo} size="300" round={true} color="#009999" />
+                            <div className="profile-preview"> <Avatar name={name} src={photo} size="300" round={true} color="#009999" />
                             </div>
                         </div>
                     }
@@ -269,9 +270,15 @@ const Profile = () => {
                         >
                         </textarea>
                     </div>
-                    <button className="signup-button" onClick={() => handleSubmit()} >
-                        Update
-          </button>
+                    {loading ?
+                        <button className="signup-button" disabled  >
+                            <CircularProgress />
+                        </button> :
+                        <button className="signup-button" onClick={() => handleSubmit()} >
+                            Update
+       </button>
+                    }
+
 
                 </div>
             </div>

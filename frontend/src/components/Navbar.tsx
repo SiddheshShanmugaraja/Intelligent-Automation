@@ -1,12 +1,11 @@
-
 import React from 'react'
 import SettingsIcon from '@material-ui/icons/Settings';
 import Avatar from 'react-avatar';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import Sidebar from './Sidebar';
 import { useHistory } from 'react-router-dom';
-import "../assets/css/Navbar.css"
-import { baseUrl } from "../config"
+import "../assets/css/Navbar.css";
+import { baseUrl } from "../config";
 const Navbar = (props: any) => {
     const history = useHistory();
     let loggeduser = JSON.parse(sessionStorage.getItem('loggeduser') || '{}')
@@ -14,6 +13,7 @@ const Navbar = (props: any) => {
         if (sessionStorage.getItem('loggeduser') !== null) {
             sessionStorage.removeItem('loggeduser')
             history.push("/")
+
         } else {
             console.log("Logout Error");
         }
