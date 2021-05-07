@@ -18,7 +18,7 @@
 }
 .task-management-header-right-items {
   display: flex;
-  width: 520px;
+  width: 660px;
   align-items: center;
   justify-content: space-between;
 }
@@ -51,7 +51,7 @@
   flex: 1;
   max-width: fit-content;
   padding: 10px;
-  height: 30px;
+  height: 35px;
   border: 1px solid lightgrey;
   border-radius: 4px;
 }
@@ -188,8 +188,7 @@ button.modal-button-cancel {
 }
 
 .task-management-body {
-
-  margin: 0 35px;
+  margin: 0 50px;
 }
 
 .task-management-body table {

@@ -9,70 +9,47 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import Sort from '@material-ui/icons/UnfoldMore';
 import { baseUrl } from "../config"
+import axios from 'axios';
+import { toast } from 'react-toastify';
+
 const Search = () => {
     const [search, setSearch] = useState('');
     const [select, setSelect] = useState({ field: '' })
+    const [data, setData] = useState({})
     const [type, setType] = useState(true)
     const [field, setField] = useState('id')
     var [table_values, setTable_values] = useState([] as any);
 
+    const setInitalState = () => {
+        axios.get(baseUrl + '/search').then(res => {
+            if (res.data.status === 200) {
+                setData(res.data.data)
+            }
+            else {
+                toast.error(res.data.message, {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+            }
+        }).catch((e) => {
+            toast.error("Network Error", {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+            });
+        })
+    }
+    useEffect(() => {
+        setInitalState()
+    }, [])
 
     useEffect(() => {
-        const res = {
-            "data": [
-                {
-                    "id": 1,
-                    "username": "zadmin",
-                    "email": "admin@gmail.com",
-                    "dob": "2021-05-05",
-                    "gender": "male",
-                    "device": null,
-                    "phone": null,
-                    "about": null,
-                    "photo": "static/profile_pictures/default.jpg",
-                    "is_admin": true,
-                    "projects": ["Project1", "Project2", "Project3"]
-                },
-
-                {
-                    "id": 2,
-                    "username": "user",
-                    "email": "user@gmail.com",
-                    "dob": "2004-05-05",
-                    "gender": "female",
-                    "device": "tablet",
-                    "phone": "123-456-7890",
-                    "about": null,
-                    "photo": "static/profile_pictures/user.jpg",
-                    "is_admin": false,
-                    "projects": ["Project4", "Project5", "Project6"]
-                },
-                {
-                    "id": 3,
-                    "username": "user",
-                    "email": "user@gmail.com",
-                    "dob": "2010-05-05",
-                    "gender": "female",
-                    "device": "tablet",
-                    "phone": "123-456-7890",
-                    "about": null,
-                    "photo": "static/profile_pictures/user.jpg",
-                    "is_admin": false,
-                    "projects": ["Project4", "Project5", "Project6"]
-                }
-
-            ]
-
-        }
         if (type) {
-            setTable_values(_.orderBy(res['data'], [field], ['asc']));
+            setTable_values(_.orderBy(data, [field], ['asc']));
         }
         else {
-            setTable_values(_.orderBy(res['data'], [field], ['desc']));
+            setTable_values(_.orderBy(data, [field], ['desc']));
         }
-    }, [field, type]);
-
-
+    }, [field, type, data]);
 
     const sortTable = (f: any) => {
         if (f !== field) {
@@ -84,6 +61,52 @@ const Search = () => {
 
         }
         setField(f)
+    }
+
+    const onClear = () => {
+        setSearch('')
+        setSelect({ field: '' })
+        setInitalState()
+        setField('id')
+        setType(true)
+    }
+
+    const onSearch = () => {
+        if (search && select['field']) {
+            const formData = new FormData();
+            formData.append('search_keyword', search)
+            formData.append('search_field', select['field'])
+            axios.post(baseUrl + '/search', formData).then(res => {
+                if (res.data.status === 200) {
+                    setField('id')
+                    setType(true)
+                    setData(res.data.data)
+                }
+                else {
+                    toast.error(res.data.message, {
+                        position: toast.POSITION.TOP_RIGHT,
+                        autoClose: 3000,
+                    });
+                }
+            }).catch((e) => {
+                toast.error("Network Error", {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+            })
+        }
+        else {
+            if (!search)
+                toast.error("Please Enter the search keyword", {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+            else if (!select['field'])
+                toast.error("Please Select the search field", {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+        }
     }
 
     return (
@@ -99,7 +122,7 @@ const Search = () => {
                             <Select
                                 native
                                 value={select['field']}
-                                onChange={(e) => setSelect({ field: "" + e.target.value })}
+                                onChange={(e) => setSelect({ field: e.target.value.toString() })}
                                 inputProps={{
                                     name: 'age',
                                     id: 'select',
@@ -109,12 +132,21 @@ const Search = () => {
                                 placeholder="Select Field"
                             >
                                 <option value="" disabled>Select Field</option>
+                                <option value={'Id'}>Id</option>
                                 <option value={'Username'}>Username</option>
                                 <option value={'Email'}>Email</option>
                                 <option value={'UserID'}>UserID</option>
+                                <option value={'DOB'}>DOB</option>
+                                <option value={'Country'}>Country</option>
+                                <option value={'Gender'}>Gender</option>
+                                <option value={'Device'}>Device</option>
+                                <option value={'Phone'}>Phone</option>
+                                <option value={'About'}>About</option>
                             </Select>
                         </div>
-                        <button className="search-button">Search</button>
+                        <button className="search-button" onClick={() => onSearch()}>Search</button>
+                        <button className="search-button" onClick={() => onClear()}>Clear</button>
+
                     </div>
                 </div>
                 <div className="task-management-body">
@@ -134,14 +166,14 @@ const Search = () => {
                                 <th>projects</th>
                             </tr></thead>
                         <tbody>
-                            {table_values.map(arr =>
+                            {table_values.length > 0 ? table_values.map(arr =>
                                 <tr key={arr.id}>
                                     <td className={field === 'id' ? "selected-values" : ""}>{arr.id}</td>
                                     <td className={field === 'username' ? "selected-values" : ""}>{arr.username}</td>
                                     <td className={field === 'email' ? "selected-values" : ""}>{arr.email}</td>
                                     <td className={field === 'dob' ? "selected-values" : ""}>{arr.dob}</td>
                                     <td className={field === 'gender' ? "selected-values" : ""}>{arr.gender}</td>
-                                    <td className={field === 'device' ? "selected-values" : ""}>{arr.device}</td>
+                                    <td className={field === 'device' ? "selected-values" : ""}>{arr.device.toString()}</td>
                                     <td >{arr.phone}</td>
                                     <td>
                                         <Avatar name={arr.username} src={baseUrl + "/" + arr.photo} size="40" round={true} color="#009999" />
@@ -149,17 +181,14 @@ const Search = () => {
                                     <td className={field === 'is_admin' ? "selected-values" : ""}>{arr.is_admin.toString()}</td>
                                     <td>{arr.projects}</td>
                                 </tr>
-                            )}
+                            ) :
+                                <tr>
+                                    <td colSpan={10} >No data found</td>
+                                </tr>
+
+                            }
                         </tbody>
                     </table>
-                </div>
-                <div className="task-management-footer">
-                    <div className="task-management-footer-left">
-                        <p>Copyright @ 2020-2021 | All rights reserved</p>
-                    </div>
-                    <div className="task-management-footer-right">
-                        <p>Privacy Policy | Terms and Conditions | Sitemap</p>
-                    </div>
                 </div>
             </div>
         </>

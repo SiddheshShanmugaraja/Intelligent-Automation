@@ -9,6 +9,11 @@
    z-index: 10;
     padding-right: 20px;
   }
+
+  .navbar p {
+    z-index: 10;
+
+  }
   .navbar-right-items {
     width: 220px;
     display: flex;
