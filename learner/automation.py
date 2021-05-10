@@ -113,7 +113,6 @@ class Auto():
         except Exception as e:
             print(f"Error: {e}")
             return (1,False)
-            
 
     def get_result(self):
         try:

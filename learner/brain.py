@@ -1,6 +1,6 @@
+import os
 import numpy as np
 import pandas as pd
-import os
 
 class QLearningTable:
     def __init__(self, actions, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9,mode=None,csv=None,model_name=None,page_count=0):
@@ -30,6 +30,7 @@ class QLearningTable:
             print("Value error",str(e))
             self.q_table = pd.DataFrame(columns=self.actions, dtype=np.float64)
             self.q_table.columns = self.actions
+
     def choose_action(self, observation):
         self.check_state_exist(observation)
         # action selection
@@ -53,21 +54,11 @@ class QLearningTable:
         self.q_table.loc[s, a] += self.lr * (q_target - q_predict)  # update
 
     def check_state_exist(self, state):
-        # print("Checking states",self.q_table)
         if state not in self.q_table.index:
-            # append new state to q table
-            self.q_table = self.q_table.append(
-                pd.Series(
-                    [0]*len(self.actions),
-                    index=self.q_table.columns,
-                    name=state,
-                )
-            )
-    
+            self.q_table = self.q_table.append(pd.Series([0]*len(self.actions), index=self.q_table.columns, name=state))
     
     def save_each_value(self,model_name,episode):
         self.q_table.to_csv(os.getcwd()+'/../models/{}/logs/log_{}.csv'.format(model_name,episode))
         
     def save_q_values(self,filename,path):
-        # filename = "Unnamed" if filename == '' else filename
         self.q_table.to_csv(os.getcwd()+'/../models/{}/maze.csv'.format(filename))

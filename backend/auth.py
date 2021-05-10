@@ -156,9 +156,9 @@ def transfer_credits():
     Returns:
         [type]: [description]
     """
+    amount = int(request.form.get("amount"))
     sender_username = request.form.get("sender_username")
     reciever_username = request.form.get("reciever_username")
-    amount = int(request.form.get("amount"))
     sender = User.query.filter_by(username=sender_username).first()
     reciever = User.query.filter_by(username=reciever_username).first()
     if sender and reciever:
@@ -166,7 +166,7 @@ def transfer_credits():
             sender.credit -= amount
             reciever.credit += amount
             db.session.commit()
-            data = dict(sender=sender.to_dict(), reciever=reciever.to_dict()
+            data = dict(sender=sender.to_dict(), reciever=reciever.to_dict())
             status = 200
             message = "Credits transferred successfully!"
         else:
