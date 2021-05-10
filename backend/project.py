@@ -29,12 +29,17 @@ def create_project():
     url = request.form.get('url')
     username = request.form.get('username')
     user = User.query.filter_by(username=username).first()
-    project = Project(name=name, url=url, user_id=user.id)
-    db.session.add(project)
-    db.session.commit()
-    status = 200
-    message = "Project created successfully!"
-    data = project.to_dict()
+    if user:
+        project = Project(name=name, url=url, user_id=user.id)
+        db.session.add(project)
+        db.session.commit()
+        status = 200
+        message = "Project created successfully!"
+        data = project.to_dict()
+    else:
+        status = 400
+        message = f"No user found with username - '{username}'!"
+        data = None
     return return_response(status, message, data)
 
 @project.route('/get-pages', methods=['GET','POST'])
@@ -57,10 +62,16 @@ def create_page():
     name = request.form.get('name')
     url = request.form.get('url')
     project_id = int(request.form.get('project_id'))
-    page = Page(name=name, url=url, project_id=project_id)
-    db.session.add(page)
-    db.session.commit()
-    status = 200
-    message = "Page created successfully!"
-    data = project.to_dict()
+    project = Project.query.filter_by(id=project_id)
+    if project:
+        page = Page(name=name, url=url, project_id=project.id)
+        db.session.add(page)
+        db.session.commit()
+        status = 200
+        message = "Page created successfully!"
+        data = project.to_dict()
+    else:
+        status = 400
+        message = f"No project found with id - '{project_id}'!"
+        data = None
     return return_response(status, message, data)

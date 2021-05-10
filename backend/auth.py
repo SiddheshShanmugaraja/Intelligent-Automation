@@ -77,19 +77,19 @@ def change_password():
     old_password = request.form.get('old_password')
     new_password = request.form.get('new_password')
     user = User.query.filter_by(username=username).first()
-    if (user) and (check_password_hash(user.password, old_password)) and (len(new_password) >= 5) :
-        user.password = generate_password_hash(new_password)
-        db.session.commit()
-        status = 200
-        message = "Password updated successfully!"
-        data = user.to_dict()
-    else:
-        if len(new_password) < 5:
-            message = "Password must be atleast 5 characters!"
-        elif not user:
-            message = f"Incorrect username: {username}"
+    if user:
+        if check_password_hash(user.password, old_password):
+            user.password = generate_password_hash(new_password)
+            db.session.commit()
+            status = 200
+            message = "Password updated successfully!"
+            data = user.to_dict()
         else:
             message = "Incorrect password!"
+            status = 400
+            data = None
+    else:
+        message = f"Incorrect username: '{username}'!"
         status = 400
         data = None
     return return_response(status, message, data)
@@ -110,12 +110,12 @@ def update_profile():
             if eval(f"user_info[u]"):
                 exec(f"user.{u} = user_info[u]")
         photo = request.files.get('photo')
+        dob = request.form.get('dob')
         if photo:
             photo_path = f"static/profile_pictures/{username}.jpg"
             photo = Image.open(photo.stream)
             photo.save(photo_path)
             user.photo = photo_path
-        dob = request.form.get('dob')
         if dob:
             user.dob = datetime.strptime(dob, "%d/%m/%Y").date()
         db.session.commit()
@@ -161,15 +161,20 @@ def transfer_credits():
     amount = int(request.form.get("amount"))
     sender = User.query.filter_by(username=sender_username).first()
     reciever = User.query.filter_by(username=reciever_username).first()
-    if sender.credit >= amount:
-        sender.credit -= amount
-        reciever.credit += amount
-        db.session.commit()
-        data = {"sender": sender.to_dict(), "reciever": reciever.to_dict()}
-        status = 200
-        message = "Credits transferred successfully!"
+    if sender and reciever:
+        if sender.credit >= amount:
+            sender.credit -= amount
+            reciever.credit += amount
+            db.session.commit()
+            data = {"sender": sender.to_dict(), "reciever": reciever.to_dict()}
+            status = 200
+            message = "Credits transferred successfully!"
+        else:
+            data = None
+            status = 400
+            message = "Insufficient credits"
     else:
         data = None
         status = 400
-        message = "Insufficient credits"
+        message = f"Sender - '{sender_username}' or/and Reciever - '{reciever_username}' do not exist!"
     return return_response(status, message, data)
