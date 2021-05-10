@@ -1,7 +1,21 @@
 from . import db
-from datetime import datetime
-from flask_login import UserMixin
 from sqlalchemy.sql import func
+from flask_login import UserMixin
+from datetime import datetime, date
+
+def calculate_age(born):
+    """[summary]
+
+    Args:
+        born ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    if not born:
+        return None
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
@@ -28,6 +42,7 @@ class User(db.Model, UserMixin):
                 "username": self.username,
                 "email": self.email,
                 "dob": self.dob.strftime("%d/%m/%Y") if self.dob is not None else None,
+                "age": calculate_age(self.dob),
                 "country": self.country,
                 "credit": self.credit,
                 "gender": self.gender,

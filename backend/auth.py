@@ -1,26 +1,11 @@
 from PIL import Image
 from .models import User
 from . import db, return_response
-from datetime import datetime, date
 from flask_cors import cross_origin
 from flask import Blueprint, request
 from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint('auth', __name__)
-
-################################################################################################################
-
-def calculate_age(born):
-    """[summary]
-
-    Args:
-        born ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    today = date.today()
-    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 ################################################################################################################
 
@@ -166,4 +151,30 @@ def search():
             data.append(user.to_dict())
     status = 200
     message = "Users queried successfully!"
+    return return_response(status, message, data)
+
+@auth.route('/transfer-credits', methods=['POST'])
+@cross_origin()
+def transfer_credits():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
+    sender_username = request.form.get("sender_username")
+    reciever_username = request.form.get("reciever_username")
+    amount = int(request.form.get("amount"))
+    sender = User.query.filter_by(username=sender_username).first()
+    reciever = User.query.filter_by(username=reciever_username).first()
+    if sender.credit >= amount:
+        sender.credit -= amount
+        reciever.credit += amount
+        db.session.commit()
+        data = {"sender": sender.to_dict(), "reciever": reciever.to_dict()}
+        status = 200
+        message = "Credits transferred successfully!"
+    else:
+        data = None
+        status = 400
+        message = "Insufficient credits"
     return return_response(status, message, data)
