@@ -26,7 +26,7 @@ def return_response(status: int, message:str, data: Optional[Dict] = None) -> st
     Returns:
         str: [description]
     """
-    response = {"status": status, "message": message}
+    response = dict(status=status, message=message}
     if data:
         response["data"] = data
     return jsonify(response)

@@ -102,7 +102,7 @@ const Settings = () => {
                         />
                     </div>
                     <div className="signup-password">
-                        <p>ConfirmNew Password</p>
+                        <p>Confirm New Password</p>
                         <input
                             type="password"
                             name='password'
