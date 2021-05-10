@@ -9,6 +9,12 @@ auth = Blueprint('auth', __name__)
 
 ################################################################################################################
 
+def get_attribute_names(dict_, attributes):
+    dict_[attributes] = [attribute['name'] for attribute in dict_[attributes]] 
+    return dict_
+
+################################################################################################################
+
 @auth.route('/sign-up', methods=['POST'])
 @cross_origin()
 def sign_up():
@@ -138,12 +144,12 @@ def search():
     """
     if request.method == 'GET':
         users = User.query.all()
-        data = [user.to_dict() for user in users]
+        data = [get_attribute_names(user.to_dict(), 'projects') for user in users]
     elif request.method == 'POST':
         search_keyword = request.form.get('search_keyword')
         search_field = request.form.get('search_field').lower()
         users = eval(f"User.query.filter(User.{search_field}.contains('{search_keyword}'))")
-        data = [user.to_dict() for user in users]
+        data = [get_attribute_names(user.to_dict(), 'projects') for user in users]
     status = 200
     message = "Users queried successfully!"
     return return_response(status, message, data)

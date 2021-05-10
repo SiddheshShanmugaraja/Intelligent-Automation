@@ -19,7 +19,7 @@ const Settings = () => {
         valid.oldpassword = oldpassword.length >= 5 && oldpassword.length < 10 ? "" : " old password should be between 5 to 10 characters"
         valid.newpassword = newpassword.length >= 5 && newpassword.length < 10 ? "" : " new password should be between 5 to 10 characters"
         valid.newpasswordconfirm = newpasswordconfirm.length >= 5 && newpasswordconfirm.length < 10 ? "" : " confirm new  password should be between 5 to 10 characters"
-        valid.matched = newpassword == newpasswordconfirm ? "" : "new passwords did not match"
+        valid.matched = newpassword === newpasswordconfirm ? "" : "new passwords did not match"
         return valid;
     }
 
@@ -31,7 +31,6 @@ const Settings = () => {
             formData.append('username', username)
             formData.append('old_password', oldpassword)
             formData.append('new_password', newpassword)
-            // formData.append('newpasswordconfirm', newpasswordconfirm)
             axios.post(baseUrl + '/change-password', formData).then(res => {
                 console.log(res, res.status)
                 if (res.data.status === 200) {
