@@ -11,6 +11,11 @@ project = Blueprint('project', __name__)
 @project.route('/get-projects', methods=['GET','POST'])
 @cross_origin()
 def get_projects():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     if request.method == 'GET':
         projects = Project.query.all()
     elif request.method == 'POST':
@@ -25,6 +30,11 @@ def get_projects():
 @project.route('/create-project', methods=['POST'])
 @cross_origin()
 def create_project():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     name = request.form.get('name')
     url = request.form.get('url')
     username = request.form.get('username')
@@ -45,6 +55,11 @@ def create_project():
 @project.route('/get-pages', methods=['GET','POST'])
 @cross_origin()
 def get_pages():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     if request.method == 'GET':
         pages = Page.query.all()
     elif request.method == 'POST':
@@ -59,6 +74,11 @@ def get_pages():
 @project.route('/create-page', methods=['POST'])
 @cross_origin()
 def create_page():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     name = request.form.get('name')
     url = request.form.get('url')
     project_id = int(request.form.get('project_id'))
