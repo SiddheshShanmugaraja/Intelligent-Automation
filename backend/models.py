@@ -72,7 +72,7 @@ class Project(db.Model):
                 "name": self.name,
                 "url": self.url,
                 "user_id": self.user_id,
-                "date_created": self.date_created,
+                "date_created": self.date_created.strftime("%d/%m/%Y %H:%M:%S"),
                 "pages": list(map(lambda x: x.to_dict(), self.pages)),
                 "goals": list(map(lambda x: x.to_dict(), self.goals))
             }

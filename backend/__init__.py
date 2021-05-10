@@ -41,12 +41,14 @@ def create_app() -> object:
     from .models import User, Project, Page, Goal
     from .auth import auth
     from .agent import agent
+    from .project import project
     app = Flask(__name__, static_folder=os.path.abspath('./static'))
     CORS(app)
     app.config['SECRET_KEY'] = SECRET_KEY
     app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(agent, url_prefix='/')
+    app.register_blueprint(project, url_prefix='/')
     db.init_app(app)
     db.create_all(app=app)
     return app

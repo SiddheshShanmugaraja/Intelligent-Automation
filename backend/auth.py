@@ -77,15 +77,20 @@ def change_password():
     old_password = request.form.get('old_password')
     new_password = request.form.get('new_password')
     user = User.query.filter_by(username=username).first()
-    if check_password_hash(user.password, old_password):
-        user.password = new_password
+    if (user) and (check_password_hash(user.password, old_password)) and (len(new_password) >= 5) :
+        user.password = generate_password_hash(new_password)
         db.session.commit()
         status = 200
-        message = "Password update successful!"
+        message = "Password updated successfully!"
         data = user.to_dict()
     else:
+        if len(new_password) < 5:
+            message = "Password must be atleast 5 characters!"
+        elif not user:
+            message = f"Incorrect username: {username}"
+        else:
+            message = "Incorrect password!"
         status = 400
-        message = "Incorrect Password!"
         data = None
     return return_response(status, message, data)
 
@@ -100,13 +105,7 @@ def update_profile():
     username = request.form.get('username')
     user = User.query.filter_by(username=username).first()
     if user:
-        user_info = dict(
-                        country = request.form.get('country'),
-                        gender = request.form.get('gender'),
-                        device = request.form.get('device'),
-                        phone = request.form.get('phone'),
-                        about = request.form.get('about'),
-                    )
+        user_info = dict(country = request.form.get('country'), gender = request.form.get('gender'), device = request.form.get('device'), phone = request.form.get('phone'), about = request.form.get('about'))
         for u in user_info:
             if eval(f"user_info[u]"):
                 exec(f"user.{u} = user_info[u]")
@@ -139,16 +138,12 @@ def search():
     """
     if request.method == 'GET':
         users = User.query.all()
-        data = list()
-        for user in users:
-            data.append(user.to_dict())
+        data = [user.to_dict() for user in users]
     elif request.method == 'POST':
         search_keyword = request.form.get('search_keyword')
         search_field = request.form.get('search_field').lower()
         users = eval(f"User.query.filter(User.{search_field}.contains('{search_keyword}'))")
-        data = list()
-        for user in users:
-            data.append(user.to_dict())
+        data = [user.to_dict() for user in users]
     status = 200
     message = "Users queried successfully!"
     return return_response(status, message, data)

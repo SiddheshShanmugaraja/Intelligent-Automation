@@ -10,7 +10,14 @@ except ImportError:
     from yaml import Loader, Dumper
 
 logging.basicConfig(filename=os.getcwd()+'/../logs/app.log', filemode='w',format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+
 def update(site,mode):
+    """[summary]
+
+    Args:
+        site ([type]): [description]
+        mode ([type]): [description]
+    """
     count = 0
     site_over = False
     iteration = 200

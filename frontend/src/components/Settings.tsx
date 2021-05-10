@@ -10,7 +10,7 @@ const Settings = () => {
             <div className="container">
 
                 <div className="profile-container">
-                    <div><h1>Reset Password                     </h1> </div>
+                    <div><h1>Reset Password</h1> </div>
                     <div className="signup-password">
                         <p>Current Password</p>
                         <input
