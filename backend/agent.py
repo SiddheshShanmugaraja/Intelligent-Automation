@@ -182,6 +182,11 @@ def get_page_list():
 @agent.route("/train_data", methods=["POST"])
 @cross_origin()
 def train_site():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     goal_name = request.form.get("goal_name")
     page_details = json.loads(request.form.get("pageDetail"))
     input_file = request.files["input_data"]
@@ -219,6 +224,11 @@ def train_site():
 @agent.route("/get_training_status", methods=["GET"])
 @cross_origin()
 def get_training_status():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     with open(LOG_FILE, "r", os.O_NONBLOCK) as f:
         data = f.read()
     split = data.split("\n")
@@ -240,6 +250,11 @@ def get_training_status():
 @agent.route("/projects", methods=["POST", "GET", "DELETE"])
 @cross_origin()
 def action_projects():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     if request.method == "POST":
         data = request.get_json()
         new_project = Project(name=data["name"], url=data["domain_url"], user_id=data["user_id"])
@@ -257,6 +272,11 @@ def action_projects():
 @agent.route("/pages", methods=["POST", "GET", "DELETE"])
 @cross_origin()
 def action_pages():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     if request.method == "POST":
         data = request.get_json()
         new_page = Page(name=data["name"], url=data["domain_url"], project_id=data["project_id"])
@@ -274,6 +294,11 @@ def action_pages():
 @agent.route("/goals", methods=["POST", "GET", "DELETE"])
 @cross_origin()
 def action_goals():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     if request.method == "POST":
         data = request.get_json()
         new_goal = Goal(name=data["name"], training_status=data["training_status"], project_id=data["project_id"], page_id=data["page_id"])

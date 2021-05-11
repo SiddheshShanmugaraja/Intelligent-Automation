@@ -20,5 +20,4 @@ const Sidebar = (props: any) => {
         </div>
     )
 }
-
 export default Sidebar

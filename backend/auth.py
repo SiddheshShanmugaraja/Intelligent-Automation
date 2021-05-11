@@ -184,5 +184,10 @@ def transfer_credits():
     else:
         data = None
         status = 400
-        message = f"Sender - '{sender_username}' or/and Reciever - '{reciever_username}' do not exist!"
+        if (not sender) and (not reciever):
+            message = f"No users with usernames - '{sender_username}', '{reciever_username}'!"
+        elif not sender:
+            message = f"No user with username - '{sender_username}'!"
+        elif not reciever:
+            message = f"No user with username - '{reciever_username}'!"
     return return_response(status, message, data)

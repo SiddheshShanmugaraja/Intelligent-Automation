@@ -185,8 +185,8 @@ const Search = () => {
                                 <option value={'Id'}>Id</option>
                                 <option value={'Username'}>Username</option>
                                 <option value={'Email'}>Email</option>
-                                <option value={'UserID'}>UserID</option>
-                                <option value={'Age'}>Age</option>
+                                {/* <option value={'UserID'}>UserID</option> */}
+                                {/* <option value={'Age'}>Age</option> */}
                                 <option value={'Country'}>Country</option>
                                 <option value={'Gender'}>Gender</option>
                                 <option value={'Device'}>Device</option>

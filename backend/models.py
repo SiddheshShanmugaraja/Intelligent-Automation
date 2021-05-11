@@ -37,22 +37,22 @@ class User(db.Model, UserMixin):
         return f"User(User ID: '{self.id}', Username: '{self.username}', Email: '{self.email}', Gender: '{self.gender}', Device: '{self.device}', is_Admin: {user.is_admin})"
 
     def to_dict(self):
-        return {
-                "id": self.id,
-                "username": self.username,
-                "email": self.email,
-                "dob": self.dob.strftime("%d/%m/%Y") if self.dob is not None else None,
-                "age": calculate_age(self.dob),
-                "country": self.country,
-                "credit": self.credit,
-                "gender": self.gender,
-                "device": self.device.split(",") if (self.device is not None) and (self.device != "") else list(),
-                "phone": self.phone,
-                "about": self.about,
-                "photo": self.photo,
-                "is_admin": self.is_admin,
-                "projects": list(map(lambda x: x.to_dict(), self.projects))
-            }
+        return dict(
+                    id = self.id,
+                    username = self.username,
+                    email = self.email,
+                    dob = self.dob.strftime("%d/%m/%Y") if self.dob is not None else None,
+                    age = calculate_age(self.dob),
+                    country = self.country,
+                    credit = self.credit,
+                    gender = self.gender,
+                    device = self.device.split(",") if (self.device is not None) and (self.device != "") else list(),
+                    phone = self.phone,
+                    about = self.about,
+                    photo = self.photo,
+                    is_admin = self.is_admin,
+                    projects = list(map(lambda x: x.to_dict(), self.projects))
+                )
 
 class Project(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
@@ -67,15 +67,15 @@ class Project(db.Model):
         return f"Project(Project ID: '{self.id}', Creator ID: '{self.user_id}', Project Name: '{self.name}', Project URL: '{self.url}', Date Created: '{self.date_created}')"
 
     def to_dict(self):
-        return {
-                "id": self.id,
-                "name": self.name,
-                "url": self.url,
-                "user_id": self.user_id,
-                "date_created": self.date_created.strftime("%d/%m/%Y %H:%M:%S"),
-                "pages": list(map(lambda x: x.to_dict(), self.pages)),
-                "goals": list(map(lambda x: x.to_dict(), self.goals))
-            }
+        return dict(
+                    id = self.id,
+                    name = self.name,
+                    url = self.url,
+                    user_id = self.user_id,
+                    date_created = self.date_created.strftime("%d/%m/%Y %H:%M:%S"),
+                    pages = list(map(lambda x: x.to_dict(), self.pages)),
+                    goals = list(map(lambda x: x.to_dict(), self.goals))
+                )
 
 class Page(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
@@ -88,13 +88,13 @@ class Page(db.Model):
         return f"Page(Page ID: '{self.id}', Project ID: '{self.project_id}', Page Name: '{self.name}', Page URL: '{self.url}')"
 
     def to_dict(self):
-        return {
-                "id": self.id,
-                "name": self.name,
-                "url": self.url,
-                "project_id": self.project_id,
-                "goals": list(map(lambda x: x.to_dict(), self.goals))
-            }
+        return dict(
+                    id = self.id,
+                    name = self.name,
+                    url = self.url,
+                    project_id = self.project_id,
+                    goals = list(map(lambda x: x.to_dict(), self.goals))
+                )
 
 class Goal(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
@@ -107,10 +107,10 @@ class Goal(db.Model):
         return f"Goal(Goal ID: '{self.id}', Project ID: '{self.project_id}', Page ID: '{self.page_id}',  Goal Name: '{self.name}', Training Status: {self.training_status})"
 
     def to_dict(self):
-        return {
-                "id": self.id,
-                "name": self.name,
-                "training_status": self.training_status,
-                "project_id": self.project_id,
-                "page_id": self.page_id,
-            }
+        return dict(
+                    id = self.id,
+                    name = self.name,
+                    training_status = self.training_status,
+                    project_id = self.project_id,
+                    page_id = self.page_id,
+                )
