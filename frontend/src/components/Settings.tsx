@@ -58,13 +58,14 @@ const Settings = () => {
         else {
             console.log("found some error")
             console.log(obj)
-            Object.keys(obj).map(function (key, index) {
+            Object.keys(obj).map(function (key) {
                 if (obj[key] !== "") {
                     toast.error(obj[key], {
                         position: toast.POSITION.TOP_RIGHT,
                         autoClose: 3000,
                     });
                 }
+                return 0
             });
         }
 

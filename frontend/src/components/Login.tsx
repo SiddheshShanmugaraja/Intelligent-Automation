@@ -33,6 +33,7 @@ const Login = () => {
             autoClose: 3000,
           });
           sessionStorage.setItem('loggeduser', JSON.stringify(res.data.data))
+          sessionStorage.setItem('credit', JSON.stringify(res.data.data.credit))
           history.push('/home')
         }
         else {
