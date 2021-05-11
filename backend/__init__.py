@@ -38,10 +38,10 @@ def create_app() -> object:
     Returns:
         object: [description]
     """
-    from .models import User, Project, Page, Goal
     from .auth import auth
     from .agent import agent
     from .project import project
+    from .models import User, Project, Page, Goal
     app = Flask(__name__, static_folder=os.path.abspath('./static'))
     CORS(app)
     app.config['SECRET_KEY'] = SECRET_KEY
