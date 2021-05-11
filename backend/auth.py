@@ -2,6 +2,7 @@ from PIL import Image
 from .models import User
 from . import db, return_response
 from flask_cors import cross_origin
+from datetime import datetime, date
 from flask import Blueprint, request
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -9,8 +10,9 @@ auth = Blueprint('auth', __name__)
 
 ################################################################################################################
 
-def get_attribute_names(dict_, attributes):
-    dict_[attributes] = [attribute['name'] for attribute in dict_[attributes]] 
+def get_attribute_names(dict_, attributes_list):
+    for attributes in attributes_list:
+        dict_[attributes] = [attribute['name'] for attribute in dict_[attributes]] 
     return dict_
 
 ################################################################################################################
@@ -144,12 +146,12 @@ def search():
     """
     if request.method == 'GET':
         users = User.query.all()
-        data = [get_attribute_names(user.to_dict(), 'projects') for user in users]
+        data = [get_attribute_names(user.to_dict(), ['projects']) for user in users]
     elif request.method == 'POST':
         search_keyword = request.form.get('search_keyword')
         search_field = request.form.get('search_field').lower()
         users = eval(f"User.query.filter(User.{search_field}.contains('{search_keyword}'))")
-        data = [get_attribute_names(user.to_dict(), 'projects') for user in users]
+        data = [get_attribute_names(user.to_dict(), ['projects']) for user in users]
     status = 200
     message = "Users queried successfully!"
     return return_response(status, message, data)
@@ -162,7 +164,7 @@ def transfer_credits():
     Returns:
         [type]: [description]
     """
-    amount = int(request.form.get("amount"))
+    amount = abs(int(float(request.form.get("amount"))))
     sender_username = request.form.get("sender_username")
     reciever_username = request.form.get("reciever_username")
     sender = User.query.filter_by(username=sender_username).first()

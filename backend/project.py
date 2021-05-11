@@ -2,6 +2,7 @@ from PIL import Image
 from . import db, return_response
 from flask_cors import cross_origin
 from flask import Blueprint, request
+from .auth import get_attribute_names
 from .models import User, Project, Page, Goal
 
 project = Blueprint('project', __name__)
@@ -22,7 +23,7 @@ def get_projects():
         username = request.form.get('username')
         user = User.query.filter_by(username=username).first()
         projects = user.projects
-    data = [project.to_dict() for project in projects]
+    data = [get_attribute_names(project.to_dict(), ['pages', 'goals']) for project in projects]
     status = 200
     message = "Projects queried successfully!"
     return return_response(status, message, data)
@@ -35,8 +36,8 @@ def create_project():
     Returns:
         [type]: [description]
     """
-    name = request.form.get('name')
     url = request.form.get('url')
+    name = request.form.get('name')
     username = request.form.get('username')
     user = User.query.filter_by(username=username).first()
     if user:
@@ -66,7 +67,7 @@ def get_pages():
         project_id = int(request.form.get('project_id'))
         project = Project.query.filter_by(id=project_id).first()
         pages = project.pages
-    data = [page.to_dict() for page in pages]
+    data = [get_attribute_names(page.to_dict(), ['goals']) for page in pages]
     status = 200
     message = "Pages queried successfully!"
     return return_response(status, message, data)
