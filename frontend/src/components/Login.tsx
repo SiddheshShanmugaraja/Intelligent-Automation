@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { baseUrl } from '../config'
 import axios from 'axios'
 import { toast } from 'react-toastify';
-
+import { Link } from 'react-router-dom'
 const Login = () => {
   const history = useHistory();
   // const [email, setEmail] = useState('')
@@ -56,6 +56,10 @@ const Login = () => {
   }
   return (
     <div className="container">
+      <div className="d-none" >
+        <Link to='/' />
+        <Link to='/sign-up' />
+      </div>
       <div className="login-navbar-container">
         <div className="login-navbar-content">
           <p>Need an Account ?</p>

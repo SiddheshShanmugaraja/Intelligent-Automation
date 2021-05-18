@@ -9,6 +9,7 @@ import Profile from './components/Profile';
 import Search from './components/Search'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Project from './components/ProjectPage'
 import ProtectedRoute, { ProtectedRouteProps } from './protectedRoute'
 
 function App() {
@@ -25,7 +26,7 @@ function App() {
     <Router>
       <div className="App">
         <Switch>
-          <ProtectedRoute
+          <Route
             {...defaultProtectedRouteProps}
             exact={true}
             path='/home'
@@ -50,7 +51,9 @@ function App() {
             component={() => <Profile />}
           />
           <Route exact path='/sign-up'><Signup /></Route>
+          <Route exact path='/project'><Project /></Route>
           <Route path='/'><Login /></Route>
+
         </Switch>
         <ToastContainer />
       </div>
