@@ -134,7 +134,7 @@ def extract_from_data():
             df.dropna(subset=["URL"], inplace=True)
             data = df["URL"].values.tolist()
             page_titles = df['PAGE_TITLE'].values.tolist()
-        if len(data) > 0:
+        if len(data):
             res = _make_url_tree(data, page_titles)
             status = 200
             message = "Sites extracted!"
@@ -256,17 +256,19 @@ def action_projects():
         [type]: [description]
     """
     if request.method == "POST":
-        data = request.get_json()
-        new_project = Project(name=data["name"], url=data["domain_url"], user_id=data["user_id"])
+        name = request.form.get("name")
+        url = request.form.get("url")
+        user_id = int(request.form.get("user_id"))
+        new_project = Project(name=name, url=url, user_id=user_id)
         db.session.add(new_project)
         db.session.commit()
         status = 200
         message = "Project created successfully!"
-        data = {"project_id": new_project.id, "project_name": new_project.name, "project_url": new_project.url}
+        data = new_project.to_dict()
     elif request.method == "GET":
         status = 200
         message = "Projects loaded!"
-        data = {"Projects": Project.query.all()}
+        data = list(map(lambda x: x.to_dict(), Project.query.all()))
     return return_response(status, message, data)
 
 @agent.route("/pages", methods=["POST", "GET", "DELETE"])
@@ -278,8 +280,10 @@ def action_pages():
         [type]: [description]
     """
     if request.method == "POST":
-        data = request.get_json()
-        new_page = Page(name=data["name"], url=data["domain_url"], project_id=data["project_id"])
+        name = request.form.get("name")
+        url = request.form.get("url")
+        project_id = int(request.form.get("project_id"))
+        new_page = Page(name=name, url=url, project_id=project_id)
         db.session.add(new_page)
         db.session.commit()
         status = 200
@@ -288,7 +292,7 @@ def action_pages():
     elif request.method == "GET":
         status = 200
         message = "Pages loaded!"
-        data = {"Pages": Page.query.all()}
+        data = list(map(lambda x: x.to_dict(), Page.query.all()))
     return return_response(status, message, data)
 
 @agent.route("/goals", methods=["POST", "GET", "DELETE"])
@@ -306,9 +310,9 @@ def action_goals():
         db.session.commit()
         status = 200
         message = "Goal created successfully!"
-        data = {"goal_id": new_goal.id, "goal_name": new_goal.name, "goal_url": new_goal.url}
+        data = new_goal.to_dict()
     elif request.method == "GET":
         status = 200
         message = "Goals loaded!"
-        data = {"Goals": Goal.query.all()}
+        data = list(map(lambda x: x.to_dict(), Goal.query.all())) #{"Goals": Goal.query.all()}
     return return_response(status, message, data)

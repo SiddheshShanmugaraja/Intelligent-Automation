@@ -9,7 +9,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 
 INPUT_DATA_FILE = "../data/input_data.txt"
-CHROME_DRIVER = "backend/chromedriver"
+CHROME_DRIVER = "../backend/chromedriver"
 
 class Auto():
     """docstring for Auto"""
@@ -74,7 +74,7 @@ class Auto():
                 return (-1,False)
         elif objtype == 'range':
             try:
-                self.driver.execute_script("$('#{}').val({}).change()".format(state,value),input_element)
+                self.driver.execute_script(f"$('#{state}').val({value}).change()",input_element)
             except Exception as e:
                 print(f"Error: {e}")
         self.values.append(value)
@@ -154,7 +154,7 @@ class Auto():
         else:
             self.url = "Unnamed"
         raw = self.driver.page_source
-        soup = BeautifulSoup(raw,features="html5lib")
+        soup = BeautifulSoup(raw, features="html5lib")
         if element != "":
             soup = soup.select_one(element)
         inputs = soup.find_all('input')

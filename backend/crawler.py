@@ -1,4 +1,4 @@
-import json
+import json, os, re
 import pandas as pd
 import openpyxl as op
 from bs4 import BeautifulSoup
@@ -11,6 +11,7 @@ with open("backend/config.json", "r") as f:
 
 EXCEL_DIR = config.get("EXCEL_DIR") 
 CHROME_DRIVER = config.get("CHROME_DRIVER")
+EXCEL_EXTENSION = ".xlsx"
 
 def crawl_urls(url_list, crawled_urls, driver, url):
     """Get a set of urls and crawl each url recursively
@@ -42,15 +43,17 @@ def crawl_urls(url_list, crawled_urls, driver, url):
             
             url_list.append(a.get("href"))
 
+    new_url_list = list()
     # Recursively parse each url within same domain
     for page in set(url_list):  # set to remove duplicates
         # Check if the url belong to the same domain
         # And if this url is already parsed ignore it
         if (urlparse(page).netloc == domain) and (page not in crawled_urls):
+            new_url_list.append(page)
             print(page)
 
     # Once all urls are crawled return the list to calling function
-    return crawled_urls, url_list
+    return crawled_urls, new_url_list
 
 
 def load_to_excel(lst):
@@ -80,7 +83,7 @@ def format_excel(xl, sheet="Sheet1"):
     """
     # Open the excel file
     wb = op.load_workbook(xl)
-    ws = wb.get_sheet_by_name(sheet)
+    ws = wb[sheet]
 
     # Freeze panes
     ws.freeze_panes = "B2"
@@ -128,7 +131,8 @@ def main(url):
     global sheet_name
     parent_url = url
     domain = urlparse(parent_url).netloc
-    xl_name = os.path.join(EXCEL_DIR, url.split('.com')[0] + ".xlsx")
+    name = re.search(r'https://(.*?).com', url).group(1) if re.search(r'https://(.*?).com', url) != None else re.search(r'http://(.*?):', url).group(1)
+    xl_name = os.path.join(EXCEL_DIR, name + EXCEL_EXTENSION)
     sheet_name = "URLs"
     options = Options()
     options.headless = True
@@ -156,3 +160,7 @@ def main(url):
 
     # Format the excel file
     format_excel(xl_name, sheet_name)
+
+if __name__ == "__main__":
+    url = "https://optisolbusiness.com"
+    main(url)

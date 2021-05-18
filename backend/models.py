@@ -30,7 +30,7 @@ class User(db.Model, UserMixin):
     about = db.Column(db.String(1000), nullable=True)
     photo = db.Column(db.String(55), nullable=False, default="static/profile_pictures/default.jpg")
     password = db.Column(db.String(94), nullable=False)
-    is_admin = db.Column(db.Boolean, nullable=False, default=False)
+    is_admin = db.Column(db.Boolean, nullable=False, default=True)
     projects = db.relationship('Project', backref='creator', lazy=True)
 
     def __repr__(self):

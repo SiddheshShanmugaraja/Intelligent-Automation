@@ -28,7 +28,7 @@ def sign_up():
     email = request.form.get('email')
     username = request.form.get('username')
     password = request.form.get('password')
-    user1 = User.query.filter_by(email=email).first()
+    user1 = User.query.filter_by(email=email).first()# User.query.all()
     user2 = User.query.filter_by(username=username).first()
     if user1:
         status = 400

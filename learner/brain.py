@@ -58,7 +58,7 @@ class QLearningTable:
             self.q_table = self.q_table.append(pd.Series([0]*len(self.actions), index=self.q_table.columns, name=state))
     
     def save_each_value(self,model_name,episode):
-        self.q_table.to_csv(os.getcwd()+'/../models/{}/logs/log_{}.csv'.format(model_name,episode))
+        self.q_table.to_csv(os.getcwd()+f'/../models/{model_name}/logs/log_{episode}.csv')
         
     def save_q_values(self,filename,path):
-        self.q_table.to_csv(os.getcwd()+'/../models/{}/maze.csv'.format(filename))
+        self.q_table.to_csv(os.getcwd()+f'/../models/{filename}/maze.csv')
