@@ -217,7 +217,7 @@ const Search = () => {
                                     <th>Transfer Credits</th>
                                 </tr></thead>
                             <tbody>
-                                {table_values.length > 0 ? table_values.map(arr =>
+                                {table_values && table_values.length > 0 ? table_values.map(arr =>
                                     <tr key={arr.id}>
                                         <td className={field === 'id' ? "selected-values" : ""}>{arr.id}</td>
                                         <td className={field === 'username' ? "selected-values" : ""}>{arr.username}</td>
@@ -244,7 +244,7 @@ const Search = () => {
                                     </tr>
                                 ) :
                                     <tr>
-                                        <td colSpan={10} >No data found</td>
+                                        <td colSpan={11} >No data found</td>
                                     </tr>
                                 }
                             </tbody>
