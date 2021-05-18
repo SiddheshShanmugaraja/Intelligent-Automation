@@ -18344,3 +18344,7 @@ section.dark .notification-menu .title {
 .border-bottom {
 	border-bottom: 1px solid white;
 }
+
+.border-white {
+	border: 1px solid white;
+}

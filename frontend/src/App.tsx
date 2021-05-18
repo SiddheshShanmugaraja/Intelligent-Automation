@@ -52,6 +52,7 @@ function App() {
           />
           <Route exact path='/sign-up'><Signup /></Route>
           <Route exact path='/project'><Project /></Route>
+          <Route path='/login'><Login /></Route>
           <Route path='/'><Login /></Route>
 
         </Switch>

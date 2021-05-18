@@ -8,13 +8,25 @@ import { Treebeard } from 'react-treebeard';
 
 
 const Tdata = {
-    name: 'http://thedemosite.co.uk/',
+    name: 'http://localhost:3000/',
     toggled: true,
     children: [
 
-        { name: 'http://thedemosite.co.uk/index.php' },
-        { name: 'http://thedemosite.co.uk/login.php' },
-        { name: "http://thedemosite.co.uk/addauser.php" },
+        { name: 'http://localhost:3000/login' },
+        { name: 'http://localhost:3000/sign-up' },
+
+
+    ]
+};
+
+const TdataPages = {
+    name: 'http://localhost:3000/login/',
+    toggled: true,
+    children: [
+
+        { name: 'UserName Input' },
+        { name: 'Password Input' },
+        { name: "Login Button" },
 
 
     ]
@@ -70,6 +82,7 @@ class TrainingModel extends Component {
             file: {},
             errorType: "",
             TreeData: Tdata,
+            TreeDataPages: TdataPages,
 
         }
 
@@ -133,14 +146,30 @@ class TrainingModel extends Component {
         this.setState(() => ({ cursor: node, TreeData: Object.assign({}, TreeData) }));
     }
 
+    onToggleTreePages = (node, toggled) => {
+        const { cursor, TreeDataPages } = this.state;
+        if (cursor) {
+            this.setState(() => ({ cursor, active: false }));
+        }
+        node.active = true;
+        if (node.children) {
+            node.toggled = toggled;
+        }
+        this.setState(() => ({ cursor: node, TreeDataPages: Object.assign({}, TreeDataPages) }));
+    }
+
     handleChange = (event) => {
         if (event.target.name === "goalDomainName") {
             this.setState({ pageList: [], createDomainPopup: false })
+
             let goalDomainIndex = _.findIndex(this.state.domainList, { domainName: event.target.value })
             let data = []
-            if (this.state.domainList[goalDomainIndex] && this.state.domainList[goalDomainIndex].pages.length > 0) {
-                console.log(this.state.domainList[goalDomainIndex].pages)
-                this.state.domainList[goalDomainIndex].pages.forEach(element => {
+            let domainList = this.state.domainList
+            domainList[goalDomainIndex].pages = ["http://localhost:3000/", "http://localhost:3000/sign-up", "http://localhost:3000/login"]
+
+            console.log(domainList[goalDomainIndex].pages)
+            if (domainList[goalDomainIndex] && domainList[goalDomainIndex].pages.length > 0) {
+                domainList[goalDomainIndex].pages.forEach(element => {
                     data.push({ name: element.pageName, value: element.pageName, element })
                 });
                 this.setState({ pageList: data, [event.target.name]: event.target.value, createDomainPopup: true })
@@ -1044,7 +1073,7 @@ class TrainingModel extends Component {
                                     <div className="mt-2 text-white text-center border-bottom">
                                         <label className="b h5 list-heading" > DOMAIN REPOSITORY</label>
                                     </div>
-                                    {this.state.domainList.length > 0 ? <nav id="menu" className="nav-main" role="navigation">
+                                    {this.state.domainList.length > 0 ? <nav id="menu" className="ml-2 nav-main" role="navigation">
                                         {this.state.domainList.map((object, index) =>
                                             <ul key={index} className="mt-1 text-white">
 
@@ -1055,7 +1084,7 @@ class TrainingModel extends Component {
                                                     >
                                                         <span className="text-truncate w-207 d-block"
                                                             onClick={e => this.loadDomain(object, index)}>{object.domainName}</span>
-                                                        <button className="btn btn-danger btn-xs d-inline mr-1 " onClick={() => { this.deleteDomain(object, index) }}>  <i className="fas fa-trash-alt text-default "></i></button>
+                                                        <button className="btn btn-danger btn-xs d-inline ml-1 mr-1 " onClick={() => { this.deleteDomain(object, index) }}>  <i className="fas fa-trash-alt text-default "></i></button>
 
 
                                                     </label>
@@ -1107,19 +1136,19 @@ class TrainingModel extends Component {
 
                                     {this.state.goalList.length > 0 ?
                                         <nav id="menu" className="nav-main mt-5 " role="navigation">
-                                            <label className=" b text-info list-heading" > GOAL REPOSITORY</label><br />
+                                            <div className="mt-2 text-white text-center border-white">
+                                                <label className="b h5 list-heading" > GOAL REPOSITORY</label>
+                                            </div>
+                                            {this.state.goalList.length > 0 && <nav id="menu" className="ml-2 nav-main" role="navigation">
+                                                {this.state.goalList.map((goal, index) =>
+                                                    <ul key={index} className="mt-1 text-white">
 
-                                            {this.state.goalList.map((goal, index) =>
-                                                <span key={index} className="text-white">
+                                                        <li className="list-none position-relative">
 
-                                                    <span className="list-none position-relative">
-                                                        <span className="b  c-pointer row ml-1 " value={goal.goalName}
-                                                        >
-
-                                                            <i className={"c-pointer far position-absolute align-i " + (goal.expand === true ? 'fa-minus-square' : 'fa-plus-square')} onClick={e => { this.selectGoal(goal, index) }}></i>
-                                                            <label className="ml-1 align-label w-120 text-truncate d-inline-flex" onClick={e => { this.setState({ goalIndex: index, openGoal: true }) }} > {goal.goalName}
+                                                            <i className={"far align-i " + (goal.expand === true ? 'fa-minus-square' : 'fa-plus-square')} onClick={e => { this.selectGoal(goal, index) }}></i>
+                                                            <label className="c-pointer ml-1 align-label d-inline-flex" onClick={e => { this.setState({ goalIndex: index, openGoal: true }) }} > {goal.goalName}
                                                             </label>
-                                                            <button className="btn btn-success btn-xs d-inline mr-1 " onClick={() => { this.setState({ trainGoalPopup: true, currentGoal: goal }) }}> Train</button>
+                                                            <button className="btn btn-success btn-xs d-inline ml-1" onClick={() => { this.setState({ trainGoalPopup: true, currentGoal: goal }) }}> Train</button>
                                                             {goal.showStatusButton ?
                                                                 <button data-toggle="tooltip" title="Run Inference" className="btn btn-warning btn-xs d-inline "
                                                                     onClick={() => { this.setState({ showTrainingStatus: true }) }}><i className={goal.showInferenceBtn ? "fas fa-cog" : "fas fa-cog fa-spin"}></i> </button>
@@ -1131,53 +1160,58 @@ class TrainingModel extends Component {
                                                                 <button data-toggle="tooltip" title="Open File" className="btn btn-info btn-xs d-inline ml-1" onClick={() => { this.setState({ showFile: true, pdfFile: goal.pdfBlob }) }}><i className="fas fa-file-alt "></i> </button>
                                                                 : null}
 
-                                                            <button className="btn btn-danger btn-xs d-inline mr-1 " onClick={() => { this.deleteGaol(goal, index) }}>  <i className="fas fa-trash-alt text-default "></i></button>
+                                                            <button className="ml-1 btn btn-danger btn-xs d-inline mr-1 " onClick={() => { this.deleteGaol(goal, index) }}>  <i className="fas fa-trash-alt text-default "></i></button>
 
+
+                                                        </li>
+                                                        <span className="d-inline-flex">
                                                         </span>
 
-                                                    </span>
-                                                    <span className="d-inline-flex">
-                                                    </span>
 
 
+                                                        {goal.expand === true ?
+                                                            <div>
 
-                                                    {goal.expand === true ?
-                                                        <div>
+                                                                <span className="pt-1 pb-1 mt-1">
+                                                                    {goal.selectedPages && goal.selectedPages.map((page, pageIndex) =>
 
-                                                            <span className="pt-1 pb-1 mt-1">
-                                                                {goal.selectedPages && goal.selectedPages.map((page, pageIndex) =>
+                                                                        <form classname="position-relative tm-form c-pointer  w-100">
+                                                                            <div class="btn-group w-100 mt-1" role="group" aria-label="Basic example">
+                                                                                <button type="button" class="btn btn-default w-90 " onClick={e => {
+                                                                                    this.setState({
+                                                                                        mainSelector: page.mainSelector,
+                                                                                        minorGoal: page.minorGoal,
+                                                                                        iErrorSelector: page.iErrorSelector,
+                                                                                        iSuccessSelector: page.iSuccessSelector,
+                                                                                        startUrl: page.startUrl, pageName: page.pageName
+                                                                                    })
+                                                                                }}><span className="text-wrap">{page.pageName}</span></button>
+                                                                                <button type="button" class="btn btn-secondary" onClick={e => { this.deletePage(page, index, pageIndex) }}><i class="fas fa-trash fas-lg"></i></button>
+                                                                            </div>
+                                                                        </form>
+                                                                    )}
 
-                                                                    <form classname="position-relative tm-form c-pointer  w-100">
-                                                                        <div class="btn-group w-100 mt-1" role="group" aria-label="Basic example">
-                                                                            <button type="button" class="btn btn-default w-90 " onClick={e => {
-                                                                                this.setState({
-                                                                                    mainSelector: page.mainSelector,
-                                                                                    minorGoal: page.minorGoal,
-                                                                                    iErrorSelector: page.iErrorSelector,
-                                                                                    iSuccessSelector: page.iSuccessSelector,
-                                                                                    startUrl: page.startUrl, pageName: page.pageName
-                                                                                })
-                                                                            }}><span className="text-wrap">{page.pageName}</span></button>
-                                                                            <button type="button" class="btn btn-secondary" onClick={e => { this.deletePage(page, index, pageIndex) }}><i class="fas fa-trash fas-lg"></i></button>
-                                                                        </div>
-                                                                    </form>
-                                                                )}
+                                                                </span>
+                                                                {/* <Treebeard
+                                                                    key={index}
+                                                                    id={index}
+                                                                    onClick={e => { this.setState({ goalDomainIndex: index }) }}
+                                                                    data={goal.goalDomains.extractedPage}
+                                                                    onToggle={this.onToggleGoalPage} /> */}
+                                                                <Treebeard
+                                                                    data={this.state.TreeDataPages}
+                                                                    onToggle={this.onToggleTreePages}
+                                                                />
 
-                                                            </span>
-                                                            <Treebeard
-                                                                key={index}
-                                                                id={index}
-                                                                onClick={e => { this.setState({ goalDomainIndex: index }) }}
-                                                                data={goal.goalDomains.extractedPage}
-                                                                onToggle={this.onToggleGoalPage} />
-
-                                                        </div> : null}
-
-
-                                                </span>
+                                                            </div> : null}
 
 
-                                            )}
+                                                    </ul>
+
+
+                                                )}
+
+                                            </nav>}
                                         </nav> : null}
 
                                 </div>
