@@ -1,12 +1,15 @@
 import React from 'react'
 import '../assets/css/Task.css'
-
+import { Helmet } from 'react-helmet';
 import Navbar from './Navbar'
 
 const Task = () => {
 
     return (
         <>
+            <Helmet>
+                <title>Home</title>
+            </Helmet>
             <Navbar title={'Home'} />
             <div className="task-management-container">
                 <div className="task-management-footer">

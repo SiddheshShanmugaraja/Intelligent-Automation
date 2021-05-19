@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { baseUrl } from '../config'
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { Helmet } from 'react-helmet';
 
 const Signup = () => {
 
@@ -57,6 +58,9 @@ const Signup = () => {
 
   return (
     <div className="container">
+      <Helmet>
+        <title>Sign Up</title>
+      </Helmet>
       <div className="signup-navbar-container">
         <div className="signup-navbar-content">
           <p>Already have an account ?</p>

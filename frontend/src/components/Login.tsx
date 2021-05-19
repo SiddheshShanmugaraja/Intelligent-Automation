@@ -5,6 +5,8 @@ import { baseUrl } from '../config'
 import axios from 'axios'
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet';
+
 const Login = () => {
   const history = useHistory();
   // const [email, setEmail] = useState('')
@@ -56,6 +58,9 @@ const Login = () => {
   }
   return (
     <div className="container">
+      <Helmet>
+        <title>Login</title>
+      </Helmet>
       <div className="d-none" >
         <Link to='/' />
         <Link to='/sign-up' />

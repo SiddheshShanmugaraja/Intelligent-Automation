@@ -14,6 +14,7 @@ const Sidebar = (props: any) => {
                     {props.loggedUser['is_admin'] && <Link to='/search'><li>Search</li></Link>}
                     <Link to='/profile'><li>Profile</li></Link>
                     <Link to='/settings'><li>Settings</li></Link>
+                    <Link to='/project'><li>Project</li></Link>
                     <div className="side-bar-button">{sidebar ? <KeyboardArrowLeftIcon onClick={() => setSidebar(false)} /> : < KeyboardArrowRightIcon onClick={() => setSidebar(true)} />}</div>
                 </ul>
             </div>

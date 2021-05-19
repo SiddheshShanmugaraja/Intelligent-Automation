@@ -8,11 +8,11 @@ import _ from 'lodash'
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import Send from '@material-ui/icons/Send';
-
 import Sort from '@material-ui/icons/UnfoldMore';
 import { baseUrl } from "../config"
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { Helmet } from 'react-helmet';
 
 const Search = () => {
     const [search, setSearch] = useState('');
@@ -161,6 +161,9 @@ const Search = () => {
 
     return (
         <>
+            <Helmet>
+                <title>Search</title>
+            </Helmet>
             <Navbar title={'Search'} />
             <div className="task-management-container">
                 <div className="search-management-header">

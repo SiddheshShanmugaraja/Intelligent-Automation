@@ -13,6 +13,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import Avatar from 'react-avatar';
 import { CircularProgress } from '@material-ui/core';
+import { Helmet } from 'react-helmet';
 
 // import axios from 'axios';
 const Profile = () => {
@@ -164,6 +165,9 @@ const Profile = () => {
     }
     return (
         <>
+            <Helmet>
+                <title>Profile</title>
+            </Helmet>
             <Navbar title={'Profile'} />
             <div className="container">
                 <div className="profile-container">
