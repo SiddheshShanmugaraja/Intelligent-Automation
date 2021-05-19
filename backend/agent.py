@@ -7,9 +7,9 @@ from . import db, return_response
 from flask_cors import cross_origin
 from flask import Blueprint, request
 import os, re, time, json, subprocess
-from .crawler import main as crawlerMain
 from .models import User, Project, Page, Goal
 from typing import List, Dict, Tuple, Optional
+from .crawler import main as crawlerMain, get_filename
 
 agent = Blueprint('agent', __name__)
 
@@ -17,7 +17,7 @@ with open("backend/config.json", "r") as f:
     config = json.load(f)
 
 RL_SCRIPT = config.get("RL_SCRIPT") 
-SHEETS_DIR = config.get("SHEETS_DIR")
+EXCEL_DIR = config.get("EXCEL_DIR")
 INPUT_DATA_FILE = config.get("INPUT_DATA_FILE")
 LOG_FILE = config.get("LOG_FILE")
 CSV_EXTENSION = ".csv"
@@ -44,15 +44,15 @@ def _make_url_tree(data, page_titles) -> List:
         parent = "/".join(l[:-1])
         data.pop(0)
         page_titles.pop(0)
+        form_dict["children"] = list()
         form_dict["url"] = d
-        form_dict["children"] = []
         form_dict["name"] = t
         option = find_match(parent, result)
         if (option):
             option["children"].append(form_dict)
         else:
             result.append(form_dict)
-    return result[0]
+    return prune_children(result[0])
 
 def find_match(d, res):
     """ To find a matching parent
@@ -73,25 +73,17 @@ def find_match(d, res):
                 return temp
     return None
 
-
-def get_url_filename(url: str) -> str:
-    """[summary]
-
-    Args:
-        url ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    try:
-        url_split = urlparse(url).hostname.split(".")
-    except AttributeError:
-        return "Not a valid URL"
-    return url_split[1] if len(url_split) == 3 else url_split[0]
+def prune_children(data):
+    if not len(data['children']):
+        data.pop('children')
+    else:
+        for d in data['children']:
+            prune_children(d)
+    return data
 
 ################################################################################################################
 
-@agent.route("/extract_sitemap", methods=["POST"])
+@agent.route("/extract-sitemap", methods=["POST"])
 @cross_origin()
 def extract_sitemap():
     """[summary]
@@ -101,8 +93,7 @@ def extract_sitemap():
     """
     url = request.form.get("url")
     if url:
-        filename = get_url_filename(url)
-        if os.path.exists(os.path.join(SHEETS_DIR, filename + CSV_EXTENSION)):
+        if os.path.exists(os.path.join(EXCEL_DIR, get_filename(url) + CSV_EXTENSION)):
             status = 200
             message = "File already exists!"
             data = None
@@ -117,7 +108,7 @@ def extract_sitemap():
         data = None
     return return_response(status, message, data)
 
-@agent.route("/get_sites", methods=["POST"])
+@agent.route("/get-sites", methods=["POST"])
 @cross_origin()
 def extract_from_data():
     """Reads the CSV and return the data in a tree structure
@@ -126,46 +117,44 @@ def extract_from_data():
         [type]: [description]
     """
     domain = request.form.get("domain")
+    xl_name = os.path.join(EXCEL_DIR, get_filename(domain) + CSV_EXTENSION)
     if domain:
-        url = get_url_filename(domain)
-        data = list()
-        if os.path.exists(os.path.join(SHEETS_DIR, url + CSV_EXTENSION)):
-            df = pd.read_csv(os.path.join(SHEETS_DIR, url + CSV_EXTENSION))
-            df.dropna(subset=["URL"], inplace=True)
+        if not os.path.exists(xl_name):
+            crawlerMain(domain)
+        if os.path.exists(xl_name):
+            df = pd.read_csv(xl_name)
+            df.dropna(subset=["URL", "PAGE_TITLE"], inplace=True)
             data = df["URL"].values.tolist()
             page_titles = df['PAGE_TITLE'].values.tolist()
-        if len(data):
-            res = _make_url_tree(data, page_titles)
-            status = 200
-            message = "Sites extracted!"
-            data = res
-        else:
-            status = 400
-            message = "No data found!"
-            data = None
+            if len(data):
+                status = 200
+                message = "Sites extracted!"
+                data = _make_url_tree(data, page_titles)
+            else:
+                status = 400
+                message = "No data found!"
+                data = None
     else:
         status = 400
         message = "Domain is missing!"
         data = None
     return return_response(status, message, data)
 
-@agent.route("/pageList", methods=["POST"])
+@agent.route("/page-list", methods=["POST"])
 @cross_origin()
 def get_page_list():
     """[summary]
 
     Returns:
         [type]: [description]
-    """
+    """                
     domain = request.form.get("domain")
-    url = get_url_filename(domain)
-    if url != "Not a valid URL":
-        if os.path.exists(os.path.join(SHEETS_DIR, url + CSV_EXTENSION)):
-            df = pd.read_csv(os.path.join(SHEETS_DIR, url + CSV_EXTENSION))
+    xl_name = os.path.join(EXCEL_DIR, get_filename(domain) + CSV_EXTENSION)
+    if domain:
+        if os.path.exists(xl_name):
+            df = pd.read_csv(xl_name)
             df.dropna(subset=["URL", "PAGE_TITLE"], inplace=True)
-            df.drop(columns=["Unnamed: 0"], inplace=True)
-            df['name'] = df['PAGE_TITLE']
-            df.columns = ["url", "value", "name"]
+            df.columns = ["name","url"]
             status = 200
             message = "Success!"
             data = df.to_dict(orient="row")
@@ -179,7 +168,7 @@ def get_page_list():
         data = None
     return return_response(status, message, data)
 
-@agent.route("/train_data", methods=["POST"])
+@agent.route("/train-data", methods=["POST"])
 @cross_origin()
 def train_site():
     """[summary]
@@ -190,9 +179,9 @@ def train_site():
     goal_name = request.form.get("goal_name")
     page_details = json.loads(request.form.get("pageDetail"))
     input_file = request.files["input_data"]
+    input_data = input_file.read()
     mode = request.form.get("mode")
     goal_name = "_".join(goal_name.split(" "))
-    input_data = input_file.read()
     with open(INPUT_DATA_FILE, "wb") as f:
         f.write(input_data)
     abs_input_path = os.path.abspath(INPUT_DATA_FILE)
@@ -244,7 +233,7 @@ def get_training_status():
                 status = 202
                 done_flag = "Terminated"
     message = "Success!"
-    data = {"log": data, "training_status": done_flag}
+    data = dict(log=data, training_status=done_flag)
     return return_response(status, message, data)
 
 @agent.route("/projects", methods=["POST", "GET", "DELETE"])
