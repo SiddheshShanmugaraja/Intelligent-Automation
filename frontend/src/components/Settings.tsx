@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import axios from 'axios'
 import { baseUrl } from '../config'
 import { toast } from 'react-toastify';
+import { Helmet } from 'react-helmet';
 
 
 
@@ -78,6 +79,9 @@ const Settings = () => {
     }, []);
     return (
         <>
+            <Helmet>
+                <title>Settings</title>
+            </Helmet>
             <Navbar title={'Settings'} />
             <div className="container">
 

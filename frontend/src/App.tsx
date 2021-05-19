@@ -3,7 +3,7 @@ import './App.css';
 import Login from './components/Login';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Signup from './components/Signup';
-import Task from './components/Task';
+import Home from './components/Home';
 import Settings from './components/Settings';
 import Profile from './components/Profile';
 import Search from './components/Search'
@@ -30,7 +30,7 @@ function App() {
             {...defaultProtectedRouteProps}
             exact={true}
             path='/home'
-            component={() => <Task />}
+            component={() => <Home />}
           />
           <ProtectedRoute
             {...AdminProtectedRouteProps}
@@ -50,8 +50,13 @@ function App() {
             path='/profile'
             component={() => <Profile />}
           />
+          <ProtectedRoute
+            {...defaultProtectedRouteProps}
+            exact={true}
+            path='/project'
+            component={() => <Project />}
+          />
           <Route exact path='/sign-up'><Signup /></Route>
-          <Route exact path='/project'><Project /></Route>
           <Route path='/'><Login /></Route>
 
         </Switch>

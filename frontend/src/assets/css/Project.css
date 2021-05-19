@@ -545,6 +545,7 @@ a:active {
 		margin-left: -300px;
 	}
 }
+
 /* iOS10 Content Width Fix */
 @media (min-width: 768px) {
 	section.mobile-device.flexbox:not(.has-tab-navigation) .content-body {
@@ -602,6 +603,8 @@ a:active {
 
 .content-with-menu {
 	margin: 0 50px;
+	border: solid 1px white;
+
 }
 
 /* Content With Menu - Responsive */
@@ -618,13 +621,14 @@ a:active {
 	.content-with-menu {
 		margin: 10px 0px;
 		min-height: 85vh;
-		border: solid 1px white;
 	}
 
 	.inner-menu {
 		width : 400px;
 		display: table-cell;
 		vertical-align: top;
+		border-right : solid 1px white;
+
 	}
 
 	.inner-body {
@@ -643,7 +647,7 @@ a:active {
 	}
 
 	.content-with-menu-has-toolbar .inner-toolbar {
-		padding-left: 140px;
+		padding-left: 0px;
 	}
 }
 /* Content With Menu - Flexbox supported */
@@ -3028,9 +3032,6 @@ section.boxed.no-overflowscrolling.custom-scroll .inner-menu .nano > .nano-conte
 }
 /* Content With Menu - Inner Menu Style */
 .inner-menu {
-	background: #1D2127;
-	border-right: 1px solid #fff;
-	color: #abb4be;
 	padding: 0;
 	margin: 0;
 }
@@ -13917,7 +13918,6 @@ section.dark .bootstrap-timepicker-widget table td input {
 
 /* Toolbar */
 .inner-toolbar {
-	background: #1D2127;
 	margin: -40px -40px 30px;
 	padding: 0;
 	border-bottom: 1px solid #ffffff;
@@ -18266,7 +18266,7 @@ section.dark .notification-menu .title {
 	margin: 0 auto;
 }
 .w-100{
-	width:100%;
+	width:100% !important;
 }
 .pt5{
 	padding-top:5px;
@@ -18343,4 +18343,16 @@ section.dark .notification-menu .title {
 }
 .border-bottom {
 	border-bottom: 1px solid white;
+}
+
+.border-white {
+	border: 1px solid white;
+}
+
+.c-pointer {
+	cursor: pointer;
+}
+
+.w-80{
+	width : 80% !important
 }
