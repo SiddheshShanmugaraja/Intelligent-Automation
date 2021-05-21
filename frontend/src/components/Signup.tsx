@@ -110,7 +110,7 @@ const Signup = () => {
           SignUp
           </button>
       </div>
-      <div className="signup-footer-container">
+      <div className="text-center text-white mt-4">
         <p>By signing up I accept the <span>Terms & Conditions </span> and the  <span>Privacy Policy </span></p>
       </div>
     </div>
