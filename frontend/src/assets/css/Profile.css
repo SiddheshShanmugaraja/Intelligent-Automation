@@ -29,7 +29,11 @@
   margin-top: 20px;
 }
 
-.profile-text input {
+.input-error {
+  border: 2px solid red !important;
+
+}
+.profile-text-input {
   width: 100%;
   padding: 12px 20px;
   margin: 8px 0;
@@ -39,16 +43,8 @@
   border-radius: 4px;
   color: #fff;
 }
-
-.profile-text TextField {
-  width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
-  border: 2px solid #fff;
-  outline: none;
-  background-color: rgb(58, 59, 87);
-  border-radius: 4px;
-  color: #fff;
+.profile-text input {
+  color: white;
 }
 .profile-text{
   margin-bottom: 10px;
@@ -57,7 +53,7 @@
   margin-bottom: 5px
 }
 
-.profile-text textarea {
+.profile-text-textarea {
   width: 100%;
   padding: 12px 20px;
   margin: 8px 0;

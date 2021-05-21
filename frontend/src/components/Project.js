@@ -77,7 +77,7 @@ class TrainingModel extends Component {
         if (this.state.openEditPopup === true) {
             domainList[this.state.domainIndex].domainName = this.state.domainName
             domainList[this.state.domainIndex].domainURL = this.state.URL
-            this.state.treeData.name = this.state.domainName
+            // this.state.treeData.name = this.state.domainName
             this.setState({
                 URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false,
                 projectName: this.state.domainName, startUrl: this.state.URL, collapseOne: true
@@ -1193,7 +1193,7 @@ class TrainingModel extends Component {
                                                                                     </div>
                                                                                     : null}
 
-                                                                                <iframe className="col-12  mt-2 h-490px text-center" title="iframe loader" id="framLoader" style={{ height: "60vh" }}
+                                                                                <iframe className="col-12  mt-2 h-490px text-center" title="iframe loader" id="framLoader" style={{ height: "500px" }}
                                                                                     type="text/html" src={this.state.startUrl}
                                                                                     onClick={e => { this.getElementDetails(e) }}
                                                                                 >
