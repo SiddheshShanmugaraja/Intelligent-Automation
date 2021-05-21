@@ -21,6 +21,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     username = db.Column(db.String(25), unique=True, nullable=False)
     email = db.Column(db.String(500), unique=True, nullable=False)
+    name = db.Column(db.String(500), nullable=True)
     dob = db.Column(db.Date, nullable=True)
     country = db.Column(db.String(50), nullable=True)
     credit = db.Column(db.Integer, nullable=False, default=100)
@@ -41,6 +42,7 @@ class User(db.Model, UserMixin):
                     id = self.id,
                     username = self.username,
                     email = self.email,
+                    name = self.name,
                     dob = self.dob.strftime("%d/%m/%Y") if self.dob is not None else None,
                     age = calculate_age(self.dob),
                     country = self.country,

@@ -47,6 +47,23 @@ def sign_up():
         data = new_user.to_dict()
     return return_response(status, message, data)
 
+@auth.route('/delete-user', methods=['GET'])
+@cross_origin()
+def delete_user():
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
+    username = request.args.get('username')
+    user = User.query.filter_by(username=username).first()
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        status = 200
+        message = "Account deleted successfully!"
+    return return_response(status, message)
+
 @auth.route('/login', methods=['POST'])
 @cross_origin()
 def login():
@@ -113,7 +130,7 @@ def update_profile():
     username = request.form.get('username')
     user = User.query.filter_by(username=username).first()
     if user:
-        user_info = dict(country = request.form.get('country'), gender = request.form.get('gender'), device = request.form.get('device'), phone = request.form.get('phone'), about = request.form.get('about'))
+        user_info = dict(name = request.form.get('name'), country = request.form.get('country'), gender = request.form.get('gender'), device = request.form.get('device'), phone = request.form.get('phone'), about = request.form.get('about'))
         for u in user_info:
             if eval(f"user_info[u]"):
                 exec(f"user.{u} = user_info[u]")
