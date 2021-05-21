@@ -14,10 +14,13 @@ import { toast } from 'react-toastify';
 import Avatar from 'react-avatar';
 import { CircularProgress } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
+import { useHistory } from 'react-router-dom'
+
 const countriesList = ['afghanistan', 'akrotiri', 'albania', 'algeria', 'american samoa', 'andorra', 'angola', 'anguilla', 'antarctica', 'antigua and barbuda', 'argentina', 'armenia', 'aruba', 'ashmore and cartier islands', 'australia', 'austria', 'azerbaijan', 'bahamas, the', 'bahrain', 'bangladesh', 'barbados', 'bassas da india', 'belarus', 'belgium', 'belize', 'benin', 'bermuda', 'bhutan', 'bolivia', 'bosnia and herzegovina', 'botswana', 'bouvet island', 'brazil', 'british indian ocean territory', 'british virgin islands', 'brunei', 'bulgaria', 'burkina faso', 'burma', 'burundi', 'cambodia', 'cameroon', 'canada', 'cape verde', 'cayman islands', 'central african republic', 'chad', 'chile', 'china', 'christmas island', 'clipperton island', 'cocos (keeling) islands', 'colombia', 'comoros', 'congo, democratic republic of the', 'congo, republic of the', 'cook islands', 'coral sea islands', 'costa rica', "cote d'ivoire", 'croatia', 'cuba', 'cyprus', 'czech republic', 'denmark', 'dhekelia', 'djibouti', 'dominica', 'dominican republic', 'ecuador', 'egypt', 'el salvador', 'equatorial guinea', 'eritrea', 'estonia', 'ethiopia', 'europa island', 'falkland islands (islas malvinas)', 'faroe islands', 'fiji', 'finland', 'france', 'french guiana', 'french polynesia', 'french southern and antarctic lands', 'gabon', 'gambia, the', 'gaza strip', 'georgia', 'germany', 'ghana', 'gibraltar', 'glorioso islands', 'greece', 'greenland', 'grenada', 'guadeloupe', 'guam', 'guatemala', 'guernsey', 'guinea', 'guinea-bissau', 'guyana', 'haiti', 'heard island and mcdonald islands', 'holy see (vatican city)', 'honduras', 'hong kong', 'hungary', 'iceland', 'india', 'indonesia', 'iran', 'iraq', 'ireland', 'isle of man', 'israel', 'italy', 'jamaica', 'jan mayen', 'japan', 'jersey', 'jordan', 'juan de nova island', 'kazakhstan', 'kenya', 'kiribati', 'korea, north', 'korea, south', 'kuwait', 'kyrgyzstan', 'laos', 'latvia', 'lebanon', 'lesotho', 'liberia', 'libya', 'liechtenstein', 'lithuania', 'luxembourg', 'macau', 'macedonia', 'madagascar', 'malawi', 'malaysia', 'maldives', 'mali', 'malta', 'marshall islands', 'martinique', 'mauritania', 'mauritius', 'mayotte', 'mexico', 'micronesia, federated states of', 'moldova', 'monaco', 'mongolia', 'montserrat', 'morocco', 'mozambique', 'namibia', 'nauru', 'navassa island', 'nepal', 'netherlands', 'netherlands antilles', 'new caledonia', 'new zealand', 'nicaragua', 'niger', 'nigeria', 'niue', 'norfolk island', 'northern mariana islands', 'norway', 'oman', 'pakistan', 'palau', 'panama', 'papua new guinea', 'paracel islands', 'paraguay', 'peru', 'philippines', 'pitcairn islands', 'poland', 'portugal', 'puerto rico', 'qatar', 'reunion', 'romania', 'russia', 'rwanda', 'saint helena', 'saint kitts and nevis', 'saint lucia', 'saint pierre and miquelon', 'saint vincent and the grenadines', 'samoa', 'san marino', 'sao tome and principe', 'saudi arabia', 'senegal', 'serbia and montenegro', 'seychelles', 'sierra leone', 'singapore', 'slovakia', 'slovenia', 'solomon islands', 'somalia', 'south africa', 'south georgia and the south sandwich islands', 'spain', 'spratly islands', 'sri lanka', 'sudan', 'suriname', 'svalbard', 'swaziland', 'sweden', 'switzerland', 'syria', 'taiwan', 'tajikistan', 'tanzania', 'thailand', 'timor-leste', 'togo', 'tokelau', 'tonga', 'trinidad and tobago', 'tromelin island', 'tunisia', 'turkey', 'turkmenistan', 'turks and caicos islands', 'tuvalu', 'uganda', 'ukraine', 'united arab emirates', 'united kingdom', 'united states', 'uruguay', 'uzbekistan', 'vanuatu', 'venezuela', 'vietnam', 'virgin islands', 'wake island', 'wallis and futuna', 'west bank', 'western sahara', 'yemen', 'zambia', 'zimbabwe', 'united states of america', 'usa', 'uk', 'uae', 'gambia']
 
 // import axios from 'axios';
 const Profile = () => {
+    const history = useHistory();
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [name, setName] = useState('')
@@ -48,7 +51,6 @@ const Profile = () => {
     }
 
     const validate = () => {
-        console.log(countriesList.includes(country.toLowerCase()))
         let valid = {} as any
         valid.name = name && name.length > 0 ? "" : "*Name is Required"
         valid.about = about && about.length > 0 ? about.length < 501 ? about.length > 30 ? "" : "*About should be greater than 30 characters" : "*About should be within 500 characters" : "* About is required"
@@ -167,6 +169,8 @@ const Profile = () => {
                         position: toast.POSITION.TOP_RIGHT,
                         autoClose: 3000,
                     });
+                    history.push('/home')
+
                 }
                 else {
                     toast.error(res.data.data, {
