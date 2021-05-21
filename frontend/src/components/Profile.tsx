@@ -169,7 +169,7 @@ const Profile = () => {
                         position: toast.POSITION.TOP_RIGHT,
                         autoClose: 3000,
                     });
-                    // history.push('/home')
+                    history.push('/home')
 
                 }
                 else {
