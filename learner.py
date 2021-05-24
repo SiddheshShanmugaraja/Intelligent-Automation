@@ -130,15 +130,15 @@ class Webpage:
         print(table)
                         
     def inference(self):
-        if self.inference_driver.current_url != self.url:
-            self.inference_driver.get(self.url)
+        if self.driver.current_url != self.url:
+            self.driver.get(self.url)
         for state_index, state in enumerate(self.q_table.states):
             action_index = self.q_table.table[state_index].argmax()
             action = self.q_table.actions[action_index]
-            input_element = self.inference_driver.find_element_by_css_selector(state)
+            input_element = self.driver.find_element_by_css_selector(state)
             input_element.clear()
             input_element.send_keys(action)
-        self.inference_driver.find_element_by_css_selector(self.terminal_state).click()
+        self.driver.find_element_by_css_selector(self.terminal_state).click()
 
     def to_dict(self):
         return dict(name=self.name, url=self.url, states=self.states, actions=self.actions, terminal_state=self.terminal_state)
@@ -161,10 +161,9 @@ class Domain:
             prev_url = self.environment[url]
 
     def inference(self):
-        inference_driver = None#webdriver.Chrome(executable_path=CHROME_DRIVER)
         for url in self.environment:
             print(f"Inference - '{self.environment[url].url}'")
-            self.environment[url].inference(inference_driver)
+            self.environment[url].inference()
 
 if __name__ == '__main__':
     website = Domain(name=NAME, urls=URLS, states=STATES, actions=ACTIONS, terminal_states=TERMINAL_STATES)
