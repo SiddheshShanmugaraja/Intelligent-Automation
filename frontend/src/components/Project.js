@@ -200,19 +200,36 @@ class TrainingModel extends Component {
         this.setState({ showLoader: true })
         axios.post(baseUrl + '/get-sites', formData).then(res => {
             if (res.data.status === 200) {
+                let treedata = _.cloneDeep(res.data.data)
+                let goaldata = _.cloneDeep(res.data.data)
                 let myTreeData = this.state.myTreeData
-                myTreeData.unshift(res.data.data)
+                myTreeData.unshift(treedata)
                 let GoalTreeData = this.state.GoalTreeData
-                GoalTreeData.unshift(res.data.data)
+                GoalTreeData.unshift(goaldata)
                 this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
                 // this.getSiteMaps(res.data.data)
             }
+            else {
+                let treedata = []
+                let goaldata = []
+                let myTreeData = this.state.myTreeData
+                myTreeData.unshift(treedata)
+                let GoalTreeData = this.state.GoalTreeData
+                GoalTreeData.unshift(goaldata)
+                this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
+            }
 
         }).catch(e => {
-            this.setState({ showLoader: false })
             toast.error("Api Error Response From /get_sites", {
                 position: toast.POSITION.TOP_RIGHT
             });
+            let treedata = []
+            let goaldata = []
+            let myTreeData = this.state.myTreeData
+            myTreeData.unshift(treedata)
+            let GoalTreeData = this.state.GoalTreeData
+            GoalTreeData.unshift(goaldata)
+            this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
         })
     }
     getSiteMaps = (domain, domainList) => {
@@ -467,7 +484,6 @@ class TrainingModel extends Component {
             });
             if (type === "domain") {
                 domainList[index].expand = !domainList[index].expand
-
             } else if (type === "page") {
                 domainList[index].pages[pageIndex].expand = !domainList[index].pages[pageIndex].expand
             }
@@ -622,9 +638,9 @@ class TrainingModel extends Component {
     }
 
     onToggleGoalPage = (node, toggled) => {
-        const { cursor, GoalTreeData, goalList, currentGoalIndex, goalDomainIndex } = this.state;
-        if (cursor) {
-            this.setState(() => ({ cursor, active: false }));
+        const { gcursor, GoalTreeData, goalList, currentGoalIndex, goalDomainIndex } = this.state;
+        if (gcursor) {
+            this.setState(() => ({ gcursor, active: false }));
         }
         node.active = true;
         if (node.children) {
@@ -632,7 +648,6 @@ class TrainingModel extends Component {
         }
 
         let goalObj = goalList[currentGoalIndex]
-        console.log(goalObj)
         let pageIndex = _.findIndex(goalObj.selectedPages, { startUrl: node.url, pageName: node.name })
         let mainSelector = ""
         let minorGoal = ""
@@ -644,8 +659,8 @@ class TrainingModel extends Component {
             iErrorSelector = goalObj.selectedPages[pageIndex].iErrorSelector
             iSuccessSelector = goalObj.selectedPages[pageIndex].iSuccessSelector
         }
-        let newData = GoalTreeData;
-        newData[goalDomainIndex] = Object.assign({}, newData[goalDomainIndex]);
+        let newGoalData = GoalTreeData;
+        newGoalData[goalDomainIndex] = Object.assign({}, newGoalData[goalDomainIndex]);
         this.setState({
             iSuccessSelector, iErrorSelector,
             mainSelector, minorGoal,
@@ -654,7 +669,7 @@ class TrainingModel extends Component {
             startUrl: node.url, pageName: node.name
         },
 
-            () => ({ cursor: node, GoalTreeData: newData }));
+            () => ({ 6: node, GoalTreeData: newGoalData }));
     }
 
     deletePage = (page, goalIndex, pageIndex) => {
@@ -1186,12 +1201,10 @@ class TrainingModel extends Component {
 
                                                                                             <input type="text" className="form-control  col-md-2 d-inline  " placeholder="Main  Selector"
                                                                                                 name="mainSelector" onChange={e => this.handleChange(e)} value={this.state.mainSelector} />
-                                                                                            <input type="text" className="form-control col-md-2 d-inline  ml-1" placeholder="Minor Goal"
+                                                                                            <input type="text" className="form-control col-md-2 d-inline  ml-1" placeholder="Actions"
                                                                                                 name="minorGoal" onChange={e => this.handleChange(e)} value={this.state.minorGoal} />
-                                                                                            <input type="text" className="form-control  col-md-2 d-inline ml-1 " placeholder="Success Selector"
+                                                                                            <input type="text" className="form-control  col-md-2 d-inline ml-1 " placeholder="Terminal State"
                                                                                                 name="iSuccessSelector" onChange={e => this.handleChange(e)} value={this.state.iSuccessSelector} />
-                                                                                            <input type="text" className="form-control  col-md-2 d-inline ml-1 " placeholder="Error  Selector"
-                                                                                                name="iErrorSelector" onChange={e => this.handleChange(e)} value={this.state.iErrorSelector} />
                                                                                             <button className="btn btn-success col-md-2 ml-1" onClick={e => { this.savePage() }}>Save</button>
 
                                                                                         </div>
