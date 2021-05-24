@@ -160,9 +160,9 @@ class TrainingModel extends Component {
 
 
     handleChangeSelector(e, ind, select) {
-        let selectors = this.state.selectors
-        selectors[ind][select] = e.target.value
-        this.setState({ selectors })
+        let val = this.state[select]
+        val[ind] = e.target.value
+        this.setState({ [select]: val })
     }
 
 
@@ -463,10 +463,16 @@ class TrainingModel extends Component {
 
     savePage = () => {
 
-        let { goalList, currentGoalIndex, mainSelector, minorGoal, startUrl, pageName, iErrorSelector, iSuccessSelector } = { ...this.state }
-        console.log(goalList[currentGoalIndex], goalList)
-
-        let tempPage = { startUrl: startUrl, pageName: pageName, minorGoal: minorGoal, mainSelector: mainSelector, iSuccessSelector, iErrorSelector }
+        let { goalList, currentGoalIndex, mainSelector, minorGoal, startUrl, pageName, iErrorSelector, iSuccessSelector, actions, selectors, terminalState } = { ...this.state }
+        let tempPage = {
+            startUrl: startUrl,
+            pageName: pageName,
+            minorGoal: minorGoal,
+            mainSelector: mainSelector,
+            terminalState: terminalState,
+            selector: selectors,
+            actions: actions
+        }
         //   goalList[goalIndex].expand=true
         if (goalList[currentGoalIndex].selectedPages) {
             let findIndex = _.findIndex(goalList[currentGoalIndex].selectedPages, { startUrl: startUrl, pageName: pageName })
@@ -1237,7 +1243,7 @@ class TrainingModel extends Component {
                                                                                                     {this.state.selectors && this.state.selectors.map((ele, n) =>
                                                                                                         <div className="mt-2">
                                                                                                             <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector"
-                                                                                                                name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "mainSelector")} value={this.state.selectors[n]} />
+                                                                                                                name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "selectors")} value={this.state.selectors[n]} />
                                                                                                             {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("selectors") }}>  <i className="fas fa-plus text-default "></i></span>
                                                                                                                 : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("selectors", n) }} >  <i className="fas fa-minus text-default "></i></span>}
 
