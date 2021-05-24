@@ -7,6 +7,7 @@
   background-color: rgb(43, 44, 65);
   padding: 20px;
   transition: 0.5s ease-in;
+  z-index: 9999;
 }
 .sidebar a{
   text-decoration: none;

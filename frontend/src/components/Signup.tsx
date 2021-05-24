@@ -5,6 +5,7 @@ import { baseUrl } from '../config'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom'
 
 const Signup = () => {
 
@@ -58,6 +59,11 @@ const Signup = () => {
 
   return (
     <div className="container">
+      <div className="d-none" >
+        <Link to='/' />
+        <Link to='/sign-up' />
+        <Link to='/profile' />
+      </div>
       <Helmet>
         <title>Sign Up</title>
       </Helmet>

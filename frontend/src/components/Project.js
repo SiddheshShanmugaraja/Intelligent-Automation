@@ -55,7 +55,7 @@ class TrainingModel extends Component {
             trainGoalPopup: false,
             file: {},
             errorType: "",
-            GoalTreeData: "",
+            GoalTreeData: [],
 
         }
 
@@ -79,7 +79,7 @@ class TrainingModel extends Component {
             domainList[this.state.domainIndex].domainURL = this.state.URL
             // this.state.treeData.name = this.state.domainName
             this.setState({
-                URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false,
+                domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false,
                 projectName: this.state.domainName, startUrl: this.state.URL, collapseOne: true
             })
 
@@ -91,7 +91,7 @@ class TrainingModel extends Component {
                 })
                 this.extractSitemap(this.state.URL, domainList)
                 this.setState({
-                    URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false, collapseOne: true,
+                    domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false, collapseOne: true, pageName: this.state.domainName,
                     projectName: this.state.domainName, startUrl: this.state.URL, domainIndex: 0, mainSelector: "", minorGoal: ""
                 })
                 // this.props.updateUrlElement(domainList)
@@ -107,7 +107,7 @@ class TrainingModel extends Component {
 
     onToggle = (node, toggled) => {
         console.log(node, toggled)
-        const { cursor, myTreeData } = this.state;
+        const { cursor, myTreeData, domainIndex } = this.state;
         if (cursor) {
             this.setState(() => ({ cursor, active: false }));
         }
@@ -115,7 +115,9 @@ class TrainingModel extends Component {
         if (node.children) {
             node.toggled = toggled;
         }
-        this.setState({ goalExpand: false, URL: node.url, startUrl: node.url, pageName: node.name }, () => ({ cursor: node, myTreeData: Object.assign({}, myTreeData) }));
+        const newData = myTreeData;
+        newData[domainIndex] = Object.assign({}, newData[domainIndex]);
+        this.setState({ goalExpand: false, URL: node.url, startUrl: node.url, pageName: node.name }, () => ({ cursor: node, myTreeData: newData }));
     }
 
     handleChange = (event) => {
@@ -123,16 +125,12 @@ class TrainingModel extends Component {
             this.setState({ pageList: [], createDomainPopup: false })
 
             let goalDomainIndex = _.findIndex(this.state.domainList, { domainName: event.target.value })
-            let data = []
             let domainList = this.state.domainList
-            domainList[goalDomainIndex].pages = ["http://localhost:3000/", "http://localhost:3000/sign-up", "http://localhost:3000/login"]
+            domainList[goalDomainIndex].pages = this.state.GoalTreeData[goalDomainIndex]
 
             console.log(domainList[goalDomainIndex].pages)
-            if (domainList[goalDomainIndex] && domainList[goalDomainIndex].pages.length > 0) {
-                domainList[goalDomainIndex].pages.forEach(element => {
-                    data.push({ name: element.pageName, value: element.pageName, element })
-                });
-                this.setState({ pageList: data, [event.target.name]: event.target.value, createDomainPopup: true })
+            if (domainList[goalDomainIndex] && domainList[goalDomainIndex].pages) {
+                this.setState({ pageList: domainList[goalDomainIndex].pages, [event.target.name]: event.target.value, createDomainPopup: true })
 
             } else {
                 toast.error("No Pages found for this domain", {
@@ -199,18 +197,39 @@ class TrainingModel extends Component {
     extractSitemap = (domain, domainList) => {
         var formData = new FormData();
         formData.append("domain", domain)
-        this.setState({ myTreeData: [], showLoader: true })
+        this.setState({ showLoader: true })
         axios.post(baseUrl + '/get-sites', formData).then(res => {
             if (res.data.status === 200) {
-                this.setState({ myTreeData: res.data.data, GoalTreeData: res.data.data, showLoader: false })
+                let treedata = _.cloneDeep(res.data.data)
+                let goaldata = _.cloneDeep(res.data.data)
+                let myTreeData = this.state.myTreeData
+                myTreeData.unshift(treedata)
+                let GoalTreeData = this.state.GoalTreeData
+                GoalTreeData.unshift(goaldata)
+                this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
                 // this.getSiteMaps(res.data.data)
+            }
+            else {
+                let treedata = []
+                let goaldata = []
+                let myTreeData = this.state.myTreeData
+                myTreeData.unshift(treedata)
+                let GoalTreeData = this.state.GoalTreeData
+                GoalTreeData.unshift(goaldata)
+                this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
             }
 
         }).catch(e => {
-            this.setState({ showLoader: false })
             toast.error("Api Error Response From /get_sites", {
                 position: toast.POSITION.TOP_RIGHT
             });
+            let treedata = []
+            let goaldata = []
+            let myTreeData = this.state.myTreeData
+            myTreeData.unshift(treedata)
+            let GoalTreeData = this.state.GoalTreeData
+            GoalTreeData.unshift(goaldata)
+            this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
         })
     }
     getSiteMaps = (domain, domainList) => {
@@ -465,7 +484,6 @@ class TrainingModel extends Component {
             });
             if (type === "domain") {
                 domainList[index].expand = !domainList[index].expand
-
             } else if (type === "page") {
                 domainList[index].pages[pageIndex].expand = !domainList[index].pages[pageIndex].expand
             }
@@ -620,9 +638,9 @@ class TrainingModel extends Component {
     }
 
     onToggleGoalPage = (node, toggled) => {
-        const { cursor, GoalTreeData, goalList, currentGoalIndex } = this.state;
-        if (cursor) {
-            this.setState(() => ({ cursor, active: false }));
+        const { gcursor, GoalTreeData, goalList, currentGoalIndex, goalDomainIndex } = this.state;
+        if (gcursor) {
+            this.setState(() => ({ gcursor, active: false }));
         }
         node.active = true;
         if (node.children) {
@@ -630,7 +648,6 @@ class TrainingModel extends Component {
         }
 
         let goalObj = goalList[currentGoalIndex]
-        console.log(goalObj)
         let pageIndex = _.findIndex(goalObj.selectedPages, { startUrl: node.url, pageName: node.name })
         let mainSelector = ""
         let minorGoal = ""
@@ -642,6 +659,8 @@ class TrainingModel extends Component {
             iErrorSelector = goalObj.selectedPages[pageIndex].iErrorSelector
             iSuccessSelector = goalObj.selectedPages[pageIndex].iSuccessSelector
         }
+        let newGoalData = GoalTreeData;
+        newGoalData[goalDomainIndex] = Object.assign({}, newGoalData[goalDomainIndex]);
         this.setState({
             iSuccessSelector, iErrorSelector,
             mainSelector, minorGoal,
@@ -650,7 +669,7 @@ class TrainingModel extends Component {
             startUrl: node.url, pageName: node.name
         },
 
-            () => ({ cursor: node, GoalTreeData: Object.assign({}, GoalTreeData) }));
+            () => ({ 6: node, GoalTreeData: newGoalData }));
     }
 
     deletePage = (page, goalIndex, pageIndex) => {
@@ -669,18 +688,20 @@ class TrainingModel extends Component {
 
     }
     deleteDomain = (obj, index) => {
-        let { domainList,
-            // startUrl, URL, pageName, findIndex 
+        let { domainList, myTreeData,
+            URL, findIndex
         } = { ...this.state }
         if (window.confirm("Are you sure do you want delete it ?")) {
             domainList.splice(index, 1)
-            // console.log(obj,domainList,URL,startUrl,pageName)
-            //   if(URL===obj.domainURL){
-            //     console.log(findIndex,domainList[domainList])
-            //     this.setState({URL:"",domainName:"",domainList,openPopup:false,goalDomainIndex:"",openEditPopup:false,
-            //     projectName:"",startUrl:"",domainIndex:0,mainSelector:"",minorGoal:"",iErrorSelector:"",iSuccessSelector:""})
+            myTreeData.splice(index, 1)
+            if (URL === obj.domainURL) {
+                console.log(findIndex, domainList[domainList])
+                this.setState({
+                    URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false,
+                    projectName: "", startUrl: "", domainIndex: 0, mainSelector: "", minorGoal: "", iErrorSelector: "", iSuccessSelector: ""
+                })
 
-            //   }
+            }
             this.setState({ domainList })
         }
 
@@ -1008,18 +1029,17 @@ class TrainingModel extends Component {
                                                     <label className="c-pointer ml-1 align-label d-inline-flex"
                                                     >
                                                         <span className="text-truncate w-207 d-block"
-                                                            onClick={e => this.loadDomain(object, index)}>{object.domainName}</span>
-                                                        <button className="btn btn-danger btn-xs d-inline ml-1 mr-1 " onClick={() => { this.deleteDomain(object, index) }}>  <i className="fas fa-trash-alt text-default "></i></button>
-
-
+                                                            onClick={e => { this.loadDomain(object, index); e.stopPropagation() }}>{object.domainName}</span>
+                                                        <span className="btn btn-danger btn-xs d-inline ml-1 mr-1 " onClick={() => { this.deleteDomain(object, index) }}>  <i className="fas fa-trash-alt text-default "></i></span>
                                                     </label>
                                                 </li>
                                                 {object.expand ?
+                                                    this.state.myTreeData[index] &&
                                                     <Treebeard
                                                         key={index}
                                                         id={index}
                                                         onClick={e => { this.setState({ domainIndex: index }) }}
-                                                        data={this.state.myTreeData}
+                                                        data={this.state.myTreeData[index]}
                                                         onToggle={this.onToggle} />
                                                     : null}
                                                 {/* {object.expand?
@@ -1097,7 +1117,7 @@ class TrainingModel extends Component {
 
                                                                         <form classname="position-relative tm-form c-pointer   w-100">
                                                                             <div class="btn-group mt-1 w-80" role="group" aria-label="Basic example">
-                                                                                <button type="button" class="btn btn-default w-80" onClick={e => {
+                                                                                <button type="button" class="btn btn-default w-80 overflow-hidden" onClick={e => {
                                                                                     this.setState({
                                                                                         mainSelector: page.mainSelector,
                                                                                         minorGoal: page.minorGoal,
@@ -1117,7 +1137,7 @@ class TrainingModel extends Component {
                                                                         key={index}
                                                                         id={index}
                                                                         onClick={e => { this.setState({ goalDomainIndex: index }) }}
-                                                                        data={this.state.GoalTreeData}
+                                                                        data={this.state.GoalTreeData[index]}
                                                                         onToggle={this.onToggleGoalPage} />
                                                                 </div>
                                                             </div> : null}
@@ -1181,12 +1201,10 @@ class TrainingModel extends Component {
 
                                                                                             <input type="text" className="form-control  col-md-2 d-inline  " placeholder="Main  Selector"
                                                                                                 name="mainSelector" onChange={e => this.handleChange(e)} value={this.state.mainSelector} />
-                                                                                            <input type="text" className="form-control col-md-2 d-inline  ml-1" placeholder="Minor Goal"
+                                                                                            <input type="text" className="form-control col-md-2 d-inline  ml-1" placeholder="Actions"
                                                                                                 name="minorGoal" onChange={e => this.handleChange(e)} value={this.state.minorGoal} />
-                                                                                            <input type="text" className="form-control  col-md-2 d-inline ml-1 " placeholder="Success Selector"
+                                                                                            <input type="text" className="form-control  col-md-2 d-inline ml-1 " placeholder="Terminal State"
                                                                                                 name="iSuccessSelector" onChange={e => this.handleChange(e)} value={this.state.iSuccessSelector} />
-                                                                                            <input type="text" className="form-control  col-md-2 d-inline ml-1 " placeholder="Error  Selector"
-                                                                                                name="iErrorSelector" onChange={e => this.handleChange(e)} value={this.state.iErrorSelector} />
                                                                                             <button className="btn btn-success col-md-2 ml-1" onClick={e => { this.savePage() }}>Save</button>
 
                                                                                         </div>
