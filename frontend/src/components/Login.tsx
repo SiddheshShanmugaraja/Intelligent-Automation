@@ -64,8 +64,7 @@ const Login = () => {
       <div className="d-none" >
         <Link to='/' />
         <Link to='/sign-up' />
-        <Link to='/login' />
-
+        <Link to='/profile' />
       </div>
       <div className="login-navbar-container">
         <div className="login-navbar-content">

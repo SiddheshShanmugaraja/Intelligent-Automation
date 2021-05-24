@@ -52,9 +52,9 @@ const Profile = () => {
 
     const validate = () => {
         let valid = {} as any
-        valid.name = name && name.length > 2 ? /^[A-Za-z]+$/.test(name) ? "" : "*Name should contain only alphabets" : "*Name should contain atleast 3 characters"
+        valid.name = name && name.length > 2 ? /^[a-zA-Z ]*$/.test(name) ? "" : "*Name should contain only alphabets" : "*Name should contain atleast 3 characters"
         valid.about = about && about.length > 0 ? about.length < 501 ? about.length > 30 ? "" : "*About should be greater than 30 characters" : "*About should be within 500 characters" : "* About is required"
-        valid.country = country && country.length > 0 ? /^[A-Za-z]+$/.test(country) ? countriesList.includes(country.toLowerCase()) ? "" : "*Country name not recogonized" : "*Country name should contain only alphabets" : "*Country name is required"
+        valid.country = country && country.length > 0 ? /^[a-zA-Z ]*$/.test(country) ? countriesList.includes(country.toLowerCase()) ? "" : "*Country name not recogonized" : "*Country name should contain only alphabets" : "*Country name is required"
         valid.phone = phone && phone.length > 0 ? /^\d+$/.test(phone) && phone.length === 10 ? "" : "*Invalid Phone number" : "*Phone number is required"
         return valid;
     }

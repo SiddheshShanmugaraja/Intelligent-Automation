@@ -58,7 +58,6 @@ function App() {
           />
           <Route exact path='/sign-up'><Signup /></Route>
           <Route path='/'><Login /></Route>
-
         </Switch>
         <ToastContainer />
       </div>

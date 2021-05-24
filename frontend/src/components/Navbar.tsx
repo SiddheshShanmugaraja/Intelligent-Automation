@@ -5,6 +5,8 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import Sidebar from './Sidebar';
 import { useHistory } from 'react-router-dom';
 import "../assets/css/Navbar.css";
+import { Link } from 'react-router-dom'
+
 import { baseUrl } from "../config";
 const Navbar = (props: any) => {
     const history = useHistory();
@@ -20,6 +22,11 @@ const Navbar = (props: any) => {
     }
     return (
         <>
+            <div className="d-none" >
+                <Link to='/' />
+                <Link to='/sign-up' />
+                <Link to='/profile' />
+            </div>
             <Sidebar loggedUser={loggeduser} />
             <div className="navbar">
                 <p>{props.title}</p>
