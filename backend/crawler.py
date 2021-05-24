@@ -1,9 +1,10 @@
-import json
+import json, os, re
 import pandas as pd
 import openpyxl as op
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from urllib.parse import urlparse
+from urllib.request import urlopen, Request
 from selenium.webdriver.chrome.options import Options
 
 with open("backend/config.json", "r") as f:
@@ -11,6 +12,10 @@ with open("backend/config.json", "r") as f:
 
 EXCEL_DIR = config.get("EXCEL_DIR") 
 CHROME_DRIVER = config.get("CHROME_DRIVER")
+EXCEL_EXTENSION = ".xlsx"
+CSV_EXTENSION = ".csv"
+
+get_filename = lambda x: re.search(r'https://(.*?).com', x).group(1) if re.search(r'https://(.*?).com', x) != None else re.search(r'http://(.*?):', x).group(1)
 
 def crawl_urls(url_list, crawled_urls, driver, url):
     """Get a set of urls and crawl each url recursively
@@ -31,7 +36,7 @@ def crawl_urls(url_list, crawled_urls, driver, url):
     
     html = driver.page_source.encode("utf-8")
 
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, features="html.parser")
 
     urls = soup.findAll("a")
 
@@ -39,19 +44,21 @@ def crawl_urls(url_list, crawled_urls, driver, url):
     # But those urls not in the same domain are not parsed
     for a in urls:
         if (a.get("href")) and (a.get("href") not in url_list):
-            
-            url_list.append(a.get("href"))
-
-    # Recursively parse each url within same domain
-    for page in set(url_list):  # set to remove duplicates
-        # Check if the url belong to the same domain
-        # And if this url is already parsed ignore it
-        if (urlparse(page).netloc == domain) and (page not in crawled_urls):
-            print(page)
-
+            page = a.get("href")
+            page = url + page if page.count('/') == 1 else page
+            if (domain in page) and (page not in crawled_urls):
+                url_list.append(page)
     # Once all urls are crawled return the list to calling function
     return crawled_urls, url_list
 
+def get_page_title(url):
+    try:
+        url = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        soup = BeautifulSoup(urlopen(url), features="html.parser")
+        return soup.title.get_text()
+    except Exception as e:
+        print(f"Error: {e}")
+        return 'Unnamed'
 
 def load_to_excel(lst):
     """Load the list into excel file using pandas
@@ -80,7 +87,7 @@ def format_excel(xl, sheet="Sheet1"):
     """
     # Open the excel file
     wb = op.load_workbook(xl)
-    ws = wb.get_sheet_by_name(sheet)
+    ws = wb[sheet]
 
     # Freeze panes
     ws.freeze_panes = "B2"
@@ -128,7 +135,7 @@ def main(url):
     global sheet_name
     parent_url = url
     domain = urlparse(parent_url).netloc
-    xl_name = os.path.join(EXCEL_DIR, url.split('.com')[0] + ".xlsx")
+    xl_name = os.path.join(EXCEL_DIR, get_filename(url) + EXCEL_EXTENSION)
     sheet_name = "URLs"
     options = Options()
     options.headless = True
@@ -141,7 +148,10 @@ def main(url):
 
     # Initiate the crawling by passind the beginning url
     crawled_urls, url_list = crawl_urls(url_list, crawled_urls, driver, parent_url)
-
+    df = pd.DataFrame()
+    df['PAGE_TITLE'] = [get_page_title(u) for u in url_list]
+    df['URL'] = url_list
+    df.to_csv(xl_name.replace(EXCEL_EXTENSION, CSV_EXTENSION), index=False)
     # Finally quit the browser
     driver.quit()
 
@@ -156,3 +166,7 @@ def main(url):
 
     # Format the excel file
     format_excel(xl_name, sheet_name)
+
+if __name__ == "__main__":
+    url = "http://localhost:4000"
+    main(url)

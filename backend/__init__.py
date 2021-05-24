@@ -7,11 +7,11 @@ from typing import List, Dict, Tuple, Optional
 with open("backend/config.json", "r") as f:
     config = json.load(f)
 
-DB_USERNAME = config.get("DB_USERNAME")
-DB_PASSWORD = config.get("DB_PASSWORD")
 DB_HOST = config.get("DB_HOST")
 DB_NAME = config.get("DB_NAME")
 SECRET_KEY = config.get("SECRET_KEY")
+DB_USERNAME = config.get("DB_USERNAME")
+DB_PASSWORD = config.get("DB_PASSWORD")
 
 db = SQLAlchemy()
 

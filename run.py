@@ -1,4 +1,4 @@
-import re, os, time
+import re, os, json, time
 import logging
 from learner.env import Website
 from learner.brain import QLearningTable
@@ -8,6 +8,12 @@ try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
+
+with open("backend/config.json", "r") as f:
+    config = json.load(f)
+
+INPUT_DATA_FILE = config.get("INPUT_DATA_FILE")
+CONFIG_FILE = config.get("CONFIG_FILE")
 
 logging.basicConfig(filename=os.getcwd()+'/../logs/app.log', filemode='w',format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
@@ -62,20 +68,19 @@ def update(site,mode):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-m", "--mode", help="Mode can be either t for training and i for inference",default='t', type=str)
-    parser.add_argument("-d", "--data", help="data input path", type=str)
-    parser.add_argument("-n", "--model_name", help="Model name to save for training mode", type=str)
-    parser.add_argument("-r", "--routes", help="Routes needed for training mode accepts yml files", type=str)
-    parser.add_argument("-vt", "--validator_type", help="Validator type can be either individual or generic", type=str, default="individual")    
+    parser.add_argument("-d", "--data", help="data input path", type=str, default=INPUT_DATA_FILE)
+    parser.add_argument("-n", "--model_name", help="Model name to save for training mode", type=str, default='test')
+    parser.add_argument("-r", "--routes", help="Routes needed for training mode accepts yml files", type=str, default=CONFIG_FILE)
+    parser.add_argument("-vt", "--validator_type", help="Validator type can be either individual or global", type=str, default="individual")    
     args = parser.parse_args()
     start_time = time.time()
     mode = args.mode
     model_name = args.model_name
-    
     assert (args.routes !=None),"Specify routes for training"
     assert (args.model_name !=None),"Model name is required"
     assert (args.validator_type !=None),"Validator type is required"
-    model_path = os.path.join(os.getcwd()+"/../models/"+args.model_name)
-    if not os.path.exists(os.getcwd()+"/../automation_backend/data/input_data.txt"):
+    model_path = os.path.join(os.getcwd()+"/models/"+args.model_name)
+    if not os.path.exists(INPUT_DATA_FILE):
         print("Input data cannot be empty")
     if (mode == "t") and (not os.path.exists(model_path)):
         os.mkdir(model_path)
@@ -99,16 +104,20 @@ if __name__ == "__main__":
             selector_element = d['main_selector']
             if site:
                 next_url = None
-                try:
-                    env = Website(site,element=selector_element,mode=mode)
-                except Exception as e:
-                    logging.error("Training has been terminated due to this following error :"+str(e)+ " -terminated")
-                    exit()
+                # try:
+                if True:
+                    env = Website(site,selector_element,mode=mode)
+                # except Exception as e:
+                #     message = f"Training has been terminated due to this following error :{e} -terminated"
+                #     print(message)
+                #     logging.error(message)
+                #     exit()
                 RL = QLearningTable(actions=list(range(env.n_actions)),model_name=args.model_name,mode=mode,page_count=count)
                 time.sleep(0.01)
                 update(site,mode)
                 finished_sites.append(current_url)
                 if next_id:
+                    print("Next page:", next_id)
                     next_url = env.click_next(next_id)
                 print("Next URL......", next_url)
                 if next_url:

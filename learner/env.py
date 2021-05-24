@@ -9,7 +9,7 @@ class Website:
         super(Website, self).__init__()
         with open(os.path.join(os.getcwd(), INPUT_DATA_FILE),"r") as f:
             contents = f.read()
-        self.action_space = range(len(contents.split('\n'))+1) # +1 for terminal
+        self.action_space = range(len(contents.split('\n')) + 1) # +1 for terminal
         self.n_actions = len(self.action_space)
         self.state = 'username'
         if mode == "i":
