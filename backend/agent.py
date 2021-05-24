@@ -9,7 +9,8 @@ from flask import Blueprint, request
 import os, re, time, json, subprocess
 from .models import User, Project, Page, Goal
 from typing import List, Dict, Tuple, Optional
-from .crawler import main as crawlerMain, get_filename
+from .crawler import crawl_url as crawl, get_filename
+from learner import Domain
 
 agent = Blueprint('agent', __name__)
 
@@ -18,13 +19,12 @@ with open("backend/config.json", "r") as f:
 
 RL_SCRIPT = config.get("RL_SCRIPT") 
 EXCEL_DIR = config.get("EXCEL_DIR")
-INPUT_DATA_FILE = config.get("INPUT_DATA_FILE")
 LOG_FILE = config.get("LOG_FILE")
 CSV_EXTENSION = ".csv"
 
 ################################################################################################################
 
-def _make_url_tree(data, page_titles) -> List:
+def create_tree(data, page_titles) -> List:
     """[summary]
 
     Args:
@@ -83,31 +83,6 @@ def prune_children(data):
 
 ################################################################################################################
 
-@agent.route("/extract-sitemap", methods=["POST"])
-@cross_origin()
-def extract_sitemap():
-    """[summary]
-
-    Returns:
-        [type]: [description]
-    """
-    url = request.form.get("url")
-    if url:
-        if os.path.exists(os.path.join(EXCEL_DIR, get_filename(url) + CSV_EXTENSION)):
-            status = 200
-            message = "File already exists!"
-            data = None
-        else:
-            crawlerMain(url)
-            status = 200
-            message = "Job started!"
-            data = None
-    else:
-        status = 400
-        message = "URL parameter is missing!"
-        data = None
-    return return_response(status, message, data)
-
 @agent.route("/get-sites", methods=["POST"])
 @cross_origin()
 def extract_from_data():
@@ -120,16 +95,15 @@ def extract_from_data():
     xl_name = os.path.join(EXCEL_DIR, get_filename(domain) + CSV_EXTENSION)
     if domain:
         if not os.path.exists(xl_name):
-            crawlerMain(domain)
+            crawl(domain)
         if os.path.exists(xl_name):
             df = pd.read_csv(xl_name)
-            df.dropna(subset=["URL", "PAGE_TITLE"], inplace=True)
-            data = df["URL"].values.tolist()
-            page_titles = df['PAGE_TITLE'].values.tolist()
+            data = df["url"].values.tolist()
+            page_titles = df['title'].values.tolist()
             if len(data):
                 status = 200
                 message = "Sites extracted!"
-                data = _make_url_tree(data, page_titles)
+                data = create_tree(data, page_titles)
             else:
                 status = 400
                 message = "No data found!"

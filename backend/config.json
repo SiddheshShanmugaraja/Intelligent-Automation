@@ -5,10 +5,9 @@
     "DB_HOST": "localhost",
     "DB_NAME": "intelligent_automation",
     "RL_SCRIPT": "./run.py",
-    "SHEETS_DIR": "./sheets",
     "EXCEL_DIR": "./excel",
-    "INPUT_DATA_FILE": "./data/input_data.txt",
     "CONFIG_FILE": "./config/yamlConfig.yml",
     "LOG_FILE": "./../logs/app.log",
-    "CHROME_DRIVER": "backend/chromedriver"
+    "CHROME_DRIVER": "./backend/chromedriver",
+    "MODELS_DIR": "./models"
 }
