@@ -11,6 +11,23 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Project from './components/ProjectPage'
 import ProtectedRoute, { ProtectedRouteProps } from './protectedRoute'
+const staticData = {
+  about: "Machine Learning Engineer at Intelligent Automation",
+  age: 0,
+  country: "UK",
+  credit: 100,
+  device: [],
+  dob: "21/05/2021",
+  email: "admin@mail.com",
+  gender: "null",
+  id: 1,
+  is_admin: true,
+  name: "Alden Smith",
+  phone: "8092766691",
+  photo: "static/profile_pictures/default.jpg",
+  projects: [],
+  username: "admin",
+}
 
 function App() {
   const defaultProtectedRouteProps: ProtectedRouteProps = {
@@ -22,6 +39,11 @@ function App() {
     authType: 'admin',
     authenticationPath: '/home',
   };
+
+  sessionStorage.setItem('loggeduser', JSON.stringify(staticData))
+  sessionStorage.setItem('credit', JSON.stringify(staticData.credit))
+
+
   return (
     <Router>
       <div className="App">
