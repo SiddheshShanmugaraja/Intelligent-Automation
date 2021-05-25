@@ -5,7 +5,7 @@ import { baseUrl } from '../config'
 import axios from 'axios'
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 const Login = () => {
   const history = useHistory();

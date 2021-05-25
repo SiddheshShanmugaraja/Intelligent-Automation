@@ -7,7 +7,7 @@ import _ from 'lodash'
 import { Treebeard } from 'react-treebeard';
 import axios from 'axios'
 import { baseUrl } from '../config'
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 // let selectedUrl = []
 class TrainingModel extends Component {
@@ -108,7 +108,6 @@ class TrainingModel extends Component {
     }
 
     onToggle = (node, toggled) => {
-        console.log(node, toggled)
         const { cursor, myTreeData, domainIndex } = this.state;
         if (cursor) {
             this.setState(() => ({ cursor, active: false }));
@@ -125,11 +124,8 @@ class TrainingModel extends Component {
     handleChange = (event) => {
         if (event.target.name === "goalDomainName") {
             this.setState({ pageList: [], createDomainPopup: false })
-
             let goalDomainIndex = _.findIndex(this.state.domainList, { domainName: event.target.value })
             let domainList = this.state.domainList
-
-            console.log(domainList[goalDomainIndex].pages)
             if (domainList[goalDomainIndex] && domainList[goalDomainIndex].pages) {
                 this.setState({ pageList: domainList[goalDomainIndex].pages, [event.target.name]: event.target.value, createDomainPopup: true })
 
@@ -172,7 +168,6 @@ class TrainingModel extends Component {
     }
 
     handleChangeSelector(e, ind, select, selectpageIndex) {
-        console.log(ind, select, selectpageIndex)
         if (selectpageIndex > -1) {
             let { goalList, currentGoalIndex } = { ...this.state }
             if (select !== "terminalState") {
@@ -232,9 +227,7 @@ class TrainingModel extends Component {
 
     }
 
-    getElementDetails = (e) => {
-        console.log(e.target)
-    }
+
 
     // createProject=(array)=>{
     //   console.log("create project ",array)
@@ -312,7 +305,6 @@ class TrainingModel extends Component {
         // 192.168.1.245:5000/get_sites
 
         let domainList = this.state.domainList
-        console.log(domain, domainList)
         let findIndex = _.findIndex(domainList, { domainURL: domain })
         if (findIndex >= 0) {
             domainList[findIndex].pages = myTreeData
@@ -403,11 +395,8 @@ class TrainingModel extends Component {
         )
     }
     handleChanges = (event) => {
-
-        console.log(event.target.files)
         let self = this
         let array = event.target.files
-        console.log(array[0])
         if (array.length > 0) {
             var reader = new FileReader();
             reader.onload = function () {
@@ -426,8 +415,7 @@ class TrainingModel extends Component {
 
     }
     createGoal = () => {
-        let { goalDomainName, goalDomainIndex, domainList } = { ...this.state }
-        console.log(goalDomainName, domainList[goalDomainIndex])
+        let { goalDomainIndex, domainList } = { ...this.state }
         domainList.forEach(element => {
             element.expand = false
         });
@@ -539,8 +527,6 @@ class TrainingModel extends Component {
             } else if (type === "page") {
                 domainList[index].pages[pageIndex].expand = !domainList[index].pages[pageIndex].expand
             }
-            console.log(type, index, pageIndex, domainList)
-
             this.setState({ domainList, goalExpand: false })
 
         }
@@ -549,9 +535,7 @@ class TrainingModel extends Component {
 
     startTraining = (goal, type) => {
 
-        console.log(goal)
         let { pdfDataForm, errorType, iErrorSelector, iSuccessSelector } = { ...this.state }
-        console.log(pdfDataForm)
         if (goal && goal.selectedPages && goal.selectedPages.length > 0) {
             var formData = new FormData();
             formData.append("goal_name", goal.goalName)
@@ -564,7 +548,6 @@ class TrainingModel extends Component {
             formData.append("main_selector", goal.selectedPages[0].mainSelector)
             formData.append("input_data", pdfDataForm)
             formData.append("mode", type)
-            console.log(formData)
         }
         //   Ml_action.startTraining(formData).then(response=>{
         //   console.log(response)
@@ -672,12 +655,9 @@ class TrainingModel extends Component {
         this.setState({ domainList, openPage: false })
     }
     frameClick = () => {
-        console.log("**********8888")
     }
     loadDomain = (domainObj, index) => {
-        console.log(domainObj, index)
         let pageIndex = _.findIndex(domainObj.pages, { startUrl: domainObj.domainURL })
-        console.log(pageIndex, domainObj.pages[pageIndex])
         let mainSelector = ""
         let minorGoal = ""
         if (pageIndex >= 0 && domainObj.pages[pageIndex]) {
@@ -728,8 +708,6 @@ class TrainingModel extends Component {
         const { goalList } = this.state;
         goalList[goalIndex].selectedPages.splice(pageIndex, 1)
         this.setState({ goalList })
-        console.log(goalList[goalIndex], page, goalIndex, pageIndex)
-
     }
     deleteGaol = (goal, index) => {
         let { goalList } = { ...this.state }
@@ -741,13 +719,12 @@ class TrainingModel extends Component {
     }
     deleteDomain = (obj, index) => {
         let { domainList, myTreeData,
-            URL, findIndex
+            URL
         } = { ...this.state }
         if (window.confirm("Are you sure do you want delete it ?")) {
             domainList.splice(index, 1)
             myTreeData.splice(index, 1)
             if (URL === obj.domainURL) {
-                console.log(findIndex, domainList[domainList])
                 this.setState({
                     URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false,
                     projectName: "", startUrl: "", domainIndex: 0, mainSelector: "", minorGoal: "", iErrorSelector: "", iSuccessSelector: ""
@@ -758,6 +735,60 @@ class TrainingModel extends Component {
         }
 
     }
+
+    trainData = (data) => {
+        let loggeduser = JSON.parse(sessionStorage.getItem('loggeduser') || '{}')
+        let selector = []
+        if (data.selectedPages && data.selectedPages.length > 0) {
+            data.selectedPages.forEach((ele) => {
+                let tempobj = {
+                    actions: ele.actions,
+                    selectors: ele.selectors,
+                    terminalState: ele.terminalState,
+                    url: ele.startUrl,
+                }
+                selector.push(tempobj)
+            })
+            let jsonData = {
+                projectName: data.goalDomains.domainName,
+                data: selector,
+                username: loggeduser['username'],
+
+            }
+            console.log(jsonData)
+            axios.post(baseUrl + '/train', jsonData).then(res => {
+                console.log(res)
+                if (res.data.status === 200) {
+                    toast.success(res.data.message, {
+                        position: toast.POSITION.TOP_RIGHT,
+                        autoClose: 3000,
+                    });
+                }
+                else {
+                    toast.error(res.data.message, {
+                        position: toast.POSITION.TOP_RIGHT,
+                        autoClose: 3000,
+                    });
+                }
+            }).catch((e) => {
+                console.log(e)
+                toast.error("Network Error", {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+            })
+
+        }
+        else {
+            toast.error("Error No Pages Selected", {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+            });
+
+        }
+
+    }
+
     render() {
         const { goalExpand, goalList, currentGoalIndex, startUrl, pageName } = { ...this.state }
         let selectpageIndex = startUrl && pageName && _.findIndex(goalList[currentGoalIndex]?.selectedPages, { startUrl: startUrl, pageName: pageName })
@@ -805,123 +836,12 @@ class TrainingModel extends Component {
                                         </select>
                                     </div>
                                 </form>
-                                {/* {this.state.pageList.length>0?
-                   
-          <div className="form-group">
-
-              <form>
-                  <div className="form-group">
-                  <label className="inputProjectName" >Select page</label>
-                    <Multiselect
-                     options={ pageList} 
-                    onSelectOptions={e=>this.result( pageList)} />
-                  </div>    
-              </form>
-                <form>
-              <label className="inputProjectName" >Choose Data File</label>
-                <div className="form-group">
-                  <div className="custom-file">
-                        <input type="file" className="custom-file-input" id="customFile " 
-                        name="pdfDataForm"  onChange={e=>this.handleChanges(e)}/>
-                        <label className="custom-file-label" for="customFile">{this.state.file.name?this.state.file.name:"Choose file"}</label>
-                    </div>
-              </div>    
-
-              </form>
-         </div> :null  }
-                     {this.state.pdfBlob!=""?
-                      <iframe className="col-12 mt-2" src={this.state.pdfBlob}   alt={this.state.pdfBlob} />
-                      :null} */}
-
                             </div>
                             <footer className="card-footer">
                                 <div className="row">
                                     <div className="col-md-12 text-right">
                                         <button className="btn btn-primary modal-confirm mr-4" onClick={e => { this.createGoal() }}>Save</button>
                                         <button className="btn btn-default modal-dismiss" onClick={e => { this.setState({ openPopup: false, createDomainPopup: false, getSelector: false }) }}>Cancel</button>
-                                    </div>
-                                </div>
-                            </footer>
-                        </section>
-                    </div>
-                </Popup>
-                <Popup className="custom-modal"
-                    open={this.state.trainGoalPopup}
-                    closeOnDocumentClick={false}
-                    onClose={e => this.setState({ trainGoalPopup: false })}
-                >
-                    <div id="modalForm" className="modal-block modal-block-primary mfp-hide">
-                        <section className="card">
-                            <header className="card-header">
-                                <h2 className="card-title ">Train Goal </h2>
-                                <b className="close text-right text" onClick={e => { this.setState({ trainGoalPopup: false }) }}>
-                                    &times;
-                          </b>
-                            </header>
-                            <div className="card-body">
-                                {/* <form>
-      <div class="form-row mb-3">
-      <div class="col-md-3">
-        
-        <label for="inputProjectName">Error Type</label>
-        </div>
-          <div className="form-group col-md-8">
-          <select name="errorType"  value={this.state.errorType} onChange={e=>this.handleChange(e)} className="form-control" >
-              <option value=""  disabled hidden>Choose here</option>
-              <option value="common" >Common</option>
-              <option value="individual" >Individual</option>
-          </select> 
-          </div>
-          </div>
-        </form> */}
-                                {/* {errorType=="common"? 
-       <form>
-         <div class="form-row mb-3">
-      <div class="col-md-3">
-        <label for="inputProjectName">Success selector</label>
-        </div>
-          <div className="form-group  col-md-8">
-           <input type="text" className="form-control " id="successSelctor " 
-           name="successSelctor"  onChange={e=>this.handleChange(e)}/>        
-          </div>
-        </div>
-        <div class="form-row mb-3">
-      <div class="col-md-3">
-          <label for="inputProjectName">Error selector</label>
-          </div>
-          <div className="form-group  col-md-8">
-          <input type="text"className="form-control " id="errorSelector " 
-            name="errorSelector"  onChange={e=>this.handleChange(e)}/>
-          </div>
-          </div>
-        </form>:null} */}
-
-                                <div className="form-group">
-                                    <form>
-                                        <div class="form-row mb-3">
-                                            <div class="col-md-3">
-                                                <label className="inputProjectName" >Choose Data File</label>
-                                            </div>
-                                            <div className="form-group col-md-8">
-                                                <div className="custom-file">
-                                                    <input type="file" className="custom-file-input" id="customFile "
-                                                        name="pdfDataForm" onChange={e => this.handleChanges(e)} />
-                                                    <label className="custom-file-label" htmlFor="customFile">{this.state.file.name ? this.state.file.name : "Choose file"}</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                                {this.state.pdfBlob !== "" ?
-                                    <iframe className="col-12 mt-2" src={this.state.pdfBlob} title="pdfBlob" alt={this.state.pdfBlob} />
-                                    : null}
-
-                            </div>
-                            <footer className="card-footer">
-                                <div className="row">
-                                    <div className="col-md-12 text-right">
-                                        <button className="btn btn-primary modal-confirm mr-4" onClick={e => { this.startTraining(this.state.currentGoal, 't') }}>Train</button>
-                                        <button className="btn btn-default modal-dismiss" onClick={e => { this.setState({ trainGoalPopup: false, createDomainPopup: false, getSelector: false }) }}>Cancel</button>
                                     </div>
                                 </div>
                             </footer>
@@ -1051,18 +971,6 @@ class TrainingModel extends Component {
                             <div className={"nano has-scrollbar "}>
                                 <div className="nano-content navi-list" tabIndex="0">
                                     <div className="inner-menu-content">
-                                        {/* <div className="inner-menu-toggle-inside">
-                                            <a className="inner-menu-collapse"
-                                            // onClick={() => { this.props.showBar() }}
-                                            >
-                                                <i className="fas fa-chevron-up d-inline" aria-hidden="true"></i><i className="fas fa-chevron-left d-inline" aria-hidden="true"></i> Hide Bar
-                        </a>
-                                            <a className="inner-menu-expand" data-open="inner-menu"
-                                            // onClick={() => { this.props.showBar() }}
-                                            >
-                                                Show Bar <i className="fas fa-chevron-down" aria-hidden="true"></i>
-                                            </a>
-                                        </div> */}
                                         <div className="sidebar-widget m-0">
                                             <div className="widget-content">
 
@@ -1095,38 +1003,9 @@ class TrainingModel extends Component {
                                                         data={this.state.myTreeData[index]}
                                                         onToggle={this.onToggle} />
                                                     : null}
-                                                {/* {object.expand?
-                                                  object.pages.map((page,pageIndex)=> 
-                                                  page.startUrl?<li key={pageIndex}>
-                                                <ul className="sublist">
-                                                  <li  className="list-none position-relative"data-toggle="tooltip" title= {page.startUrl}
-                                                  >
-
-                                                     
-                                                          <label className="c-pointer ml-1 align-label pl-1"
-                                                          data-toggle="tooltip" title= {`Main  Selector: ${page.mainSelector}`}
-                                                           onClick={e=>{this.setState({selectedPage:page,startUrl:page.startUrl,mainSelector:page.mainSelector,pageName:page.pageName})}} >
-                                                           <span className="text-truncate w-207 d-block" >{page.pageName}</span>
-                                                           <i className=" ml-2 fas fa-pencil-alt text-success fa-sm text-info align-pencil position-absolute"
-                                                            onClick={e=>this.setState({domainIndex:index,projectName:object.domainName,pageIndex,selectedPage:page,tempPageName:page.pageName,tempPageUrl:page.startUrl,tempMainSelector:page.mainSelector,tempMinorGoal:page.minorGoal, openPage:true,})} ></i>
-                                                            </label> 
-                                                                  
-                                                  </li>
-                                              </ul>
-                                              </li>:null
-                                                  
-                                           ):null}  */}
-
                                             </ul>
                                         )}
                                     </nav> : null}
-                                    {/* <div className="text-white mt-n3">
-                          <span>Project Repository</span>
-                         
-
-                              
-                    </div> */}
-
                                     {this.state.goalList.length > 0 ?
                                         <nav id="menu" className="nav-main mt-5 " role="navigation">
                                             <div className="mt-2 text-white text-center border-white">
@@ -1141,7 +1020,7 @@ class TrainingModel extends Component {
                                                             <i className={"far align-i " + (goal.expand === true ? 'fa-minus-square' : 'fa-plus-square')} onClick={e => { this.selectGoal(goal, index) }}></i>
                                                             <label className="c-pointer ml-1 align-label d-inline-flex" onClick={e => { this.setState({ goalIndex: index, openGoal: true }) }} > {goal.goalName}
                                                             </label>
-                                                            <button className="btn btn-success btn-xs d-inline ml-1" onClick={() => { this.setState({ trainGoalPopup: true, currentGoal: goal }) }}> Train</button>
+                                                            <button className="btn btn-success btn-xs d-inline ml-1" onClick={() => { this.setState({ currentGoal: goal }); this.trainData(goal) }}> Train</button>
                                                             {goal.showStatusButton ?
                                                                 <button data-toggle="tooltip" title="Run Inference" className="btn btn-warning btn-xs d-inline "
                                                                     onClick={() => { this.setState({ showTrainingStatus: true }) }}><i className={goal.showInferenceBtn ? "fas fa-cog" : "fas fa-cog fa-spin"}></i> </button>
@@ -1157,11 +1036,6 @@ class TrainingModel extends Component {
 
 
                                                         </li>
-                                                        <span className="d-inline-flex">
-                                                        </span>
-
-
-
                                                         {goal.expand === true ?
                                                             <div>
 
@@ -1313,7 +1187,6 @@ class TrainingModel extends Component {
 
                                                                                 <iframe className="col-12  mt-2 h-490px text-center" title="iframe loader" id="framLoader" style={{ height: "500px" }}
                                                                                     type="text/html" src={this.state.startUrl}
-                                                                                    onClick={e => { this.getElementDetails(e) }}
                                                                                 >
                                                                                 </iframe>
 
