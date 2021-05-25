@@ -1,29 +1,15 @@
 import os, json, random, time
 import pandas as pd
 import numpy as np 
-
 from selenium import webdriver
+from argparse import ArgumentParser
 from typing import List, Dict, Tuple, Optional
-from selenium.webdriver.chrome.options import Options
 
-options = Options()
-options.headless = False 
 with open("./backend/config.json", "r") as f:
     config = json.load(f)
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
-
-URLS = ['http://localhost:3000/', 
-        'http://localhost:3000/profile']
-
-STATES = [['input[name="name"]', 'input[name="password"]'], ['input[name="username"]', 'input[name="country"]', 'input[name="phone"]','div#root textarea']]
-
-ACTIONS = [['user1', 'password1'], ['AldenSmith', 'UK', '8092766691', 'Machine Learning Engineer at Intelligent Automation']]
-
-TERMINAL_STATES = ['div#root div.login-container > button', 'div#root button']
-
-NAME = 'localhost'
 
 LEARNING_RATE = 0.1
 GAMMA = 0.9
@@ -34,11 +20,12 @@ POSITIVE_REWARD = 10
 NEGATIVE_REWARD = -5
 
 N_EPISODES = 10
+SLEEP_BETWEEN_INTERVALS = 0.1
 
 CHROME_DRIVER = config.get("CHROME_DRIVER")
 MODELS_DIR = config.get("MODELS_DIR")
+DATA_FILE = config.get("DATA_FILE")
 CSV_EXTENSION = '.csv'
-SLEEP_BETWEEN_INTERVALS = 0.1
 
 class QLearningTable:
 
@@ -146,7 +133,7 @@ class Webpage:
 class Domain:
 
     def __init__(self, name: str, urls: List, states: List[List], actions: List[List], terminal_states: List):
-        self.driver = webdriver.Chrome(executable_path=CHROME_DRIVER, options=options)
+        self.driver = webdriver.Chrome(executable_path=CHROME_DRIVER)
         self.environment = dict()
         for index_, (url, state, action, terminal_state) in enumerate(zip(urls, states, actions, terminal_states), 1):
             self.environment[url] = Webpage(url=url, states=state, actions=action, terminal_state=terminal_state, name=name, page_number=index_, driver=self.driver)
@@ -166,6 +153,31 @@ class Domain:
             self.environment[url].inference()
 
 if __name__ == '__main__':
-    website = Domain(name=NAME, urls=URLS, states=STATES, actions=ACTIONS, terminal_states=TERMINAL_STATES)
-    website.train(N_EPISODES)
-    website.inference()
+    parser = ArgumentParser()
+    parser.add_argument("-m", "--mode", help="Mode, either train, inference or both", choices=["both", "train", "inference"], default="both", type=str)
+    parser.add_argument("-u", "--user", help="Username of the creator for the project", required=True, type=str)
+    parser.add_argument("-p", "--project", help="Project name", required=True, type=str)
+    args = parser.parse_args()
+
+    MODE = args.mode
+    USERNAME = args.user # 'admin'
+    PROJECT_NAME = args.project # 'localhost'
+
+    if args.mode == 'train':
+        train = True
+        inference = False 
+    elif args.mode == 'inference':
+        train = False
+        inference = False
+    else:
+        train = True
+        inference = True
+
+    with open(DATA_FILE, 'r') as f:
+        DATA = json.load(f)[USERNAME][PROJECT_NAME]
+
+    website = Domain(name=PROJECT_NAME, urls=[d['url'] for d in DATA], states=[d['states'] for d in DATA], actions=[d['actions'] for d in DATA], terminal_states=[d['terminal_state'] for d in DATA])
+    if train:
+        website.train(N_EPISODES)
+    if inference:
+        website.inference()
