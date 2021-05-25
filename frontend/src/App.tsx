@@ -11,6 +11,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Project from './components/ProjectPage'
 import ProtectedRoute, { ProtectedRouteProps } from './protectedRoute'
+import {  HelmetProvider } from 'react-helmet-async';
+
 const staticData = {
   about: "Machine Learning Engineer at Intelligent Automation",
   age: 0,
@@ -45,6 +47,8 @@ function App() {
 
 
   return (
+    <HelmetProvider>
+
     <Router>
       <div className="App">
         <Switch>
@@ -84,6 +88,7 @@ function App() {
         <ToastContainer />
       </div>
     </Router>
+    </HelmetProvider>
   );
 }
 

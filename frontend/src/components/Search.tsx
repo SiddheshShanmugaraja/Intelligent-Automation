@@ -12,7 +12,7 @@ import Sort from '@material-ui/icons/UnfoldMore';
 import { baseUrl } from "../config"
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 const Search = () => {
     const [search, setSearch] = useState('');
