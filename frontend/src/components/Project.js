@@ -38,7 +38,7 @@ class TrainingModel extends Component {
             mainSelector: "",
             goalDomainName: "",
             optisolbusiness: "",
-            goalDomainIndex: "",
+            goalDomainIndex: 0,
             domainIndex: "",
             pdfBlob: "",
             pageList: [],
@@ -58,7 +58,6 @@ class TrainingModel extends Component {
             trainGoalPopup: false,
             file: {},
             errorType: "",
-            GoalTreeData: [],
 
         }
 
@@ -82,7 +81,7 @@ class TrainingModel extends Component {
             domainList[this.state.domainIndex].domainURL = this.state.URL
             // this.state.treeData.name = this.state.domainName
             this.setState({
-                domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false,
+                domainName: "", domainList, openPopup: false, goalDomainIndex: 0, openEditPopup: false,
                 projectName: this.state.domainName, startUrl: this.state.URL, collapseOne: true
             })
 
@@ -94,7 +93,7 @@ class TrainingModel extends Component {
                 })
                 this.extractSitemap(this.state.URL, domainList)
                 this.setState({
-                    domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false, collapseOne: true, pageName: this.state.domainName,
+                    domainName: "", domainList, openPopup: false, goalDomainIndex: 0, openEditPopup: false, collapseOne: true, pageName: this.state.domainName,
                     projectName: this.state.domainName, startUrl: this.state.URL, domainIndex: 0, mainSelector: "", minorGoal: ""
                 })
                 // this.props.updateUrlElement(domainList)
@@ -129,7 +128,6 @@ class TrainingModel extends Component {
 
             let goalDomainIndex = _.findIndex(this.state.domainList, { domainName: event.target.value })
             let domainList = this.state.domainList
-            domainList[goalDomainIndex].pages = this.state.GoalTreeData[goalDomainIndex]
 
             console.log(domainList[goalDomainIndex].pages)
             if (domainList[goalDomainIndex] && domainList[goalDomainIndex].pages) {
@@ -145,26 +143,58 @@ class TrainingModel extends Component {
         this.setState({ [event.target.name]: event.target.value })
     }
 
-    addSelectors(select) {
-        let val = this.state[select]
-        val.push("")
-        this.setState({ [select]: val })
-    }
-    deleteSelectors(select, ind) {
-        if (ind !== 0) {
+    addSelectors(select, selectpageIndex) {
+        if (selectpageIndex > -1) {
+            let { goalList, currentGoalIndex } = { ...this.state }
+            goalList[currentGoalIndex].selectedPages[selectpageIndex][select].push("")
+            this.setState({ goalList })
+        }
+        else {
             let val = this.state[select]
-            val.splice(ind, 1)
+            val.push("")
             this.setState({ [select]: val })
+        }
+
+    }
+    deleteSelectors(select, ind, selectpageIndex) {
+        if (selectpageIndex > -1) {
+            let { goalList, currentGoalIndex } = { ...this.state }
+            goalList[currentGoalIndex].selectedPages[selectpageIndex][select].splice(ind, 1)
+            this.setState({ goalList })
+        }
+        else {
+            if (ind !== 0) {
+                let val = this.state[select]
+                val.splice(ind, 1)
+                this.setState({ [select]: val })
+            }
         }
     }
 
+    handleChangeSelector(e, ind, select, selectpageIndex) {
+        console.log(ind, select, selectpageIndex)
+        if (selectpageIndex > -1) {
+            let { goalList, currentGoalIndex } = { ...this.state }
+            if (select !== "terminalState") {
+                goalList[currentGoalIndex].selectedPages[selectpageIndex][select][ind] = e.target.value
+            }
+            else {
+                goalList[currentGoalIndex].selectedPages[selectpageIndex].terminalState = e.target.value
+            }
+            this.setState({ goalList })
+        }
+        else {
+            let val = this.state[select]
+            if (select !== "terminalState") {
+                val[ind] = e.target.value
+            }
+            else {
+                val = e.target.value
+            }
+            this.setState({ [select]: val })
+        }
 
-    handleChangeSelector(e, ind, select) {
-        let val = this.state[select]
-        val[ind] = e.target.value
-        this.setState({ [select]: val })
     }
-
 
     bindRepository = (domain) => {
         let obj = { name: domain.domainName, children: domain.pages, domain }
@@ -219,6 +249,7 @@ class TrainingModel extends Component {
         this.setState({ startUrl, pageName })
 
     }
+
     extractSitemap = (domain, domainList) => {
         var formData = new FormData();
         formData.append("domain", domain)
@@ -226,23 +257,16 @@ class TrainingModel extends Component {
         axios.post(baseUrl + '/get-sites', formData).then(res => {
             if (res.data.status === 200) {
                 let treedata = _.cloneDeep(res.data.data)
-                let goaldata = _.cloneDeep(res.data.data)
                 let myTreeData = this.state.myTreeData
                 myTreeData.unshift(treedata)
-                let GoalTreeData = this.state.GoalTreeData
-                GoalTreeData.unshift(goaldata)
-                this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
-                this.getSiteMaps(myTreeData, domain)
-
+                this.setState({ myTreeData: myTreeData, showLoader: false })
+                this.getSiteMaps(res.data.data, domain)
             }
             else {
                 let treedata = []
-                let goaldata = []
                 let myTreeData = this.state.myTreeData
                 myTreeData.unshift(treedata)
-                let GoalTreeData = this.state.GoalTreeData
-                GoalTreeData.unshift(goaldata)
-                this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
+                this.setState({ myTreeData: myTreeData, showLoader: false })
             }
 
         }).catch(e => {
@@ -250,12 +274,9 @@ class TrainingModel extends Component {
                 position: toast.POSITION.TOP_RIGHT
             });
             let treedata = []
-            let goaldata = []
             let myTreeData = this.state.myTreeData
             myTreeData.unshift(treedata)
-            let GoalTreeData = this.state.GoalTreeData
-            GoalTreeData.unshift(goaldata)
-            this.setState({ myTreeData: myTreeData, GoalTreeData: GoalTreeData, showLoader: false })
+            this.setState({ myTreeData: myTreeData, showLoader: false })
         })
     }
     getSiteMaps = (myTreeData, domain) => {
@@ -415,19 +436,18 @@ class TrainingModel extends Component {
             element.expand = false
         });
         if (this.state.goalName === "") {
-
             toast.error("Please enter goal name", {
                 position: toast.POSITION.TOP_RIGHT
             });
 
         } else {
             // if(domainUrls.length>0){
-            console.log(goalList)
             if (!_.find(goalList, { goalName: this.state.goalName })) {
                 let tempObj = {
                     goalName: this.state.goalName,
                     goalDomains: domainList[goalDomainIndex],
-                    // goalDataField:this.state.pdfBlob,
+                    treeData: domainList[goalDomainIndex].pages,
+                    // goalData,Field:this.state.pdfBlob,
                     // goalDataBlob:this.state.file,
                     // domainUrls:domainUrls,
                     // minerSelector:{selectorName:this.state.selectorName,cssSelector:this.state.cssSelector},
@@ -437,7 +457,7 @@ class TrainingModel extends Component {
                 goalList.unshift(tempObj)
                 this.setState({
                     currentGoalIndex: 0, goalList, modeUrl: "", mode_name: "", cssSelector: "",
-                    goalName: "", goalDomainName: "", goalDomainIndex: "", pageList: [],
+                    goalName: "", goalDomainName: "", goalDomainIndex: 0, pageList: [],
                     showPopup: false, domainUrls: [], pdfBlob: "", openPopup: false, createDomainPopup: false
                 })
 
@@ -461,47 +481,38 @@ class TrainingModel extends Component {
         // }
     }
 
-    savePage = () => {
-
-        let { goalList, currentGoalIndex, mainSelector, minorGoal, startUrl, pageName, iErrorSelector, iSuccessSelector, actions, selectors, terminalState } = { ...this.state }
-        let tempPage = {
-            startUrl: startUrl,
-            pageName: pageName,
-            minorGoal: minorGoal,
-            mainSelector: mainSelector,
-            terminalState: terminalState,
-            selector: selectors,
-            actions: actions
-        }
-        //   goalList[goalIndex].expand=true
-        if (goalList[currentGoalIndex].selectedPages) {
-            let findIndex = _.findIndex(goalList[currentGoalIndex].selectedPages, { startUrl: startUrl, pageName: pageName })
-            if (findIndex >= 0) {
-                goalList[currentGoalIndex].selectedPages[findIndex] = tempPage
-            } else {
-                goalList[currentGoalIndex].selectedPages = [...goalList[currentGoalIndex].selectedPages, tempPage]
+    savePage = (selectpageIndex) => {
+        if (selectpageIndex === -1) {
+            let { goalList, currentGoalIndex, mainSelector, minorGoal, startUrl, pageName, actions, selectors, terminalState } = { ...this.state }
+            let tempPage = {
+                startUrl: startUrl,
+                pageName: pageName,
+                minorGoal: minorGoal,
+                mainSelector: mainSelector,
+                terminalState: terminalState,
+                selectors: selectors,
+                actions: actions
             }
+            //   goalList[goalIndex].expand=true
+            if (goalList[currentGoalIndex].selectedPages) {
+                let findIndex = _.findIndex(goalList[currentGoalIndex].selectedPages, { startUrl: startUrl, pageName: pageName })
+                if (findIndex >= 0) {
+                    goalList[currentGoalIndex].selectedPages[findIndex] = tempPage
+                } else {
+                    goalList[currentGoalIndex].selectedPages = [...goalList[currentGoalIndex].selectedPages, tempPage]
+                }
 
-            this.setState({ goalList })
-        } else {
-            goalList[currentGoalIndex].selectedPages = [tempPage]
-            this.setState({ goalList })
+                this.setState({ goalList })
+            } else {
+                goalList[currentGoalIndex].selectedPages = [tempPage]
+                this.setState({ goalList })
+            }
         }
+        toast.success("Selectors saved ", {
+            position: toast.POSITION.TOP_RIGHT
+        });
 
-        console.log(goalList[currentGoalIndex].selectedPages)
 
-        //   toast.success("Main  Selector updated in "+ goalList[ goalIndex].pages[findIndex].pageName + "page", {
-        //         position: toast.POSITION.TOP_RIGHT
-        //     }); 
-        //  }else{
-
-        //   goalList[goalIndex].pages.push(tempPage)
-        //   this.setState({goalList})  
-        //   toast.success("New page and Main  Selector added ", {
-        //     position: toast.POSITION.TOP_RIGHT
-        // }); 
-
-        //  }
     }
 
     expand = (type, index, pageIndex) => {
@@ -678,7 +689,7 @@ class TrainingModel extends Component {
     }
 
     onToggleGoalPage = (node, toggled) => {
-        const { gcursor, GoalTreeData, goalList, currentGoalIndex, goalDomainIndex } = this.state;
+        const { gcursor, goalList, currentGoalIndex, goalDomainIndex } = this.state;
         if (gcursor) {
             this.setState(() => ({ gcursor, active: false }));
         }
@@ -699,9 +710,10 @@ class TrainingModel extends Component {
             iErrorSelector = goalObj.selectedPages[pageIndex].iErrorSelector
             iSuccessSelector = goalObj.selectedPages[pageIndex].iSuccessSelector
         }
-        let newGoalData = GoalTreeData;
-        newGoalData[goalDomainIndex] = Object.assign({}, newGoalData[goalDomainIndex]);
+        let newGoalData = goalList[goalDomainIndex];
+        newGoalData.treeData = Object.assign({}, newGoalData.treeData);
         this.setState({
+            selectors: [""], actions: [""], terminalState: "",
             iSuccessSelector, iErrorSelector,
             mainSelector, minorGoal,
             goalExpand: true,
@@ -709,7 +721,7 @@ class TrainingModel extends Component {
             startUrl: node.url, pageName: node.name
         },
 
-            () => ({ 6: node, GoalTreeData: newGoalData }));
+            () => ({ gcursor: node, goalList: newGoalData }));
     }
 
     deletePage = (page, goalIndex, pageIndex) => {
@@ -747,7 +759,8 @@ class TrainingModel extends Component {
 
     }
     render() {
-        const { goalExpand } = { ...this.state }
+        const { goalExpand, goalList, currentGoalIndex, startUrl, pageName } = { ...this.state }
+        let selectpageIndex = startUrl && pageName && _.findIndex(goalList[currentGoalIndex]?.selectedPages, { startUrl: startUrl, pageName: pageName })
         return (
             <div className="container-fluid">
                 <Helmet>
@@ -1177,7 +1190,7 @@ class TrainingModel extends Component {
                                                                         key={index}
                                                                         id={index}
                                                                         onClick={e => { this.setState({ goalDomainIndex: index }) }}
-                                                                        data={this.state.GoalTreeData[index]}
+                                                                        data={goal.treeData}
                                                                         onToggle={this.onToggleGoalPage} />
                                                                 </div>
                                                             </div> : null}
@@ -1240,31 +1253,59 @@ class TrainingModel extends Component {
                                                                                         <div className="row row">
                                                                                             <div className="col-md-6 row p-0">
                                                                                                 <div className="col-6">
-                                                                                                    {this.state.selectors && this.state.selectors.map((ele, n) =>
-                                                                                                        <div className="mt-2">
-                                                                                                            <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector"
-                                                                                                                name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "selectors")} value={this.state.selectors[n]} />
-                                                                                                            {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("selectors") }}>  <i className="fas fa-plus text-default "></i></span>
-                                                                                                                : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("selectors", n) }} >  <i className="fas fa-minus text-default "></i></span>}
+                                                                                                    {
+                                                                                                        selectpageIndex > -1 ?
+                                                                                                            goalList[currentGoalIndex].selectedPages[selectpageIndex].selectors.map((ele, n) =>
+                                                                                                                <div className="mt-2">
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector"
+                                                                                                                        name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "selectors", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].selectors[n]} />
+                                                                                                                    {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("selectors", selectpageIndex) }}>  <i className="fas fa-plus text-default "></i></span>
+                                                                                                                        : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("selectors", n, selectpageIndex) }} >  <i className="fas fa-minus text-default "></i></span>}
 
-                                                                                                        </div>
-                                                                                                    )}
+                                                                                                                </div>
+                                                                                                            ) :
+                                                                                                            this.state.selectors && this.state.selectors.map((ele, n) =>
+                                                                                                                <div className="mt-2">
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector"
+                                                                                                                        name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "selectors")} value={this.state.selectors[n]} />
+                                                                                                                    {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("selectors") }}>  <i className="fas fa-plus text-default "></i></span>
+                                                                                                                        : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("selectors", n) }} >  <i className="fas fa-minus text-default "></i></span>}
+
+                                                                                                                </div>
+                                                                                                            )
+                                                                                                    }
                                                                                                 </div>
                                                                                                 <div className="col-6">
-                                                                                                    {this.state.actions && this.state.actions.map((ele, n) =>
-                                                                                                        <div className="mt-2">
-                                                                                                            <input type="text" className="form-control col-md-8 d-inline  ml-1" placeholder="Actions"
-                                                                                                                name="minorGoal" onChange={e => this.handleChangeSelector(e, n, "actions")} value={this.state.actions[n]} />
-                                                                                                            {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("actions") }}>  <i className="fas fa-plus text-default "></i></span>
-                                                                                                                : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("actions", n) }} >  <i className="fas fa-minus text-default "></i></span>}
-                                                                                                        </div>
-                                                                                                    )}
+                                                                                                    {
+                                                                                                        selectpageIndex > -1 ?
+                                                                                                            goalList[currentGoalIndex].selectedPages[selectpageIndex].actions.map((ele, n) =>
+                                                                                                                <div className="mt-2">
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action"
+                                                                                                                        name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "actions", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].actions[n]} />
+                                                                                                                    {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("actions", selectpageIndex) }}>  <i className="fas fa-plus text-default "></i></span>
+                                                                                                                        : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("actions", n, selectpageIndex) }} >  <i className="fas fa-minus text-default "></i></span>}
+
+                                                                                                                </div>
+                                                                                                            ) :
+                                                                                                            this.state.selectors && this.state.actions.map((ele, n) =>
+                                                                                                                <div className="mt-2">
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action"
+                                                                                                                        name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "actions")} value={this.state.actions[n]} />
+                                                                                                                    {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("actions") }}>  <i className="fas fa-plus text-default "></i></span>
+                                                                                                                        : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("actions", n) }} >  <i className="fas fa-minus text-default "></i></span>}
+
+                                                                                                                </div>
+                                                                                                            )
+                                                                                                    }
                                                                                                 </div>
                                                                                             </div>
                                                                                             <div className="col-md-6">
-                                                                                                <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State"
-                                                                                                    name="terminalState" onChange={e => this.handleChange(e)} value={this.state.terminalState} />
-                                                                                                <button className="btn btn-success col-md-3 ml-1" onClick={e => { this.savePage() }}>Save</button>
+                                                                                                {selectpageIndex > -1 ?
+                                                                                                    <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State"
+                                                                                                        name="terminalState" onChange={e => this.handleChangeSelector(e, -1, "terminalState", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].terminalState} />
+                                                                                                    : <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State"
+                                                                                                        name="terminalState" onChange={e => this.handleChangeSelector(e, -1, "terminalState")} value={this.state.terminalState} />}
+                                                                                                <button className="btn btn-success col-md-3 ml-1" onClick={e => { this.savePage(selectpageIndex) }}>Save</button>
                                                                                             </div>
                                                                                         </div>
                                                                                     </div>
