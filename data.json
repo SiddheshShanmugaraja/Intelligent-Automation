@@ -1,0 +1,48 @@
+{
+    "admin": {
+        "Localhost": [
+            {
+                "actions": [
+                    "admin",
+                    "password"
+                ],
+                "url": "http://localhost:3000/",
+                "states": [
+                    "input[name=\"password\"]",
+                    "input[name=\"name\"]"
+                ],
+                "terminal_state": "div#root div.login-container > button"
+            }
+        ],
+        "Demo": [
+            {
+                "actions": [
+                    "password",
+                    "admin"
+                ],
+                "url": "http://localhost:3000",
+                "states": [
+                    "input[name=\"name\"]",
+                    "input[name=\"password\"]"
+                ],
+                "terminal_state": "div#root div.login-container > button"
+            },
+            {
+                "actions": [
+                    "James Bond",
+                    "UK",
+                    "0987654321",
+                    "Professional Football player from Manchester City, United Kingdom"
+                ],
+                "url": "http://localhost:3000/profile",
+                "states": [
+                    "div#root textarea",
+                    "input[name=\"phone\"]",
+                    "input[name=\"country\"]",
+                    "input[name=\"username\"]"
+                ],
+                "terminal_state": "div#root button"
+            }
+        ]
+    }
+}
