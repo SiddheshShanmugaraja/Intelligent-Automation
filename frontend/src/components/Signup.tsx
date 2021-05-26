@@ -63,6 +63,7 @@ const Signup = () => {
         <Link to='/' />
         <Link to='/sign-up' />
         <Link to='/profile' />
+        <Link to='/search' />
       </div>
       <Helmet>
         <title>Sign Up</title>

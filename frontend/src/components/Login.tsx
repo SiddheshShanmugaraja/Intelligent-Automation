@@ -65,6 +65,7 @@ const Login = () => {
         <Link to='/' />
         <Link to='/sign-up' />
         <Link to='/profile' />
+        <Link to='/search' />
       </div>
       <div className="login-navbar-container">
         <div className="login-navbar-content">
