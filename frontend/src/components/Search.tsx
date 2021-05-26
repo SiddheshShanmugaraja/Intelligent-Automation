@@ -13,8 +13,10 @@ import { baseUrl } from "../config"
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Helmet } from 'react-helmet-async';
+import { useHistory } from 'react-router-dom'
 
 const Search = () => {
+    const history = useHistory();
     const [search, setSearch] = useState('');
     const [select, setSelect] = useState({ field: '' })
     const [data, setData] = useState({})
@@ -130,6 +132,7 @@ const Search = () => {
                         autoClose: 3000,
                     });
                     sessionStorage.setItem('credit', JSON.stringify(res.data.data.sender.credit))
+                    history.push('/home')
                     setMax(res.data.data.sender.credit)
                     setInitalState()
                     let form = document.getElementById('form')
