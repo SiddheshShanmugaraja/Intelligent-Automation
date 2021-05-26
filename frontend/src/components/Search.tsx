@@ -7,7 +7,6 @@ import Avatar from 'react-avatar'
 import _ from 'lodash'
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import ExpandLess from '@material-ui/icons/ExpandLess';
-import Send from '@material-ui/icons/Send';
 import Sort from '@material-ui/icons/UnfoldMore';
 import { baseUrl } from "../config"
 import axios from 'axios';
@@ -245,7 +244,9 @@ const Search = () => {
                                                 defaultValue={''}
                                                 id={arr.id}
                                             />
-                                            <Send onClick={() => handleTransfer(arr.username, arr.id)} />
+                                           <button className="credit-button" onClick={() => handleTransfer(arr.username, arr.id)}>
+                                           <i className="fa fa-paper-plane" aria-hidden="true" ></i >
+                                               </button> 
                                         </td>
                                     </tr>
                                 ) :
