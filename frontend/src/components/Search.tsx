@@ -244,9 +244,9 @@ const Search = () => {
                                                 defaultValue={''}
                                                 id={arr.id}
                                             />
-                                           <button className="credit-button" onClick={() => handleTransfer(arr.username, arr.id)}>
+                                           <span className="credit-button" onClick={() => {handleTransfer(arr.username, arr.id)}}>
                                            <i className="fa fa-paper-plane" aria-hidden="true" ></i >
-                                               </button> 
+                                               </span> 
                                         </td>
                                     </tr>
                                 ) :
