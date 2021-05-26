@@ -59,7 +59,7 @@ class QLearningTable:
         if not os.path.exists(os.path.join(MODELS_DIR, self.name)):
             os.mkdir(os.path.join(MODELS_DIR, self.name))
         df = pd.DataFrame(data=self.table, index=self.states, columns=self.actions)
-        df.to_csv(os.path.join(MODELS_DIR, self.name, f"Page:{self.page_number}-Episode:{episode}{CSV_EXTENSION}"))
+        df.to_csv(os.path.join(MODELS_DIR, self.name, f"Page{self.page_number}-Episode{episode}{CSV_EXTENSION}"))
         return df
 
     def decay_epsilon(self):
