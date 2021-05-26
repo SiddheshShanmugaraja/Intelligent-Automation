@@ -26,6 +26,7 @@ const Navbar = (props: any) => {
                 <Link to='/' />
                 <Link to='/sign-up' />
                 <Link to='/profile' />
+                <Link to='/search' />
             </div>
             <Sidebar loggedUser={loggeduser} />
             <div className="navbar">
