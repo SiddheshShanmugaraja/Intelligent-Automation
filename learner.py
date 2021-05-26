@@ -44,9 +44,9 @@ class QLearningTable:
             df = pd.read_csv(os.path.join(MODELS_DIR, self.name, f"Page:{self.page_number}-Episode:{N_EPISODES}{CSV_EXTENSION}"), index_col='Unnamed: 0')
             self.table = df.values
 
-    def learn(self, state_index: int, action_index: int, reward: int, success: bool = False) -> None:
+    def learn(self, state_index: int, action_index: int, reward: int) -> None:
         current_q = self.table[state_index, action_index]
-        if state_index + 1 < len(self.states):
+        if state_index < len(self.states) - 1:
             max_future_q = self.table[state_index + 1, :].max()
         else:
             max_future_q = POSITIVE_REWARD
@@ -80,6 +80,7 @@ class Webpage:
         success = False
         while not success:
             self.driver.get(self.url)
+            self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)
             history = list()
             actions_copy = self.q_table.actions.copy()
             for state_index, state in enumerate(self.q_table.states):
@@ -95,19 +96,19 @@ class Webpage:
                 input_element.send_keys(action)
                 history.append((state_index, action_index))
                 actions_copy.remove(action)
-                self.q_table.learn(state_index=state_index, action_index=action_index, reward=MOVE_REWARD, success=success)
+                self.q_table.learn(state_index=state_index, action_index=action_index, reward=MOVE_REWARD)
                 if (state_index + 1) == len(self.q_table.states):
                     self.driver.find_element_by_css_selector(self.terminal_state).click()
-                    time.sleep(SLEEP_BETWEEN_INTERVALS)
+                    self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)
                     current_url = self.driver.current_url[:-1] if self.driver.current_url[-1] == '/' else self.driver.current_url
                     page_url = self.url[:-1] if self.url[-1] == '/' else self.url
                     if current_url != page_url:
                         success = True
                         for state_index, action_index in history:
-                            self.q_table.learn(state_index=state_index, action_index=action_index, reward=POSITIVE_REWARD, success=success)
+                            self.q_table.learn(state_index=state_index, action_index=action_index, reward=POSITIVE_REWARD)
                     else:
                         for state_index, action_index in history:
-                            self.q_table.learn(state_index=state_index, action_index=action_index, reward=NEGATIVE_REWARD, success=success)
+                            self.q_table.learn(state_index=state_index, action_index=action_index, reward=NEGATIVE_REWARD)
         self.q_table.decay_epsilon()
 
     def train(self, n_episodes):
@@ -161,25 +162,19 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--project", help="Project name", required=True, type=str)
     args = parser.parse_args()
 
-    MODE = args.mode
-    USERNAME = args.user # 'admin'
-    PROJECT_NAME = args.project # 'localhost'
-
+    try:
+        with open(DATA_FILE, 'r') as f:
+            DATA = json.load(f)[args.user][args.project]
+    except KeyError:
+        print(f"Username - '{args.user}' or/and Project - {args.project} do not exist!")
+        exit()
+        
+    website = Domain(name=args.project, urls=[d['url'] for d in DATA], states=[d['states'] for d in DATA], actions=[d['actions'] for d in DATA], terminal_states=[d['terminal_state'] for d in DATA])
+    
     if args.mode == 'train':
-        train = True
-        inference = False 
-    elif args.mode == 'inference':
-        train = False
-        inference = False
-    else:
-        train = True
-        inference = True
-
-    with open(DATA_FILE, 'r') as f:
-        DATA = json.load(f)[USERNAME][PROJECT_NAME]
-
-    website = Domain(name=PROJECT_NAME, urls=[d['url'] for d in DATA], states=[d['states'] for d in DATA], actions=[d['actions'] for d in DATA], terminal_states=[d['terminal_state'] for d in DATA])
-    if train:
         website.train(N_EPISODES)
-    if inference:
+    elif args.mode == 'inference':
+        website.inference()
+    else:
+        website.train(N_EPISODES)
         website.inference()

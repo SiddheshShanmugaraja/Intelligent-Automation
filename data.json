@@ -43,6 +43,22 @@
                 ],
                 "terminal_state": "div#root button"
             }
+        ],
+        "Credit": [
+            {
+                "actions": [
+                    "user1",
+                    "Username",
+                    "10"
+                ],
+                "url": "http://localhost:3000/search",
+                "states": [
+                    "div#collapseOne div.col-md-6.row.p-0 > div:nth-child(1) > div:nth-child(1) > span",
+                    "select#select",
+                    "div#collapseOne div:nth-child(1) > div:nth-child(1) > span > i"
+                ],
+                "terminal_state": "#form > table > tbody > tr:nth-child(1) > td:nth-child(11) > svg"
+            }
         ]
     }
 }
