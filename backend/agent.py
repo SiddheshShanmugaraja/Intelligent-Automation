@@ -19,6 +19,7 @@ with open("backend/config.json", "r") as f:
 
 RL_SCRIPT = config.get("RL_SCRIPT") 
 EXCEL_DIR = config.get("EXCEL_DIR")
+DATA_FILE = config.get("DATA_FILE")
 LOG_FILE = config.get("LOG_FILE")
 CSV_EXTENSION = ".csv"
 
@@ -114,35 +115,7 @@ def extract_from_data():
         data = None
     return return_response(status, message, data)
 
-@agent.route("/page-list", methods=["POST"])
-@cross_origin()
-def get_page_list():
-    """[summary]
-
-    Returns:
-        [type]: [description]
-    """                
-    domain = request.form.get("domain")
-    xl_name = os.path.join(EXCEL_DIR, get_filename(domain) + CSV_EXTENSION)
-    if domain:
-        if os.path.exists(xl_name):
-            df = pd.read_csv(xl_name)
-            df.dropna(subset=["URL", "PAGE_TITLE"], inplace=True)
-            df.columns = ["name","url"]
-            status = 200
-            message = "Success!"
-            data = df.to_dict(orient="row")
-        else:
-            status = 400
-            message = "No file found!"
-            data = None
-    else:
-        status = 400
-        message = "Not a valid URL!"
-        data = None
-    return return_response(status, message, data)
-
-@agent.route("/train-data", methods=["POST"])
+@agent.route("/train", methods=["POST"])
 @cross_origin()
 def train_site():
     """[summary]
@@ -150,38 +123,26 @@ def train_site():
     Returns:
         [type]: [description]
     """
-    goal_name = request.form.get("goal_name")
-    page_details = json.loads(request.form.get("pageDetail"))
-    input_file = request.files["input_data"]
-    input_data = input_file.read()
-    mode = request.form.get("mode")
-    goal_name = "_".join(goal_name.split(" "))
-    with open(INPUT_DATA_FILE, "wb") as f:
-        f.write(input_data)
-    abs_input_path = os.path.abspath(INPUT_DATA_FILE)
-    config = []
-    for p in list(page_details):
-        data = dict()
-        data['start_url'] = p["startUrl"]
-        data['main_selector'] = p["mainSelector"]
-        if "minorGoal" in p:
-            data["minor_goal"] = p["minorGoal"]
-        config.append(data.copy())
-    stream = open(CONFIG_FILE, "w")
-    route_path = os.path.abspath(CONFIG_FILE)
-    dump(config, stream)
-    if mode and route_path and goal_name and abs_input_path:
-        subprocess.Popen(["python", RL_SCRIPT, "-m", mode, "-r", route_path, "-n", goal_name, "-d", abs_input_path])
-        status = 200
-        data = None
-        if mode == "t":
-            message = "Training has been started!"
-        else:
-            message = "Inference has been started!"
-    else:
-        status = 400
-        message = "Mode, Route path, goal name and abs_input_path should not be None!"
-        data = None
+    response = request.get_json(silent=True)
+    username = response["username"]
+    project_name = response['projectName']
+    data = response['data']
+    for d in data:
+        d['states'] = d.pop('selectors')
+        d['terminal_state'] = d.pop('terminalState')
+    with open(DATA_FILE, 'r') as f:
+        content = json.load(f)
+    if not username in content:
+        content[username] = dict()
+    if not project_name in content[username]:
+        content[username][project_name] = dict()
+    content[username][project_name] = data
+    with open(DATA_FILE, 'w') as f:
+        json.dump(content, f, indent=4)
+    process = subprocess.Popen(f"python {RL_SCRIPT} --user {username} --project {project_name}".split())
+    status = 200
+    data = None
+    message = f'Process with id - {process.pid} has been started!'
     return return_response(status, message, data)
 
 @agent.route("/get_training_status", methods=["GET"])

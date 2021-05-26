@@ -99,7 +99,9 @@ class Webpage:
                 if (state_index + 1) == len(self.q_table.states):
                     self.driver.find_element_by_css_selector(self.terminal_state).click()
                     time.sleep(SLEEP_BETWEEN_INTERVALS)
-                    if self.driver.current_url != self.url:
+                    current_url = self.driver.current_url[:-1] if self.driver.current_url[-1] == '/' else self.driver.current_url
+                    page_url = self.url[:-1] if self.url[-1] == '/' else self.url
+                    if current_url != page_url:
                         success = True
                         for state_index, action_index in history:
                             self.q_table.learn(state_index=state_index, action_index=action_index, reward=POSITIVE_REWARD, success=success)
