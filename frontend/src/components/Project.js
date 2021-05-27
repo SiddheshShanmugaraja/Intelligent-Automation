@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import '../assets/css/Project.css'
-import "react-alice-carousel/lib/alice-carousel.css";
 import Popup from "reactjs-popup";
 import { ToastContainer, toast } from 'react-toastify';
 import _ from 'lodash'
@@ -8,8 +7,11 @@ import { Treebeard } from 'react-treebeard';
 import axios from 'axios'
 import { baseUrl } from '../config'
 import { Helmet } from 'react-helmet-async';
+import Loader from "react-loader-spinner";
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
-// let selectedUrl = []
 class TrainingModel extends Component {
     repository = []
 
@@ -27,7 +29,7 @@ class TrainingModel extends Component {
             value: 0,
             myTreeData: [],
             projectName: "",
-            showLoader: false,
+            showLoader: true,
             treeData: {},
             galleryItems: [1, 2, 3].map((i) => (<h2 key={i}>{i}</h2>)),
             openEditPopup: false,
@@ -44,6 +46,7 @@ class TrainingModel extends Component {
             pageList: [],
             cssSelector: "",
             startUrl: "",
+            startUrlType: "",
             domainUrls: [],
             tempPageName: "",
             tempPageUrl: "",
@@ -58,16 +61,77 @@ class TrainingModel extends Component {
             trainGoalPopup: false,
             file: {},
             errorType: "",
-
+            loggeduser: {},
         }
 
     }
+
+
     componentDidMount() {
-        // for(let i=1;i<=100;i++){
+        let loggeduser = JSON.parse(sessionStorage.getItem('loggeduser') || '{}')
+        this.setState({ loggeduser })
+        let formData = new FormData();
+        formData.append('username', loggeduser['username'])
+        axios.post(baseUrl + '/projects', formData).then(res => {
+            if (res.data.status === 200) {
+                res.data.data && this.initializeState(res.data.data)
+                this.setState({ showLoader: false })
+            }
+            else {
+                toast.error(res.data.message, {
+                    position: toast.POSITION.TOP_RIGHT
+                });
+            }
+        }).catch(e => {
+            toast.error("Network Error", {
+                position: toast.POSITION.TOP_RIGHT
+            });
 
-        //      console.log(i);
-        // }
+        })
 
+
+    }
+    initializeState = (data) => {
+        let domainList = []
+        let tree = []
+        Object.keys(data.domains).forEach((key, ind) => {
+            let Domain = {
+                domainName: key,
+                domainURL: data.domains[key].crawled_urls.url,
+                expand: ind === 0 ? true : false,
+                pages: data.domains[key].crawled_urls,
+                extractedPage: data.domains[key].crawled_urls,
+            }
+            domainList.push(Domain)
+            tree.push(data.domains[key].crawled_urls)
+        })
+
+        let goalList = []
+        Object.keys(data.pages).forEach((key, ind) => {
+            let selectedPages = []
+            data.pages[key].forEach((el) => {
+                let temppage = {
+                    startUrl: el.url,
+                    pageName: el.pageName,
+                    terminalState: el.terminalState,
+                    selectors: el.selectors,
+                    actions: el.actions,
+                }
+                selectedPages.push(temppage)
+            })
+            let domainInd = _.findIndex(domainList, { domainName: key })
+            let Goal = {
+                goalName: data.pages[key][0].goal,
+                expand: ind === 0 ? true : false,
+                selectedPages: selectedPages,
+                goalDomains: domainList[domainInd],
+                treeData: domainList[domainInd].pages,
+            }
+            goalList.push(Goal)
+
+        })
+        console.log(domainList, goalList)
+        this.setState({ domainIndex: 0, myTreeData: tree, domainList, goalList, currentGoalIndex: 0, collapseOne: true })
     }
 
     loadUrl = (type) => {
@@ -79,10 +143,9 @@ class TrainingModel extends Component {
         if (this.state.openEditPopup === true) {
             domainList[this.state.domainIndex].domainName = this.state.domainName
             domainList[this.state.domainIndex].domainURL = this.state.URL
-            // this.state.treeData.name = this.state.domainName
             this.setState({
                 domainName: "", domainList, openPopup: false, goalDomainIndex: 0, openEditPopup: false,
-                projectName: this.state.domainName, startUrl: this.state.URL, collapseOne: true
+                projectName: this.state.domainName, startUrl: this.state.URL, collapseOne: true, startUrlType: "domain"
             })
 
         } else {
@@ -94,9 +157,8 @@ class TrainingModel extends Component {
                 this.extractSitemap(this.state.URL, domainList)
                 this.setState({
                     domainName: "", domainList, openPopup: false, goalDomainIndex: 0, openEditPopup: false, collapseOne: true, pageName: this.state.domainName,
-                    projectName: this.state.domainName, startUrl: this.state.URL, domainIndex: 0, mainSelector: "", minorGoal: ""
+                    projectName: this.state.domainName, startUrl: this.state.URL, domainIndex: 0, mainSelector: "", minorGoal: "", startUrlType: "domain"
                 })
-                // this.props.updateUrlElement(domainList)
 
             } else {
                 toast.error("Domain already exist ", {
@@ -104,7 +166,6 @@ class TrainingModel extends Component {
                 });
             }
         }
-        // this.props.loadUrl({ url: this.state.startUrl, domainName: this.state.projectName })
     }
 
     onToggle = (node, toggled) => {
@@ -112,13 +173,13 @@ class TrainingModel extends Component {
         if (cursor) {
             this.setState(() => ({ cursor, active: false }));
         }
-        node.active = true;
+        node.active = false;
         if (node.children) {
             node.toggled = toggled;
         }
         const newData = myTreeData;
         newData[domainIndex] = Object.assign({}, newData[domainIndex]);
-        this.setState({ goalExpand: false, URL: node.url, startUrl: node.url, pageName: node.name }, () => ({ cursor: node, myTreeData: newData }));
+        this.setState({ goalExpand: false, URL: node.url, startUrl: node.url, pageName: node.name, startUrlType: "domain" }, () => ({ cursor: node, myTreeData: newData }));
     }
 
     handleChange = (event) => {
@@ -197,51 +258,6 @@ class TrainingModel extends Component {
             pageName: obj.name
         })
     }
-    componentWillReceiveProps(nextProps) {
-
-        if (!_.isEmpty(nextProps.currentDomain) && nextProps.currentDomain) {
-
-            let currentDomain = nextProps.currentDomain
-            if (currentDomain.type === "edit") {
-                this.setState({ URL: currentDomain.domainURL, domainIndex: currentDomain.index, domainName: currentDomain.domainName, openPopup: true, openEditPopup: true })
-                // this.props.revertTrainingReducer()
-            } else {
-                this.bindRepository(currentDomain)
-                this.setState({ projectName: currentDomain.domainName, startUrl: currentDomain.domainURL })
-                // this.props.revertTrainingReducer()
-            }
-        }
-
-        if (!_.isEmpty(nextProps.removedDomain) && nextProps.removedDomain) {
-            let removedDomain = nextProps.removedDomain
-            let { projectName, startUrl } = this.state
-            if (projectName === removedDomain.domainName && startUrl === removedDomain.domainURL) {
-                this.setState({ projectName: "", pageName: "", startUrl: "", treeData: {}, myTreeData: [] })
-            }
-            // this.props.revertTrainingReducer()
-        }
-        this.setState({
-            domainList: nextProps.domainList,
-        })
-
-
-    }
-
-
-
-    // createProject=(array)=>{
-    //   console.log("create project ",array)
-    //   // this.setState({URL:array[array.length-1].domainURL})
-    //   this.extractSitemap(array[0].domainURL)
-
-    //    this.repository=array
-    // }
-    customFunc = (e) => {
-        let startUrl = e.url ? e.url : e.name
-        let pageName = e.name
-        this.setState({ startUrl, pageName })
-
-    }
 
     extractSitemap = (domain, domainList) => {
         var formData = new FormData();
@@ -273,37 +289,6 @@ class TrainingModel extends Component {
         })
     }
     getSiteMaps = (myTreeData, domain) => {
-        // var formData = new FormData();
-        // formData.append("domain", domain)
-        //   get_sites.getSiteMaps(formData).then(response=>{
-        //     response=response.payload.data
-        //     if(response.status===200){
-        //       domainList[0].extractedPage=[response.data]
-        //        this.setState({myTreeData:response.data.children,treeData:response.data,pageName:response.data.name,domainList},()=>{
-        //        })
-        //       //  let domainList=this.state.domainList
-        //       //  let findIndex=_.findIndex(domainList,{domainURL:response.data.name})
-        //       //  if(findIndex>=0){
-        //       //   console.log(domainList[findIndex]&&response.data.children)
-        //       //   domainList[findIndex].pages=response.data.children
-        //       //   this.bindRepository(domainList[findIndex])
-        //       //   this.setState({domainList})
-        //       //  }
-
-        //     }else{
-        //       toast.error(response.message , {
-        //         position: toast.POSITION.TOP_RIGHT
-        //     }); 
-        //     }
-
-        //    }).catch(e=>{
-        //     toast.error("Api Error Response From /get_sites", {
-        //       position: toast.POSITION.TOP_RIGHT
-        //   }); 
-        //    })
-
-        // 192.168.1.245:5000/get_sites
-
         let domainList = this.state.domainList
         let findIndex = _.findIndex(domainList, { domainURL: domain })
         if (findIndex >= 0) {
@@ -311,13 +296,6 @@ class TrainingModel extends Component {
             this.bindRepository(domainList[findIndex])
             this.setState({ domainList })
         }
-    }
-
-    toggleRightMenu = () => {
-        this.setState({
-            showRightMenu: !this.state.showRightMenu
-        });
-        // this.props.toggleRightMenu(this.state.showRightMenu);
     }
 
     getDomainPopup = () => {
@@ -357,63 +335,6 @@ class TrainingModel extends Component {
         )
     }
 
-    getSelectorPopup = () => {
-        return (
-            <div id="modalForm" className="modal-block modal-block-primary mfp-hide">
-                <section className="card">
-                    <header className="card-header">
-                        <h2 className="card-title "> {this.state.pageName} Selector</h2>
-                    </header>
-                    <div className="card-body">
-                        <form className="col-12">
-                            <div className="form-row">
-                                <label className="text-dark col-sm-2 col-form-label h5" >Major Seletor</label>
-                                <input type="text" className="form-control col-sm-8" placeholder="Main Seletor"
-                                    name="mainSelector" onChange={e => this.handleChange(e)} value={this.state.mainSelector} />
-                            </div>
-                        </form>
-                        <br></br>
-                        <form className="col-12">
-                            <div className="form-row">
-                                <label className="text-dark col-sm-2 col-form-label h5" >minor Goal</label>
-                                <input type="text" className="form-control col-sm-8" placeholder="minor Goal"
-                                    name="minorGoal" onChange={e => this.handleChange(e)} value={this.state.minorGoal} />
-                            </div>
-                        </form>
-
-                    </div>
-                    <footer className="card-footer">
-                        <div className="row">
-                            <div className="col-md-12 text-right">
-                                <button className="btn btn-primary modal-confirm mr-4" onClick={e => { this.loadUrl() }}>{this.state.openEditPopup === true ? "Update" : "Create"}</button>
-                                <button className="btn btn-default modal-dismiss" onClick={e => { this.setState({ openPopup: false, domainName: this.state.projectName }) }}>Cancel</button>
-                            </div>
-                        </div>
-                    </footer>
-                </section>
-            </div>
-        )
-    }
-    handleChanges = (event) => {
-        let self = this
-        let array = event.target.files
-        if (array.length > 0) {
-            var reader = new FileReader();
-            reader.onload = function () {
-                self.setState({
-                    file: array[0],
-                    pdfDataForm: array[0],
-                    pdfBlob: reader.result
-                })
-            }
-
-            if (reader) {
-                reader.readAsDataURL(event.target.files[0]);
-            }
-
-        }
-
-    }
     createGoal = () => {
         let { goalDomainIndex, domainList } = { ...this.state }
         domainList.forEach(element => {
@@ -429,24 +350,18 @@ class TrainingModel extends Component {
             });
 
         } else {
-            // if(domainUrls.length>0){
             if (!_.find(goalList, { goalName: this.state.goalName })) {
                 let tempObj = {
                     goalName: this.state.goalName,
                     goalDomains: domainList[goalDomainIndex],
                     treeData: domainList[goalDomainIndex].pages,
-                    // goalData,Field:this.state.pdfBlob,
-                    // goalDataBlob:this.state.file,
-                    // domainUrls:domainUrls,
-                    // minerSelector:{selectorName:this.state.selectorName,cssSelector:this.state.cssSelector},
                     expand: true
                 }
-
                 goalList.unshift(tempObj)
                 this.setState({
                     currentGoalIndex: 0, goalList, modeUrl: "", mode_name: "", cssSelector: "",
                     goalName: "", goalDomainName: "", goalDomainIndex: 0, pageList: [],
-                    showPopup: false, domainUrls: [], pdfBlob: "", openPopup: false, createDomainPopup: false
+                    showPopup: false, domainUrls: [], pdfBlob: "", openPopup: false, createDomainPopup: false, startUrl: domainList[goalDomainIndex].domainURL, startUrlType: "goal", pageName: "",
                 })
 
             } else {
@@ -457,16 +372,6 @@ class TrainingModel extends Component {
 
 
         }
-
-        // console.log(goalList,temcurrentGoalIndexpObj,_.find(goalList,tempObj))
-        // if(!_.find(goalList,tempObj)){
-        // console.log(goalList)
-
-        // }else{
-        //   toast.error( "Model already exist with this URL", {
-        //     position: toast.POSITION.TOP_RIGHT
-        // });   
-        // }
     }
 
     savePage = (selectpageIndex) => {
@@ -481,7 +386,6 @@ class TrainingModel extends Component {
                 selectors: selectors,
                 actions: actions
             }
-            //   goalList[goalIndex].expand=true
             if (goalList[currentGoalIndex].selectedPages) {
                 let findIndex = _.findIndex(goalList[currentGoalIndex].selectedPages, { startUrl: startUrl, pageName: pageName })
                 if (findIndex >= 0) {
@@ -527,145 +431,24 @@ class TrainingModel extends Component {
             } else if (type === "page") {
                 domainList[index].pages[pageIndex].expand = !domainList[index].pages[pageIndex].expand
             }
-            this.setState({ domainList, goalExpand: false })
+            this.setState({ domainList, goalExpand: false, domainIndex: index })
 
         }
 
     }
-
-    startTraining = (goal, type) => {
-
-        let { pdfDataForm, errorType, iErrorSelector, iSuccessSelector } = { ...this.state }
-        if (goal && goal.selectedPages && goal.selectedPages.length > 0) {
-            var formData = new FormData();
-            formData.append("goal_name", goal.goalName)
-            formData.append("errorType", errorType)
-            formData.append("errorSelector", iErrorSelector)
-            formData.append("successSelector", iSuccessSelector)
-            formData.append("pageDetail", JSON.stringify(goal.selectedPages))
-            formData.append("start_url", goal.selectedPages[0].startUrl)
-            formData.append("next", "next")
-            formData.append("main_selector", goal.selectedPages[0].mainSelector)
-            formData.append("input_data", pdfDataForm)
-            formData.append("mode", type)
-        }
-        //   Ml_action.startTraining(formData).then(response=>{
-        //   console.log(response)
-        //   if(parseInt(response.data.status)===200){
-
-        //     toast.success( response.data.message, {
-        //         position: toast.POSITION.TOP_RIGHT
-        //     });
-        //     let goalIndex=_.findIndex(this.state.goalList,{goalName:goal.goalName}) 
-        //     console.log(goalIndex)
-        //     if(goalIndex>=0){
-
-        //        goalList[goalIndex].showStatusButton=true
-        //       goalList[goalIndex].pdfBlob=pdfBlob 
-        //       goalList[goalIndex].pdfDataForm=pdfDataForm 
-        //       goalList[goalIndex].errorType= errorType 
-        //       goalList[goalIndex].iErrorSelector= iErrorSelector 
-        //       goalList[goalIndex].iSuccessSelector= iSuccessSelector 
-
-        //       console.log(goalList)
-        //       this.setState({goalList,trainingStated:true,trainGoalPopup:false})
-        //       this.trainingIntervel(goalList,goalIndex)
-
-        //     }
-        //   }else{
-        //     toast.success( "something went wrong in API code :"+response.data.status, {
-        //         position: toast.POSITION.TOP_RIGHT
-        //     }); 
-        //   }
-
-        //   }).catch(e=>{
-        //     console.log(e)
-        //     toast.error( "Error in /train_data API ", {
-        //         position: toast.POSITION.TOP_RIGHT
-        //     }); 
-        //   })
-
-        //   }else{
-        //     toast.error( "Please save page to train ", {
-        //       position: toast.POSITION.TOP_RIGHT
-        //   }); 
-        //   }
-
-    }
-    trainingIntervel = (goalList, goalIndex) => {
-
-        // let self = this
-        // let gts = setInterval(() => {
-        // let color = 'yellow'
-        // Ml_action.getTrainingStatus().then(response=>{
-        //     if(response.payload.status===200){
-        //       let data=response.payload.data
-        //      let logs=data.data.log.split("\n")
-        //        if(parseInt(data.status)!=200){
-        //        if(parseInt(data.status)===201){
-        //          toast.success("Training has been completed",{
-        //           position: toast.POSITION.TOP_RIGHT
-        //          }); 
-        //         goalList[goalIndex].showInferenceBtn=true
-        //         var trainingStatus = document.getElementById('trainingStatus');
-        //          trainingStatus.scrollBy(0, trainingStatus.scrollHeight)
-        //         this.setState({goalList})
-        //        }else if(parseInt(data.status)===202){
-        //         toast.error("Training has been"+data.data.training_status,{
-        //         position: toast.POSITION.TOP_RIGHT
-        //        }); 
-        //        } 
-        //          clearInterval(gts)
-        //        }
-        //      self.setState({logs,training_status:data.data.training_status,status:parseInt(data.status)})
-        //   } 
-        // })
-
-        // }, 1000);
-    }
-
     selectGoal = (model, goalIndex) => {
         let goalList = this.state.goalList
         let findIndex = _.findIndex(goalList, model)
 
         goalList.forEach((element, index) => {
-
             if (findIndex === index) {
                 goalList[index].expand = !goalList[index].expand
             } else {
                 goalList[index].expand = false
             }
-
         });
         this.setState({ goalList, currentGoalIndex: findIndex })
 
-    }
-    pageAction = (type) => {
-        let domainList = this.state.domainList
-        if (type === "update") {
-            domainList[this.state.domainIndex].pages[this.state.pageIndex].pageName = this.state.tempPageName
-            domainList[this.state.domainIndex].pages[this.state.pageIndex].startUrl = this.state.tempPageUrl
-            domainList[this.state.domainIndex].pages[this.state.pageIndex].mainSelector = this.state.tempMainSelector
-            domainList[this.state.domainIndex].pages[this.state.pageIndex].minorGoal = this.state.tempMinorGoal
-
-            this.setState({ pageName: this.state.tempPageName, startUrl: this.state.tempPageUrl, minorGoal: this.state.tempMinorGoal, mainSelector: this.state.tempMainSelector })
-        } else if (type === "delete") {
-            domainList[this.state.domainIndex].pages.splice(this.state.pageIndex, 1)
-        }
-        this.setState({ domainList, openPage: false })
-    }
-    frameClick = () => {
-    }
-    loadDomain = (domainObj, index) => {
-        let pageIndex = _.findIndex(domainObj.pages, { startUrl: domainObj.domainURL })
-        let mainSelector = ""
-        let minorGoal = ""
-        if (pageIndex >= 0 && domainObj.pages[pageIndex]) {
-            mainSelector = domainObj.pages[pageIndex].mainSelector
-            minorGoal = domainObj.pages[pageIndex].minorGoal
-        }
-        this.setState({ mainSelector: mainSelector, minorGoal: minorGoal, startUrl: domainObj.domainURL, projectName: domainObj.domainName, URL: domainObj.domainURL, domainIndex: index })
-        // this.extractSitemap(domainObj.domainURL)
     }
 
     onToggleGoalPage = (node, toggled) => {
@@ -673,7 +456,7 @@ class TrainingModel extends Component {
         if (gcursor) {
             this.setState(() => ({ gcursor, active: false }));
         }
-        node.active = true;
+        node.active = false;
         if (node.children) {
             node.toggled = toggled;
         }
@@ -698,46 +481,98 @@ class TrainingModel extends Component {
             mainSelector, minorGoal,
             goalExpand: true,
             URL: node.url,
-            startUrl: node.url, pageName: node.name
+            startUrl: node.url, pageName: node.name,
+            startUrlType: "goal"
         },
 
             () => ({ gcursor: node, goalList: newGoalData }));
     }
 
     deletePage = (page, goalIndex, pageIndex) => {
-        const { goalList } = this.state;
-        goalList[goalIndex].selectedPages.splice(pageIndex, 1)
-        this.setState({ goalList })
-    }
-    deleteGaol = (goal, index) => {
-        let { goalList } = { ...this.state }
-        if (window.confirm("Are you sure do you want delete it ?")) {
-            goalList.splice(index, 1)
-            this.setState({ goalList })
-        }
 
+        confirmAlert({
+            message: `Are you sure you want to the page '${page.pageName}' ?`,
+            buttons: [
+                {
+                    label: 'Yes',
+                    onClick: () => {
+                        const { goalList } = this.state;
+                        goalList[goalIndex].selectedPages.splice(pageIndex, 1)
+                        this.setState({ goalList })
+                    }
+                },
+                {
+                    label: 'No',
+                }
+            ]
+        });
+
+    }
+    deleteGoal = (goal, index) => {
+        let { goalList, currentGoalIndex, startUrlType } = { ...this.state }
+        confirmAlert({
+            message: `Are you sure you want to delete the goal '${goal.goalName}' ?`,
+            buttons: [
+                {
+                    label: 'Yes',
+                    onClick: () => {
+                        goalList.splice(index, 1)
+                        if (index === currentGoalIndex && startUrlType === "goal") {
+                            this.setState({ startUrl: "", startUrlType: "", pageName: "", currentGoalIndex: 0 })
+                        }
+                        this.setState({ goalList })
+                    }
+                },
+                {
+                    label: 'No',
+                }
+            ]
+        });
     }
     deleteDomain = (obj, index) => {
-        let { domainList, myTreeData,
-            URL
-        } = { ...this.state }
-        if (window.confirm("Are you sure do you want delete it ?")) {
-            domainList.splice(index, 1)
-            myTreeData.splice(index, 1)
-            if (URL === obj.domainURL) {
-                this.setState({
-                    URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false,
-                    projectName: "", startUrl: "", domainIndex: 0, mainSelector: "", minorGoal: "", iErrorSelector: "", iSuccessSelector: ""
-                })
+        let { domainList, myTreeData, startUrlType, domainIndex, goalList, currentGoalIndex } = { ...this.state }
+        confirmAlert({
+            message: `Are you sure you want to delete the domain '${domainList[index].domainName}' ? This action will also remove the goals under this domain.`,
+            buttons: [
+                {
+                    label: 'Yes',
+                    onClick: () => {
+                        let list = _.cloneDeep(goalList)
+                        let removed = _.remove(goalList, { goalDomains: { domainName: domainList[index].domainName } })
+                        let goalindexes = []
+                        removed.forEach((ele) => {
+                            let temp = _.findIndex(list, { goalName: ele.goalName })
+                            if (temp !== -1) {
+                                goalindexes.push(temp)
+                            }
+                        })
+                        domainList.splice(index, 1)
+                        myTreeData.splice(index, 1)
+                        if (index === domainIndex && startUrlType === "domain") {
+                            this.setState({
+                                URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false, goalList,
+                                projectName: "", startUrl: "", startUrlType: "", pageName: "", domainIndex: 0, mainSelector: "", minorGoal: "", iErrorSelector: "", iSuccessSelector: ""
+                            })
+                        }
+                        else if (currentGoalIndex in goalindexes && startUrlType === "goal") {
+                            this.setState({ startUrl: "", startUrlType: "", pageName: "", domainList, goalList, currentGoalIndex: 0 })
 
-            }
-            this.setState({ domainList })
-        }
+                        }
+                        else {
+                            this.setState({ domainList, goalList })
+                        }
+                    }
+                },
+                {
+                    label: 'No',
+                }
+            ]
+        });
 
     }
 
     trainData = (data) => {
-        let loggeduser = JSON.parse(sessionStorage.getItem('loggeduser') || '{}')
+        let loggeduser = this.state.loggeduser
         let selector = []
         if (data.selectedPages && data.selectedPages.length > 0) {
             data.selectedPages.forEach((ele) => {
@@ -746,6 +581,8 @@ class TrainingModel extends Component {
                     selectors: ele.selectors,
                     terminalState: ele.terminalState,
                     url: ele.startUrl,
+                    pageName: ele.pageName,
+                    goal: data.goalName,
                 }
                 selector.push(tempobj)
             })
@@ -753,7 +590,6 @@ class TrainingModel extends Component {
                 projectName: data.goalDomains.domainName,
                 data: selector,
                 username: loggeduser['username'],
-
             }
             console.log(jsonData)
             axios.post(baseUrl + '/train', jsonData).then(res => {
@@ -790,13 +626,17 @@ class TrainingModel extends Component {
     }
 
     render() {
-        const { goalExpand, goalList, currentGoalIndex, startUrl, pageName } = { ...this.state }
-        let selectpageIndex = startUrl && pageName && _.findIndex(goalList[currentGoalIndex]?.selectedPages, { startUrl: startUrl, pageName: pageName })
+        const { goalExpand, showLoader, goalList, currentGoalIndex, startUrl, pageName } = { ...this.state }
+        let selectpageIndex = (_.findIndex(goalList[currentGoalIndex]?.selectedPages, { startUrl: startUrl, pageName: pageName }))
         return (
             <div className="container-fluid">
                 <Helmet>
                     <title>Project</title>
                 </Helmet>
+                { showLoader &&
+                    <div class="loading">
+                        <Loader className="spinner" type="Oval" color="#00BFFF" height={100} width={100} />
+                    </div>}
                 <Popup className="custom-modal"
                     open={this.state.openPopup}
                     closeOnDocumentClick={false}
@@ -848,125 +688,10 @@ class TrainingModel extends Component {
                         </section>
                     </div>
                 </Popup>
-                <Popup className="custom-modal"
-                    open={this.state.showFile}
-                    closeOnDocumentClick={false}
-                    onClose={e => this.setState({ showFile: false })}
-                >
-                    <div id="modalForm" className="modal-block modal-block-primary mfp-hide">
-                        <section className="card">
-                            <header className="card-header">
-                                <h2 className="card-title ">Goal File </h2>
-                                <b className="close text-right text" onClick={e => { this.setState({ showFile: false }) }}>
-                                    &times;
-                          </b>
-                            </header>
-                            <div className="card-body">
-
-                                {this.state.pdfBlob !== "" ?
-                                    <iframe className="col-12 mt-2" src={this.state.pdfBlob} title="pdfBlob2" alt={this.state.pdfBlob} />
-                                    : null}
-
-                            </div>
-
-                        </section>
-                    </div>
-                </Popup>
-                <Popup className="custom-modal"
-                    open={this.state.showTrainingStatus}
-                    onClose={e => this.setState({ showTrainingStatus: false })}
-                >
-                    <div id="modalForm" className="modal-block modal-block-primary mfp-hide">
-                        <section className="card">
-                            <header className="card-header">
-                                <h2 className="card-title ">Training Status</h2>
-                                <b className="close text-right text" onClick={e => { this.setState({ showTrainingStatus: false }) }}>
-                                    &times;
-                          </b>
-                            </header>
-                            <div className="card-body" id="trainingStatus">
-
-                                {this.state.logs.map((goal, index) =>
-                                    <span >{goal}<br /></span>
-                                )}
-                            </div>
-                            <footer className="card-footer">
-                                <div className="row">
-                                    <h3 className="card-title ">Status: </h3> <b className={this.state.status === 200 ? "text-warning" : this.state.status === 201 ? "text-success" : "text-danger"}>{this.state.training_status}</b>
-                                    {/* <div className="col-md-12 text-right">
-                        <button className="btn btn-primary modal-confirm mr-4"  onClick={e=>{this.loadUrl()}}>{this.state.openEditPopup===true?"Update":"Create"}</button>
-                        <button className="btn btn-default modal-dismiss" onClick={e=>{this.setState({openPopup:false,domainName:this.state.projectName})}}>Cancel</button>
-                      </div> */}
-                                </div>
-                            </footer>
-                        </section>
-                    </div>
-                </Popup>
-                <Popup className="custom-modal"
-                    open={this.state.openPage}
-                    closeOnDocumentClick={false}
-                    onClose={e => this.setState({ openPage: false })}
-                >
-                    <div id="modalForm" className="modal-block modal-block-primary mfp-hide">
-                        <section className="card">
-                            <header className="card-header">
-                                <h2 className="card-title ">Page Details</h2>
-
-                                <b className="close text-right text" onClick={e => { this.setState({ openPage: false }) }}>
-                                    &times;
-                          </b>
-                            </header>
-                            <div className="card-body">
-
-                                <form className="col-12">
-                                    <div className="form-row">
-                                        <label className="text-dark col-sm-2 col-form-label h5" > Page Name</label>
-                                        <input type="text" className="form-control col-sm-8" placeholder="Enter Domain Name"
-                                            name="tempPageName" onChange={e => this.handleChange(e)} value={this.state.tempPageName} />
-                                    </div>
-                                </form><br></br>
-                                <form className="col-12">
-                                    <div className="form-row">
-                                        <label className="text-dark col-sm-2 col-form-label h5" >Page URL</label>
-                                        <input type="text" className="form-control col-sm-8" placeholder="Enter Domain URL"
-                                            name="tempPageUrl" onChange={e => this.handleChange(e)} value={this.state.tempPageUrl} />
-                                    </div>
-                                </form>
-                                <br></br>
-                                <form className="col-12">
-                                    <div className="form-row">
-                                        <label className="text-dark col-sm-2 col-form-label h5" >Major Seletor</label>
-                                        <input type="text" className="form-control col-sm-8" placeholder="Major Seletor"
-                                            name="tempMainSelector" onChange={e => this.handleChange(e)} value={this.state.tempMainSelector} />
-                                    </div>
-                                </form>
-                                <br></br>
-                                <form className="col-12">
-                                    <div className="form-row">
-                                        <label className="text-dark col-sm-2 col-form-label h5" >Minor Goal</label>
-                                        <input type="text" className="form-control col-sm-8" placeholder="minor Goal"
-                                            name="tempMinorGoal" onChange={e => this.handleChange(e)} value={this.state.tempMinorGoal} />
-                                    </div>
-                                </form>
-                            </div>
-                            <footer className="card-footer">
-                                <div className="row">
-                                    <div className="col-md-12 text-right">
-                                        <button className="btn btn-success mr-3" onClick={e => { this.pageAction("update") }}>Update Page</button>
-                                        <button className="btn btn-danger mr-3" onClick={e => { this.pageAction("delete") }}>Delete Page</button>
-                                    </div>
-                                </div>
-                            </footer>
-
-
-                        </section>
-                    </div>
-                </Popup>
                 <div >
                 </div>
                 <section className="content-with-menu content-with-menu-has-toolbar">
                     <div className="content-with-menu-container">
-
                         <menu id="content-menu" className={"inner-menu " + (this.props.showMenu ? '' : '')} role="menu">
                             <div className={"nano has-scrollbar "}>
                                 <div className="nano-content navi-list" tabIndex="0">
@@ -989,8 +714,8 @@ class TrainingModel extends Component {
                                                         onClick={e => { this.expand("domain", index, object) }} ></i>
                                                     <label className="c-pointer ml-1 align-label d-inline-flex"
                                                     >
-                                                        <span className="text-truncate w-207 d-block"
-                                                            onClick={e => { this.loadDomain(object, index); e.stopPropagation() }}>{object.domainName}</span>
+                                                        <span className={"text-truncate w-207 d-block " + (this.state.domainIndex === index ? "selected-repo" : "")}
+                                                            onClick={e => { this.expand("domain", index, object) }}>{object.domainName}</span>
                                                         <span className="btn btn-danger btn-xs d-inline ml-1 mr-1 " onClick={() => { this.deleteDomain(object, index) }}>  <i className="fas fa-trash-alt text-default "></i></span>
                                                     </label>
                                                 </li>
@@ -1018,30 +743,15 @@ class TrainingModel extends Component {
                                                         <li className="list-none position-relative">
 
                                                             <i className={"far align-i " + (goal.expand === true ? 'fa-minus-square' : 'fa-plus-square')} onClick={e => { this.selectGoal(goal, index) }}></i>
-                                                            <label className="c-pointer ml-1 align-label d-inline-flex" onClick={e => { this.setState({ goalIndex: index, openGoal: true }) }} > {goal.goalName}
+                                                            <label className={"c-pointer ml-1 align-label d-inline-flex " + (this.state.currentGoalIndex === index ? "selected-repo" : "")} onClick={e => { this.setState({ goalIndex: index, openGoal: true }, () => { this.selectGoal(goal, index) }) }} > {goal.goalName}
                                                             </label>
                                                             <button className="btn btn-success btn-xs d-inline ml-1" onClick={() => { this.setState({ currentGoal: goal }); this.trainData(goal) }}> Train</button>
-                                                            {goal.showStatusButton ?
-                                                                <button data-toggle="tooltip" title="Run Inference" className="btn btn-warning btn-xs d-inline "
-                                                                    onClick={() => { this.setState({ showTrainingStatus: true }) }}><i className={goal.showInferenceBtn ? "fas fa-cog" : "fas fa-cog fa-spin"}></i> </button>
-                                                                : null}
-                                                            {goal.showInferenceBtn ?
-                                                                <button data-toggle="tooltip" title="Run Inference" className="btn btn-info btn-xs d-inline ml-1 " onClick={() => { this.startTraining(goal, 'i') }}><i className="far fa-eye"></i> </button>
-                                                                : null}
-                                                            {goal.pdfBlob ?
-                                                                <button data-toggle="tooltip" title="Open File" className="btn btn-info btn-xs d-inline ml-1" onClick={() => { this.setState({ showFile: true, pdfFile: goal.pdfBlob }) }}><i className="fas fa-file-alt "></i> </button>
-                                                                : null}
-
-                                                            <button className="ml-1 btn btn-danger btn-xs d-inline mr-1 " onClick={() => { this.deleteGaol(goal, index) }}>  <i className="fas fa-trash-alt text-default "></i></button>
-
-
+                                                            <button className="ml-1 btn btn-danger btn-xs d-inline mr-1 " onClick={() => { this.deleteGoal(goal, index) }}>  <i className="fas fa-trash-alt text-default "></i></button>
                                                         </li>
                                                         {goal.expand === true ?
                                                             <div>
-
                                                                 <span className="pt-1 pb-1 mt-1 text-center">
                                                                     {goal.selectedPages && goal.selectedPages.map((page, pageIndex) =>
-
                                                                         <form classname="position-relative tm-form c-pointer   w-100">
                                                                             <div class="btn-group mt-1 w-80" role="group" aria-label="Basic example">
                                                                                 <button type="button" class="btn btn-default w-80 overflow-hidden" onClick={e => {
@@ -1050,14 +760,15 @@ class TrainingModel extends Component {
                                                                                         minorGoal: page.minorGoal,
                                                                                         iErrorSelector: page.iErrorSelector,
                                                                                         iSuccessSelector: page.iSuccessSelector,
-                                                                                        startUrl: page.startUrl, pageName: page.pageName
+                                                                                        startUrl: page.startUrl, pageName: page.pageName,
+                                                                                        startUrlType: "goal",
+                                                                                        goalExpand: true
                                                                                     })
                                                                                 }}><span className="text-wrap">{page.pageName}</span></button>
                                                                                 <button type="button" class="btn btn-secondary" onClick={e => { this.deletePage(page, index, pageIndex) }}><i class="fas fa-trash fas-lg"></i></button>
                                                                             </div>
                                                                         </form>
                                                                     )}
-
                                                                 </span>
                                                                 <div className="mt-2">
                                                                     <Treebeard
@@ -1068,18 +779,11 @@ class TrainingModel extends Component {
                                                                         onToggle={this.onToggleGoalPage} />
                                                                 </div>
                                                             </div> : null}
-
-
                                                     </ul>
-
-
                                                 )}
-
                                             </nav>}
                                         </nav> : null}
-
                                 </div>
-
                                 <div className="nano-pane" style={{ 'opacity': '1', 'visibility': 'visible', 'display': 'none' }}><div className="nano-slider" style={{ height: '200px', 'transform': 'translate(0px, 0px)' }}></div></div></div>
                         </menu>
 
@@ -1112,23 +816,19 @@ class TrainingModel extends Component {
 
                                                                 </h4>
                                                             </div>
-
                                                             <div id="collapseOne" className={"card-body collapse" + (this.state.collapseOne ? 'show' : "")} aria-labelledby="headingOne" data-parent="#accordionExample">
                                                                 <div className="row">
                                                                     <div className="col-12 text-center">
-
-
                                                                         {this.state.startUrl !== "" ?
                                                                             <div className="form-row">
-
-                                                                                {goalExpand ?
+                                                                                {goalExpand && this.state.startUrlType === "goal" ?
                                                                                     <div className="col-md-12">
                                                                                         <span className='col-md-12 h5'> Please Add Page Properties</span>
                                                                                         <div className="row row">
                                                                                             <div className="col-md-6 row p-0">
                                                                                                 <div className="col-6">
                                                                                                     {
-                                                                                                        selectpageIndex > -1 ?
+                                                                                                        (selectpageIndex && selectpageIndex) > -1 ?
                                                                                                             goalList[currentGoalIndex].selectedPages[selectpageIndex].selectors.map((ele, n) =>
                                                                                                                 <div className="mt-2">
                                                                                                                     <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector"
@@ -1151,7 +851,7 @@ class TrainingModel extends Component {
                                                                                                 </div>
                                                                                                 <div className="col-6">
                                                                                                     {
-                                                                                                        selectpageIndex > -1 ?
+                                                                                                        (selectpageIndex && selectpageIndex) > -1 ?
                                                                                                             goalList[currentGoalIndex].selectedPages[selectpageIndex].actions.map((ele, n) =>
                                                                                                                 <div className="mt-2">
                                                                                                                     <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action"
@@ -1193,33 +893,26 @@ class TrainingModel extends Component {
                                                                             </div>
 
                                                                             : null}
-
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-
-
                                                     </section>
                                                     <div className="col-12">
                                                         <section className="card">
                                                         </section>
                                                     </div>
-
                                                 </div>
-
                                             </div>
-
                                         </section>
-
-                                    }  </div>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
                 <ToastContainer />
             </div>
-
         );
     }
 }
