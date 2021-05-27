@@ -18321,13 +18321,6 @@ section.dark .notification-menu .title {
 			  font-size: 18px;
 		  }
 
-
-		  .sublist{
-			.align-i{
-           
-			}
-		  }
-
 		ul{
 			list-style: none;
 			padding-left: 5px;
@@ -18355,4 +18348,47 @@ section.dark .notification-menu .title {
 
 .w-80{
 	width : 80% !important
+}
+.selected-repo{
+	background: white;
+	color: black ;
+}
+
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #6961614a;
+}
+
+
+.spinner {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -20px;
+	margin-left: -25px;
+	width: 50px;
+	height: 40px;
+	text-align: center;
+	font-size: 10px;
+  }
+
+  .react-confirm-alert-button-group{
+justify-content: center !important;
+  }
+
+  .react-confirm-alert-body{
+	  text-align: center !important;
+  }
+
+  .react-confirm-alert-button-group  :first-child {
+	  background-color: green;
+  }
+
+  
+  .react-confirm-alert-button-group  :nth-child(2) {
+	background-color: red;
 }
