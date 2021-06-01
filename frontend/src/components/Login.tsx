@@ -70,7 +70,7 @@ const Login = () => {
       <div className="login-navbar-container">
         <div className="login-navbar-content">
           <p>Need an Account ?</p>
-          <button className="login-navbar-content-button" onClick={() => history.push("/sign-up")}>Signup</button>
+          <button className="login-navbar-content-button" name="signup" id="signup" onClick={() => history.push("/sign-up")}>Signup</button>
         </div>
       </div>
       <div className="login-container">
@@ -81,6 +81,7 @@ const Login = () => {
           <input
             type="text"
             name='name'
+            id='name'
             autoComplete='on'
             onChange={(e) => setName(e.target.value)}
           />
@@ -91,12 +92,13 @@ const Login = () => {
           <input
             type="password"
             name='password'
+            id='password'
             autoComplete='off'
             onChange={(e) => setPassword(e.target.value)}
           />
           {error.password && <p className="Error-text"> {error.password}</p>}
         </div>
-        <button className="login-button" onClick={() => handleSubmit()}>
+        <button name="login" id="login" className="login-button" onClick={() => handleSubmit()}>
           LOGIN
       </button>
       </div>

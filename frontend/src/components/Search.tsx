@@ -173,7 +173,7 @@ const Search = () => {
                     <div className="task-management-header-right-items">
                         <div className="search-management-search">
                             <SearchIcon />
-                            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search" />
+                            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search" name="search" id="search"/>
                             <Select
                                 native
                                 value={select['field']}
@@ -183,6 +183,7 @@ const Search = () => {
                                     id: 'select',
                                 }}
                                 id="select"
+                                name ="select"
                                 className="search-text-select"
                                 placeholder="Select Field"
                             >
@@ -199,8 +200,8 @@ const Search = () => {
                                 <option value={'About'}>About</option>
                             </Select>
                         </div>
-                        <button className="search-button" onClick={() => onSearch()}>Search</button>
-                        <button className="search-button" onClick={() => onClear()}>Clear</button>
+                        <button className="search-button" name="Search" id="Search" onClick={() => onSearch()}>Search</button>
+                        <button className="search-button"  name="Clear" id="Clear" onClick={() => onClear()}>Clear</button>
                     </div>
                 </div>
                 <div className="task-management-body">

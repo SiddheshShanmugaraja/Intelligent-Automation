@@ -71,7 +71,7 @@ const Signup = () => {
       <div className="signup-navbar-container">
         <div className="signup-navbar-content">
           <p>Already have an account ?</p>
-          <button className="signup-navbar-content-button" onClick={() => history.push("/")}>Login</button>
+          <button className="signup-navbar-content-button" name="Login" id="Login" onClick={() => history.push("/")}>Login</button>
         </div>
       </div>
       <div className="signup-container">
@@ -81,6 +81,7 @@ const Signup = () => {
           <input
             type="text"
             name='name'
+            id='name'
             onChange={(e) => setName(e.target.value)}
           />
           {error.name && <p className="Error-text"> {error.name}</p>}
@@ -90,6 +91,7 @@ const Signup = () => {
           <input
             type="text"
             name='email'
+            id='email'
             onChange={(e) => setEmail(e.target.value)}
           />
           {error.email && <p className="Error-text"> {error.email}</p>}
@@ -100,6 +102,7 @@ const Signup = () => {
           <input
             type="password"
             name='password'
+            id='password'
             onChange={(e) => setPassword(e.target.value)}
           />
           {error.password && <p className="Error-text"> {error.password}</p>}
@@ -108,12 +111,13 @@ const Signup = () => {
           <p>Confirm Password</p>
           <input
             type="password"
-            name='password'
+            name='cnfpassword'
+            id='cnfpassword'
             onChange={(e) => setCnfPassword(e.target.value)}
           />
           {error.cnfpassword && <p className="Error-text"> {error.cnfpassword}</p>}
         </div>
-        <button className="signup-button" onClick={() => handleSubmit()} >
+        <button name="signup" id="signup" className="signup-button" onClick={() => handleSubmit()} >
           SignUp
           </button>
       </div>

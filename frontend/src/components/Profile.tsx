@@ -211,7 +211,8 @@ const Profile = () => {
                             className="profile-text-input"
                             value={username}
                             type="text"
-                            name='name'
+                            name='username'
+                            id='username'
                             disabled
                         />
 
@@ -223,6 +224,7 @@ const Profile = () => {
                             value={email}
                             type="text"
                             name='email'
+                            id='email'
                             disabled
                         />
                     </div>
@@ -232,7 +234,8 @@ const Profile = () => {
                             className={"profile-text-input " + (error.name ? "input-error" : "")}
                             value={name}
                             type="text"
-                            name='username'
+                            name='name'
+                            id= "name"
                             onChange={(e) => setName(e.target.value)}
                         />
                         {error.name && <p className="Error-text"> {error.name}</p>}
@@ -242,7 +245,8 @@ const Profile = () => {
                         <div className="profile-text-input">
                             <TextField
                                 value={dob}
-                                id="date"
+                                id="dob"
+                                name="dob"
                                 type="date"
                                 InputProps={{ disableUnderline: true }}
                                 style={{ width: '100%', color: "white" }}
@@ -258,31 +262,32 @@ const Profile = () => {
                             className={"profile-text-input " + (error.country ? "input-error" : "")} value={country}
                             type="text"
                             name='country'
+                            id='country'
                             onChange={(e) => setCountry(e.target.value)}
                         />
                         {error.country && <p className="Error-text"> {error.country}</p>}
                     </div>
                     <div className="profile-text">
                         <p>Gender</p>
-                        <RadioGroup row name="gender1" value={gender} onChange={(e) => setGender(e.target.value)}>
-                            <FormControlLabel value="female" control={<Radio />} label="Female" />
-                            <FormControlLabel value="male" control={<Radio />} label="Male" />
-                            <FormControlLabel value="other" control={<Radio />} label="Other" />
+                        <RadioGroup row name="gender" id="gender" value={gender} onChange={(e) => setGender(e.target.value)}>
+                            <FormControlLabel value="female" name="female" id="female"  control={<Radio />} label="Female" />
+                            <FormControlLabel value="male" name="male" id="male"  control={<Radio />} label="Male" />
+                            <FormControlLabel value="other" name="other" id="other"  control={<Radio />} label="Other" />
                         </RadioGroup>
                     </div>
                     <div className="profile-text">
                         <p>Devices</p>
-                        <FormGroup aria-label="position" row>
+                        <FormGroup aria-label="position" id="devices" row>
                             <FormControlLabel
-                                control={<Checkbox checked={check['Mobile']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} name="Mobile" />}
+                                control={<Checkbox name="Mobile" id="Mobile" checked={check['Mobile']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }}  />}
                                 label="Mobile"
                             />
                             <FormControlLabel
-                                control={<Checkbox checked={check['Computer']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} name="Computer" />}
+                                control={<Checkbox name="Computer" id="Computer" checked={check['Computer']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }}  />}
                                 label="Computer"
                             />
                             <FormControlLabel
-                                control={<Checkbox checked={check['Tablet']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} name="Tablet" />}
+                                control={<Checkbox name="Tablet" id="Tablet" checked={check['Tablet']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }}  />}
                                 label="Tablet"
                             />
                         </FormGroup>
@@ -294,6 +299,7 @@ const Profile = () => {
                             value={phone}
                             type="text"
                             name='phone'
+                            id='phone'
                             onChange={(e) => setPhone(e.target.value)}
                         />
                         {error.phone && <p className="Error-text"> {error.phone}</p>}
@@ -304,8 +310,7 @@ const Profile = () => {
                         <div className="container">
                             <div className="dropzone-outer">
                                 <div className="dropzone-inner"{...getRootProps({ style })}>
-                                    <input {...getInputProps()}
-                                    />
+                                    <input name="profilepicture" id="profilepicture" {...getInputProps()}/>
                                     <p>Drag 'n' drop, or click to select </p>
                                 </div>
                             </div>
@@ -325,6 +330,7 @@ const Profile = () => {
                             rows={10}
                             maxLength={500}
                             value={about}
+                            id="description"
                             onChange={(e) => setAbout(e.target.value)}
                         >
                         </textarea>
@@ -332,10 +338,10 @@ const Profile = () => {
 
                     </div>
                     {loading ?
-                        <button className="signup-button" disabled  >
+                        <button className="signup-button" name="update" id="update" disabled  >
                             <CircularProgress />
                         </button> :
-                        <button className="signup-button" onClick={() => handleSubmit()} >
+                        <button className="signup-button" name="update" id="update" onClick={() => handleSubmit()} >
                             Update
        </button>
                     }

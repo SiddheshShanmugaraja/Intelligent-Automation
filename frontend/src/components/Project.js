@@ -88,8 +88,6 @@ class TrainingModel extends Component {
             });
 
         })
-
-
     }
     initializeState = (data) => {
         let domainList = []
@@ -312,12 +310,12 @@ class TrainingModel extends Component {
                         <form>
                             <div className="form-group">
                                 <label htmlFor="inputProjectName">Project Name</label>
-                                <input type="text" className="form-control" placeholder="Enter Domain Name" name="domainName"
+                                <input type="text" className="form-control" placeholder="Enter Domain Name" name="domainName" id="domainName"
                                     onChange={e => this.handleChange(e)} value={this.state.domainName} />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="inputDomainURL">Domain / URL</label>
-                                <input type="text" className="form-control" placeholder="Enter Domain URL"
+                                <input type="text" className="form-control" placeholder="Enter Domain URL" id="URL"
                                     name="URL" onChange={e => this.handleChange(e)} value={this.state.URL} />
                             </div>
                         </form>
@@ -661,7 +659,7 @@ class TrainingModel extends Component {
                                 <form>
                                     <label htmlFor="inputProjectName">Goal Name</label>
                                     <div className="form-group">
-                                        <input type="text" className="form-control" placeholder=" Enter Goal Name"
+                                        <input type="text" className="form-control" placeholder=" Enter Goal Name" id="goalName"
                                             name="goalName" onChange={e => this.handleChange(e)} value={this.state.goalName} />
                                     </div>
                                 </form>
@@ -831,7 +829,7 @@ class TrainingModel extends Component {
                                                                                                         (selectpageIndex && selectpageIndex) > -1 ?
                                                                                                             goalList[currentGoalIndex].selectedPages[selectpageIndex].selectors.map((ele, n) =>
                                                                                                                 <div className="mt-2">
-                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector"
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector" id="mainSelector"
                                                                                                                         name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "selectors", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].selectors[n]} />
                                                                                                                     {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("selectors", selectpageIndex) }}>  <i className="fas fa-plus text-default "></i></span>
                                                                                                                         : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("selectors", n, selectpageIndex) }} >  <i className="fas fa-minus text-default "></i></span>}
@@ -840,7 +838,7 @@ class TrainingModel extends Component {
                                                                                                             ) :
                                                                                                             this.state.selectors && this.state.selectors.map((ele, n) =>
                                                                                                                 <div className="mt-2">
-                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector"
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Main  Selector" id="mainSelector"
                                                                                                                         name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "selectors")} value={this.state.selectors[n]} />
                                                                                                                     {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("selectors") }}>  <i className="fas fa-plus text-default "></i></span>
                                                                                                                         : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("selectors", n) }} >  <i className="fas fa-minus text-default "></i></span>}
@@ -854,7 +852,7 @@ class TrainingModel extends Component {
                                                                                                         (selectpageIndex && selectpageIndex) > -1 ?
                                                                                                             goalList[currentGoalIndex].selectedPages[selectpageIndex].actions.map((ele, n) =>
                                                                                                                 <div className="mt-2">
-                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action"
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action" id="mainSelector"
                                                                                                                         name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "actions", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].actions[n]} />
                                                                                                                     {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("actions", selectpageIndex) }}>  <i className="fas fa-plus text-default "></i></span>
                                                                                                                         : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("actions", n, selectpageIndex) }} >  <i className="fas fa-minus text-default "></i></span>}
@@ -863,7 +861,7 @@ class TrainingModel extends Component {
                                                                                                             ) :
                                                                                                             this.state.selectors && this.state.actions.map((ele, n) =>
                                                                                                                 <div className="mt-2">
-                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action"
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action" id="mainSelector"
                                                                                                                         name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "actions")} value={this.state.actions[n]} />
                                                                                                                     {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("actions") }}>  <i className="fas fa-plus text-default "></i></span>
                                                                                                                         : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("actions", n) }} >  <i className="fas fa-minus text-default "></i></span>}
@@ -875,9 +873,9 @@ class TrainingModel extends Component {
                                                                                             </div>
                                                                                             <div className="col-md-6">
                                                                                                 {selectpageIndex > -1 ?
-                                                                                                    <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State"
+                                                                                                    <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State" id="terminalState"
                                                                                                         name="terminalState" onChange={e => this.handleChangeSelector(e, -1, "terminalState", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].terminalState} />
-                                                                                                    : <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State"
+                                                                                                    : <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State" id="terminalState"
                                                                                                         name="terminalState" onChange={e => this.handleChangeSelector(e, -1, "terminalState")} value={this.state.terminalState} />}
                                                                                                 <button className="btn btn-success col-md-3 ml-1" onClick={e => { this.savePage(selectpageIndex) }}>Save</button>
                                                                                             </div>

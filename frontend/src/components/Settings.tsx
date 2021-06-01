@@ -91,7 +91,8 @@ const Settings = () => {
                         <p>Current Password</p>
                         <input
                             type="password"
-                            name='password'
+                            name='currpassword'
+                            id='currpassword'
                             onChange={(e) => setoldpassword(e.target.value)}
 
                         />
@@ -100,7 +101,8 @@ const Settings = () => {
                         <p>New Password</p>
                         <input
                             type="password"
-                            name='password'
+                            name='newpassword'
+                            id ="newpassword"
                             onChange={(e) => setnewpassword(e.target.value)}
 
                         />
@@ -109,12 +111,13 @@ const Settings = () => {
                         <p>Confirm New Password</p>
                         <input
                             type="password"
-                            name='password'
+                            name='cnfnewpassword'
+                            id ="cnfnewpassword"    
                             onChange={(e) => setnewpasswordconfirm(e.target.value)}
 
                         />
                     </div>
-                    <button className="signup-button" onClick={() => handleSubmit()} >
+                    <button className="signup-button" id="signup" name="signup" onClick={() => handleSubmit()} >
                         Reset password
           </button>
 
