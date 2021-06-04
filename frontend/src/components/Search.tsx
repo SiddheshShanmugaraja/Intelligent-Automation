@@ -223,7 +223,7 @@ const Search = () => {
                                     <th>Transfer Credits</th>
                                 </tr></thead>
                             <tbody>
-                                {table_values && table_values.length > 0 ? table_values.map(arr =>
+                                {table_values && table_values.length > 0 ? table_values.map((arr,ind) =>
                                     <tr key={arr.id}>
                                         <td className={field === 'id' ? "selected-values" : ""}>{arr.id}</td>
                                         <td className={field === 'username' ? "selected-values" : ""}>{arr.username}</td>
@@ -241,12 +241,12 @@ const Search = () => {
                                             <input
                                                 className="transfer-credits"
                                                 type="number"
-                                                name='credits'
+                                                name={'credits_' +ind }
                                                 defaultValue={''}
                                                 id={arr.id}
                                             />
                                            <span className="credit-button" onClick={() => {handleTransfer(arr.username, arr.id)}}>
-                                           <i className="fa fa-paper-plane" aria-hidden="true" ></i >
+                                           <i className="fa fa-paper-plane" id={"sendCredit_"+ ind} aria-hidden="true" ></i >
                                                </span> 
                                         </td>
                                     </tr>
