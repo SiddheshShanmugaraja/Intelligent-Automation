@@ -17,6 +17,7 @@ CHROME_DRIVER = webdriver.Chrome(executable_path=config.get("CHROME_DRIVER"), op
 CSV_EXTENSION = ".csv"
 
 def get_filename(url):
+    url = 'http://' + url if 'http' not in url else url
     if url.count(':') <= 1:
         return re.findall(r'w*\.*([a-zA-Z0-9]+)\.', urlparse(url).netloc)[0]
     else:

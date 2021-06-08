@@ -6,58 +6,53 @@
                     "admin",
                     "password"
                 ],
-                "url": "http://localhost:3000/",
-                "states": [
-                    "input[name=\"password\"]",
-                    "input[name=\"name\"]"
-                ],
-                "terminal_state": "div#root div.login-container > button"
-            }
-        ],
-        "Demo": [
-            {
-                "actions": [
-                    "password",
-                    "admin"
-                ],
                 "url": "http://localhost:3000",
+                "pageName": "Login",
+                "goal": "Goal4",
                 "states": [
                     "input[name=\"name\"]",
                     "input[name=\"password\"]"
                 ],
                 "terminal_state": "div#root div.login-container > button"
-            },
+            }
+        ],
+        "Google-Form": [
             {
                 "actions": [
                     "James Bond",
-                    "UK",
-                    "0987654321",
-                    "Professional Football player from Manchester City, United Kingdom"
+                    "bond007@mail.com",
+                    "8000085007",
+                    "https://bond007.com",
+                    "World class spy at British Secret Service"
                 ],
-                "url": "http://localhost:3000/profile",
+                "goal": "Goal2",
+                "url": "https://docs.google.com/forms/d/e/1FAIpQLSd5G1O10c0Hnr79oJlzMEjxRlOuOj6RpSJuPCTIsUs9FgjJvQ/viewform",
                 "states": [
-                    "div#root textarea",
-                    "input[name=\"phone\"]",
-                    "input[name=\"country\"]",
-                    "input[name=\"username\"]"
+                    "form#mG61Hd div:nth-child(1) > div > div > div.freebirdFormviewerComponentsQuestionTextRoot > div > div.quantumWizTextinputPaperinputMainContent.exportContent > div > div.quantumWizTextinputPaperinputInputArea > input",
+                    "form#mG61Hd div:nth-child(2) > div > div > div.freebirdFormviewerComponentsQuestionTextRoot > div > div.quantumWizTextinputPaperinputMainContent.exportContent > div > div.quantumWizTextinputPaperinputInputArea > input",
+                    "form#mG61Hd div:nth-child(3) > div > div > div.freebirdFormviewerComponentsQuestionTextRoot > div > div.quantumWizTextinputPaperinputMainContent.exportContent > div > div.quantumWizTextinputPaperinputInputArea > input",
+                    "form#mG61Hd div:nth-child(4) > div > div > div.freebirdFormviewerComponentsQuestionTextRoot > div > div.quantumWizTextinputPaperinputMainContent.exportContent > div > div.quantumWizTextinputPaperinputInputArea > input",
+                    "form#mG61Hd textarea"
                 ],
-                "terminal_state": "div#root button"
+                "terminal_state": "form#mG61Hd span > span"
             }
         ],
-        "Credit": [
+        "http://thedemosite.co.uk/": [
             {
                 "actions": [
-                    "user1",
-                    "Username",
-                    "10"
+                    "admin",
+                    "admin@admin.com",
+                    "admin@admin.com",
+                    "To"
                 ],
-                "url": "http://localhost:3000/search",
+                "url": "http://thedemosite.co.uk/phpformmailer",
                 "states": [
+                    "input[name=\"name\"]",
                     "div#collapseOne div.col-md-6.row.p-0 > div:nth-child(1) > div:nth-child(1) > span",
-                    "select#select",
-                    "div#collapseOne div:nth-child(1) > div:nth-child(1) > span > i"
+                    "div#collapseOne div.col-md-6.row.p-0 > div:nth-child(1) > div:nth-child(1) > span",
+                    "div#collapseOne div.col-md-6.row.p-0 > div:nth-child(1) > div:nth-child(1) > span"
                 ],
-                "terminal_state": "#form > table > tbody > tr:nth-child(1) > td:nth-child(11) > svg"
+                "terminal_state": "div#collapseOne div:nth-child(2) > div:nth-child(4) > input[name=\"mainSelector\"]"
             }
         ]
     }

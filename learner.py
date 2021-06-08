@@ -4,6 +4,11 @@ import numpy as np
 from selenium import webdriver
 from argparse import ArgumentParser
 from typing import List, Dict, Tuple, Optional
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.alert import Alert
+
+options = Options()
+options.add_argument("--disable-notifications")
 
 with open("./backend/config.json", "r") as f:
     config = json.load(f)
@@ -13,13 +18,13 @@ pd.set_option('display.max_rows', None)
 
 LEARNING_RATE = 0.1
 GAMMA = 0.9
-EPSILON = 0.9
+EPSILON = 0.2
 
 MOVE_REWARD = -2
 POSITIVE_REWARD = 10
 NEGATIVE_REWARD = -5
 
-N_EPISODES = 10
+N_EPISODES = 2
 SLEEP_BETWEEN_INTERVALS = 0.1
 
 CHROME_DRIVER = config.get("CHROME_DRIVER")
@@ -38,10 +43,11 @@ class QLearningTable:
         self.epsilon_decay = epsilon_decay
         self.name = name
         self.page_number = page_number
-        if not os.path.exists(os.path.join(MODELS_DIR, self.name, f"Page:{self.page_number}-Episode:{N_EPISODES}{CSV_EXTENSION}")):
+        if not os.path.exists(os.path.join(MODELS_DIR, self.name, f"Page{self.page_number}-Episode{N_EPISODES}{CSV_EXTENSION}")):
             self.table = np.zeros((len(states), len(actions)))
         else:
-            df = pd.read_csv(os.path.join(MODELS_DIR, self.name, f"Page:{self.page_number}-Episode:{N_EPISODES}{CSV_EXTENSION}"), index_col='Unnamed: 0')
+            print('Loading Q Table')
+            df = pd.read_csv(os.path.join(MODELS_DIR, self.name, f"Page{self.page_number}-Episode{N_EPISODES}{CSV_EXTENSION}"), index_col='Unnamed: 0')
             self.table = df.values
 
     def learn(self, state_index: int, action_index: int, reward: int) -> None:
@@ -79,8 +85,12 @@ class Webpage:
     def fill_page(self):
         success = False
         while not success:
+            try:
+                alert = Alert(self.driver)
+                alert.accept()
+            except Exception as e:
+                print(f'Error: {e}')
             self.driver.get(self.url)
-            self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)
             history = list()
             actions_copy = self.q_table.actions.copy()
             for state_index, state in enumerate(self.q_table.states):
@@ -92,6 +102,7 @@ class Webpage:
                     action = random.choice(actions_copy)
                 action_index = self.q_table.actions.index(action)
                 input_element = self.driver.find_element_by_css_selector(state)
+                time.sleep(0.3)
                 input_element.clear()
                 input_element.send_keys(action)
                 history.append((state_index, action_index))
@@ -99,7 +110,7 @@ class Webpage:
                 self.q_table.learn(state_index=state_index, action_index=action_index, reward=MOVE_REWARD)
                 if (state_index + 1) == len(self.q_table.states):
                     self.driver.find_element_by_css_selector(self.terminal_state).click()
-                    self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)
+                    time.sleep(SLEEP_BETWEEN_INTERVALS)
                     current_url = self.driver.current_url[:-1] if self.driver.current_url[-1] == '/' else self.driver.current_url
                     page_url = self.url[:-1] if self.url[-1] == '/' else self.url
                     if current_url != page_url:
@@ -107,6 +118,7 @@ class Webpage:
                         for state_index, action_index in history:
                             self.q_table.learn(state_index=state_index, action_index=action_index, reward=POSITIVE_REWARD)
                     else:
+                        self.driver.refresh()
                         for state_index, action_index in history:
                             self.q_table.learn(state_index=state_index, action_index=action_index, reward=NEGATIVE_REWARD)
         self.q_table.decay_epsilon()
@@ -136,7 +148,7 @@ class Webpage:
 class Domain:
 
     def __init__(self, name: str, urls: List, states: List[List], actions: List[List], terminal_states: List):
-        self.driver = webdriver.Chrome(executable_path=CHROME_DRIVER)
+        self.driver = webdriver.Chrome(executable_path=CHROME_DRIVER, options=options)
         self.environment = dict()
         for index_, (url, state, action, terminal_state) in enumerate(zip(urls, states, actions, terminal_states), 1):
             self.environment[url] = Webpage(url=url, states=state, actions=action, terminal_state=terminal_state, name=name, page_number=index_, driver=self.driver)

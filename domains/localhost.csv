@@ -2,3 +2,4 @@ title,url
 Login,http://localhost:3000
 Sign Up,http://localhost:3000/sign-up
 Profile,http://localhost:3000/profile
+Search,http://localhost:3000/search

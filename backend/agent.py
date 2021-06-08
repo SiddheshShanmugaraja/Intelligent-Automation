@@ -9,7 +9,7 @@ from flask import Blueprint, request
 import os, re, time, json, subprocess
 from .models import User, Project, Page, Goal
 from typing import List, Dict, Tuple, Optional
-from .crawler import crawl_url as crawl, get_filename
+from .crawler import crawl_url as crawl, get_filename, get_page_title
 from learner import Domain
 
 agent = Blueprint('agent', __name__)
@@ -82,6 +82,13 @@ def prune_children(data):
             prune_children(d)
     return data
 
+def get_crawled_urls(domain):
+    xl_name = os.path.join(EXCEL_DIR, get_filename(domain) + CSV_EXTENSION)
+    df = pd.read_csv(xl_name)
+    data = df["url"].tolist()
+    page_titles = df['title'].tolist()
+    return create_tree(data, page_titles)
+
 ################################################################################################################
 
 @agent.route("/get-sites", methods=["POST"])
@@ -99,8 +106,8 @@ def extract_from_data():
             crawl(domain)
         if os.path.exists(xl_name):
             df = pd.read_csv(xl_name)
-            data = df["url"].values.tolist()
-            page_titles = df['title'].values.tolist()
+            data = df["url"].tolist()
+            page_titles = df['title'].tolist()
             if len(data):
                 status = 200
                 message = "Sites extracted!"
@@ -137,6 +144,11 @@ def train_site():
     if not project_name in content[username]:
         content[username][project_name] = dict()
     content[username][project_name] = data
+    url = urlparse(data[0]['url']).netloc
+    user = User.query.filter_by(username=username).first()
+    new_project = Project(name=project_name, url=url, user_id=user.id)
+    db.session.add(new_project)
+    db.session.commit()
     with open(DATA_FILE, 'w') as f:
         json.dump(content, f, indent=4)
     process = subprocess.Popen(f"python {RL_SCRIPT} --user {username} --project {project_name}".split())
@@ -145,55 +157,29 @@ def train_site():
     message = f'Process with id - {process.pid} has been started!'
     return return_response(status, message, data)
 
-@agent.route("/get_training_status", methods=["GET"])
+@agent.route("/projects", methods=['POST'])
 @cross_origin()
-def get_training_status():
-    """[summary]
-
+def get_projects():
+    """
     Returns:
         [type]: [description]
     """
-    with open(LOG_FILE, "r", os.O_NONBLOCK) as f:
-        data = f.read()
-    split = data.split("\n")
+    username = request.form.get('username')
+    user = User.query.filter_by(username=username).first()
+    projects = user.projects
+    with open(DATA_FILE, 'r') as f:
+        data = json.load(f)[username]
+    for project in data:
+        for d in data[project]:
+            d['selectors'] = d.pop('states')
+            d['terminalState'] = d.pop('terminal_state')
+            if 'pageName' not in d:
+                d['pageName'] = get_page_title(d['url'])
+    domains = {project.name:dict(crawled_urls=get_crawled_urls(project.url), domain=project.url) for project in projects}
+    response = dict(pages=data, domains=domains)
     status = 200
-    done_flag = "In progress"
-    if len(split) > 0:
-        for i in list(reversed(range(len(split)))):
-            if split[i].split("-")[-1] == " completed":
-                done_flag = "Completed"
-                status = 201
-                break
-            elif split[i].split("-")[-1] == "terminated":
-                status = 202
-                done_flag = "Terminated"
-    message = "Success!"
-    data = dict(log=data, training_status=done_flag)
-    return return_response(status, message, data)
-
-@agent.route("/projects", methods=["POST", "GET", "DELETE"])
-@cross_origin()
-def action_projects():
-    """[summary]
-
-    Returns:
-        [type]: [description]
-    """
-    if request.method == "POST":
-        name = request.form.get("name")
-        url = request.form.get("url")
-        user_id = int(request.form.get("user_id"))
-        new_project = Project(name=name, url=url, user_id=user_id)
-        db.session.add(new_project)
-        db.session.commit()
-        status = 200
-        message = "Project created successfully!"
-        data = new_project.to_dict()
-    elif request.method == "GET":
-        status = 200
-        message = "Projects loaded!"
-        data = list(map(lambda x: x.to_dict(), Project.query.all()))
-    return return_response(status, message, data)
+    message = "Projects loaded successfully!"
+    return return_response(status, message, response)
 
 @agent.route("/pages", methods=["POST", "GET", "DELETE"])
 @cross_origin()

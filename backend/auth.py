@@ -193,7 +193,7 @@ def transfer_credits():
             db.session.commit()
             data = dict(sender=sender.to_dict(), reciever=reciever.to_dict())
             status = 200
-            message = "Credits transferred successfully!"
+            message = f"Credits transferred from {sender.username} to {reciever.username} successfully!"
         else:
             data = None
             status = 400
