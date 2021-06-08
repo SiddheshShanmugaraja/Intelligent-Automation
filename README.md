@@ -115,7 +115,7 @@ In the case of the robot game, to reiterate the scoring/reward structure is:
 
 ## How to translate this to Webpages?
 
-<p align="justify">The Intelligent Automation App utilizes Q-Learning to create bots that can do Automation Testing, Form Filling and much more. The concept of environment, state, action and reward csn be easily translated to a Webpage setting where the elements of the page can be defined as measureable state. The actions are the ways in which a user can potentially interact with the Webpage. Rewards can be assigned to a certain success messages appearing on the Webpage. Let's have a look at how to apply it to our use-case for form filling.</p>
+<p align="justify">The Intelligent Automation App utilizes Q-Learning to create bots that can do Automation Testing, Form Filling and much more. The concept of environment, state, action and reward can be easily translated to a Webpage setting where the elements of the page can be defined as measureable states. The actions are the ways in which a user can potentially interact with the Webpage. Rewards can be assigned to a certain success messages appearing on the Webpage. Let's have a look at how to apply it to our use-case for form filling.</p>
 
 <p align="justify">Lets consider the login page of the Intelligent Automation app for this example:- </p>
 
