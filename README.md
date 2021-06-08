@@ -1,9 +1,39 @@
 # Intelligent Automation
 
+Instructions to run the app on localhost:
+
+**Setup:-**
+Clone the repository to your loacl machine
+```
+$git clone https://github.com/chirag-optisol/Intelligent-Automation.git
+```
+
+Install essential python libraries
+```
+$pip install -r requirements.txt
+```
+
+Move to the frontend folder and install necessary npm packages
+```
+$cd frontend
+$npm i
+```
+
+**Run:-**
+To start the backend Flask server
+```
+$python main.py
+```
+
+To start the Frontend
+```
+$cd frontend
+$npm start
+```
+
 ## Q Learning:
 
 Given a State recommend/predict an action based on Q Values. When the RL Agent Interacts with the environment while training, we have to update the Q Values such that, running a certain chain of actions gives us a desirable outcome. We achieve that by giving rewards to the agent for achieveing a certain long term goal.
-
 
 ## Problem Statement:
 
@@ -12,8 +42,8 @@ The Intelligent Automation App utilizes Q-Learning to create bots that can do Au
 ### Work-Flow:
 
 The App is divided into Two sections --> 
-	1. Frontend
-	2. Backend
+1. Frontend
+2. Backend
 	
 ### Frontend: 
 
@@ -27,11 +57,10 @@ We also use MySQL Database which interacts with the Flask App using Flask-SQL Al
 
 The RL Agent is defined in the learner.py and leraner.1.2.py files. We're still experimenting and improving the RL agent as we move forward.
 
-Tech Stack
+**Tech Stack**
 
 Frontend : ReactJS, TypeScript
 Backend  : Python, Flask, Selenium, Numpy, MySQL
-
 
 **References:**
 - [Q Learning Fundamentals](https://www.youtube.com/watch?v=yMk_XtIEzH8&list=PLQVvvaa0QuDezJFIOU5wDdfy4e9vdnx-)
