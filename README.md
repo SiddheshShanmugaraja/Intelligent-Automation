@@ -113,9 +113,45 @@ In the case of the robot game, to reiterate the scoring/reward structure is:
 
 <p align="justify">We will repeat this again and again until the learning is stopped. In this way the Q-Table will be updated.</p>
 
-## Problem Statement:
+## How to translate this to Webpages?
 
-<p align="justify">The Intelligent Automation App utilizes Q-Learning to create bots that can do Automation Testing, Form Filling and much more. The concept of environment, state, action and reward csn be easily translated to a Webpage setting where the elements of the page can be defined as measureable state. The actions are the ways in which a user can potentially interact with the Webpage. Rewards can be assigned to a certain success messages appearing on the Webpage.</p>
+<p align="justify">The Intelligent Automation App utilizes Q-Learning to create bots that can do Automation Testing, Form Filling and much more. The concept of environment, state, action and reward csn be easily translated to a Webpage setting where the elements of the page can be defined as measureable state. The actions are the ways in which a user can potentially interact with the Webpage. Rewards can be assigned to a certain success messages appearing on the Webpage. Let's have a look at how to apply it to our use-case for form filling.</p>
+
+<p align="justify">Lets consider the login page of the Intelligent Automation app for this example:- </p>
+
+<p align="center"><a href="https://imgur.com/rQ12eDx"><img src="https://i.imgur.com/rQ12eDx.png" title="source: imgur.com" /></a></p>
+
+<p align="justify">We'll extract all the elements in the webpage that has an 'id' to define our states. We can easily search for these elements later by using the find_element_by_id() function in selenium. In this case we'll get 4 states -- </p>
+
+1. "Signup Button"  
+2. "Username Field"  
+3. "Password Field"  
+4. "Login Button"  
+
+<p align="justify">We'll need to define a set of generic actions. In this case we'll need just two --</p>
+
+1. "Click Button"  
+2. "Set value to a Field"  
+3. "Skip an Element"  
+
+<p align="justify">We'll need to get the inputs for the action "Set value to a Field", here we'll give two inputs -- </p>
+
+1. "admin"  
+2. "password"  
+ 
+<p algin="justify">We dont have to specify which input belongs to what field here, thats the job of the RL agent to figure out. We can give multiple combination of usernames, passwords or some dummy information and the RL agent is supposed to figure out atleast one correct combinations of username and password in this case. With all the information present we can create a Q-Table. The Q Table will look like this after we initialize the Q Values with zeros</p>
+
+</p align="center"><a href="https://imgur.com/XQrWlXM"><img src="https://i.imgur.com/XQrWlXM.png" title="source: imgur.com" /></a></p>
+
+<p align="justify">Next step will be to define rewards depneding on the goals. For each interaction with the elements we'll induce a small negative reward, this is necessary so that the RL agent learns to get to the objective in the least amount of steps possible. In the training phase we'll randomly iterate over various combination of states and actions until the login is succesful. Whenever a login attempt is succesful we get a Toast with the message 'Login success' we can use this to define the goal for the RL Agent. After the goal is achieved we'll assign a large positive reward to the chain of actions that led to the achivement. This way we ensure that the RL agent achieves the target every episode. After the model is trained for a set number of episodes we'll have an updated Q-Table wherein the action with the highest Q-Value for each state will be the appropriate action to achieve the goal</p>
+
+<p align="center"><a href="https://imgur.com/SM8ogfZ"><img src="https://i.imgur.com/SM8ogfZ.png" title="source: imgur.com" /></a></p>
+
+1. Small Negative reward for every interaction with an element.   
+2. Large Positive reward for achieving the goal / passing the assertion test.  
+
+<p align="justify">After the model is trained for a set number of episodes we'll have an updated Q-Table wherein the action with the highest Q-Value for each state will be the appropriate action to achieve the goal. We can use the updated Q-Table to run the agent on this login page, or generate Automated Test Cases for quality testing of the page.</p>
+<p align="center"><a href="https://imgur.com/OeR2m1D"><img src="https://i.imgur.com/OeR2m1D.png" title="source: imgur.com" /></a></p>  
 
 ### Work-Flow:
 
