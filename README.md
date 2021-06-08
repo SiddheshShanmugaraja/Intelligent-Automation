@@ -2,7 +2,7 @@
 
 Instructions to run the app on localhost:
 
-**Setup:-**
+**Setup:-**  
 Clone the repository to your loacl machine
 ```
 $git clone https://github.com/chirag-optisol/Intelligent-Automation.git
@@ -19,7 +19,7 @@ $cd frontend
 $npm i
 ```
 
-**Run:-**
+**Run:-**  
 To start the backend Flask server
 ```
 $python main.py
