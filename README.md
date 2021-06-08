@@ -59,8 +59,8 @@ The RL Agent is defined in the learner.py and leraner.1.2.py files. We're still 
 
 **Tech Stack**
 
-Frontend : ReactJS, TypeScript
-Backend  : Python, Flask, Selenium, Numpy, MySQL
+Frontend : ReactJS, TypeScript  
+Backend  : Python, Flask, Selenium, Numpy, MySQL  
 
 **References:**
 - [Q Learning Fundamentals](https://www.youtube.com/watch?v=yMk_XtIEzH8&list=PLQVvvaa0QuDezJFIOU5wDdfy4e9vdnx-)
