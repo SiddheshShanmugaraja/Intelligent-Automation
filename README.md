@@ -35,7 +35,7 @@ $npm start
 
 <p align="justify">Given a State recommend/predict an action based on Q Values. When the RL Agent Interacts with the environment while training, we have to update the Q Values such that, running a certain chain of actions gives us a desirable outcome. We achieve that by giving rewards to the agent for achieveing a certain long term goal.</p>
 
-### Simplitic - Overview
+### Simplitic Overview
 Reference: [Free Code Camp](https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/)
 
 <p align="justify">Let’s say that a robot has to cross a maze and reach the end point. There are mines, and the robot can only move one tile at a time. If the robot steps onto a mine, the robot is dead. The robot has to reach the end point in the shortest time possible.</p>
@@ -49,7 +49,69 @@ The scoring/reward system is as below:
 
 <p align="justify">Now, the obvious question is: How do we train a robot to reach the end goal with the shortest path without stepping on a mine?</p>
 
-<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/3JXI06jyHegMS1Yx8rhIq64gkYwSTM7ZhD25">Source</a></p>
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/3JXI06jyHegMS1Yx8rhIq64gkYwSTM7ZhD25"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+	
+**Introducing the Q-Table**
+<p align="justify">Q-Table is just a fancy name for a simple lookup table where we calculate the maximum expected future rewards for action at each state. Basically, this table will guide us to the best action at each state.</p>	
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/CcNuUwGnpHhRKkERqJJ6xl7N2W8jcl1yVdE8"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+<p align="justify">There will be four numbers of actions at each non-edge tile. When a robot is at a state it can either move up or down or right or left. So, let’s model this environment in our Q-Table. In the Q-Table, the columns are the actions and the rows are the states.</p>
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/AjVvggEquHgsnMN8i4N35AMfx53vZtELEL-l"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+<p align="justify">Each Q-table score will be the maximum expected future reward that the robot will get if it takes that action at that state. This is an iterative process, as we need to improve the Q-Table at each iteration. But how do we calculate the values of the Q-table? Are the values available or predefined? To learn each value of the Q-table, we use the Q-Learning algorithm.</p>
+
+<p align="center"><a href="https://www.codecogs.com/eqnedit.php?latex=\begin{*align}&space;\text{}\\&space;\text{Q}&space;(s_{t},&space;a_{t})&space;=&space;(1&space;-&space;\eta)&space;*&space;(Q(s_{t-1},a_{t-1}))&space;&plus;&space;\eta&space;*&space;(\alpha(s_{t})&space;&plus;&space;\gamma&space;*&space;max(Q(s_{t&plus;1})))\\&space;\text{}\\&space;\text{Q&space;=&space;Q-Learning&space;Function}\\&space;\text{s&space;=&space;state}\\&space;\text{a&space;=&space;action}\\&space;\text{t&space;=&space;current&space;timestep}\\&space;\eta&space;=&space;\text{Learning&space;Rate}\\&space;\alpha&space;=&space;\text{Reward&space;for&space;current&space;state}\\&space;\gamma&space;=&space;\text{Discount&space;Factor}&space;\end{*align}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\begin{*align}&space;\text{}\\&space;\text{Q}&space;(s_{t},&space;a_{t})&space;=&space;(1&space;-&space;\eta)&space;*&space;(Q(s_{t-1},a_{t-1}))&space;&plus;&space;\eta&space;*&space;(\alpha(s_{t})&space;&plus;&space;\gamma&space;*&space;max(Q(s_{t&plus;1})))\\&space;\text{}\\&space;\text{Q&space;=&space;Q-Learning&space;Function}\\&space;\text{s&space;=&space;state}\\&space;\text{a&space;=&space;action}\\&space;\text{t&space;=&space;current&space;timestep}\\&space;\eta&space;=&space;\text{Learning&space;Rate}\\&space;\alpha&space;=&space;\text{Reward&space;for&space;current&space;state}\\&space;\gamma&space;=&space;\text{Discount&space;Factor}&space;\end{*align}" title="\begin{*align} \text{}\\ \text{Q} (s_{t}, a_{t}) = (1 - \eta) * (Q(s_{t-1},a_{t-1})) + \eta * (\alpha(s_{t}) + \gamma * max(Q(s_{t+1})))\\ \text{}\\ \text{Q = Q-Learning Function}\\ \text{s = state}\\ \text{a = action}\\ \text{t = current timestep}\\ \eta = \text{Learning Rate}\\ \alpha = \text{Reward for current state}\\ \gamma = \text{Discount Factor} \end{*align}" /></a></p>
+
+<p align="justify">Using the above function, we get the values of Q for the cells in the table. When we start, all the values in the Q-table are zeros. There is an iterative process of updating the values. As we start to explore the environment, the Q-function gives us better and better approximations by continuously updating the Q-values in the table. Now, let’s understand how the updating takes place.</p>
+
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/oQPHTmuB6tz7CVy3L05K1NlBmS6L8MUkgOud"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+Each of the colored boxes is one step. Let’s understand each of these steps in detail.
+
+Step 1: initialize the Q-Table
+
+<p align="justify">We will first build a Q-table. There are n columns, where n= number of actions. There are m rows, where m= number of states. We will initialise the values at 0.</p>
+
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/TQ9Wy3guJHUecTf0YA5AuQgB9yVIohgLXKIn"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/gWnhK5oLqjcQkSzuuT8WgMVOGdCEp68Xvt6F"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+In our robot example, we have four actions (a=4) and five states (s=5). So we will build a table with four columns and five rows.
+
+Steps 2 and 3: Choose and Perform an Action
+
+<p align="justify">This combination of steps is done for an undefined amount of time. This means that this step runs until the time we stop the training, or the training loop stops as defined in the code. We will choose an action (a) in the state (s) based on the Q-Table. But, as mentioned earlier, when the episode initially starts, every Q-value is 0. So now the concept of exploration and exploitation trade-off comes into play. <a href="https://medium.freecodecamp.org/a-brief-introduction-to-reinforcement-learning-7799af5840db">This article has more details</a>. We’ll use something called the epsilon greedy strategy. In the beginning, the epsilon rates will be higher. The robot will explore the environment and randomly choose actions. The logic behind this is that the robot does not know anything about the environment. As the robot explores the environment, the epsilon rate decreases and the robot starts to exploit the environment. During the process of exploration, the robot progressively becomes more confident in estimating the Q-values. For the robot example, there are four actions to choose from: up, down, left, and right. We are starting the training now — our robot knows nothing about the environment. So the robot chooses a random action, say right.</p>
+
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/k0IARc6DzE3NBl2ugpWkzwLkR9N4HRkpSpjw"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+We can now update the Q-values for being at the start and moving right using the Bellman equation.
+
+Steps 4 and 5: Evaluate
+
+<p align="justify">Now we have taken an action and observed an outcome and reward.We need to update the function Q(s,a).</p>
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/TnN7ys7VGKoDszzv3WDnr5H8txOj3KKQ0G8o"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+In the case of the robot game, to reiterate the scoring/reward structure is:
+
+- power = +1
+- mine = -100
+- end = +100
+
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/EpQDzt7lCbmFyMVUzNGaPam3WCYNuD1-hVxu"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+<p align="center"><a align="center" href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/"><img src="https://cdn-media-1.freecodecamp.org/images/xQtpQAhBocPC46-f0GRHDOK3ybrz4ZasaDo4"></a></p>
+<p align="center"><a href="https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/">Source</a></p>
+
+<p align="justify">We will repeat this again and again until the learning is stopped. In this way the Q-Table will be updated.</p>
 
 ## Problem Statement:
 
