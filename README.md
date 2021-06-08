@@ -33,7 +33,7 @@ $npm start
 
 ## Q Learning:
 
-<p align="justify">Given a State recommend/predict an action based on Q Values. When the RL Agent Interacts with the environment while training, we have to update the Q Values such that, running a certain chain of actions gives us a desirable outcome. We achieve that by giving rewards to the agent for achieveing a certain long term goal.</p>
+<p align="justify">Given a State recommend/predict an action in a pre-defined environment based on Q Values. When the RL Agent Interacts with the environment while training, we have to update the Q Values such that, running a certain chain of actions gives us a desirable outcome. We achieve that by giving rewards to the agent for achieveing a certain long term goal.</p>
 
 ### Simplitic Overview
 Reference: [Free Code Camp](https://www.freecodecamp.org/news/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc/)
