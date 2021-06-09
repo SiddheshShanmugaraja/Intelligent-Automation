@@ -30,6 +30,65 @@ To start the Frontend
 $cd frontend
 $npm start
 ```
+### Work-Flow:
+
+The App is divided into Two sections --> 
+1. Frontend
+2. Backend
+
+<p align="center"><a href="https://imgur.com/xOteMeA"><img src="https://i.imgur.com/xOteMeA.jpg" title="source: imgur.com" /></a></p>
+	
+### Frontend: 
+
+<p align="justify">The frontend folder defines the UI/UX of the app. ReactJS and TypeScript are the primary tools used here.</p>
+
+### Backend:
+
+<p align="justify">The backend defines the API layer which the frontend will use to interact with the app. The API's are hosted on a Flask Server and we have plans to move it to FAST API for faster API calls and better documentation. We use Bluprints in Flask to better structure our projects and combine it with our Flask App by registering them.</p>  
+
+<table align="center">
+   <thead>
+      <tr>
+         <th>File</th>
+         <th>Description</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr>
+         <td>main.py</td>
+         <td>File to start the Flask Server.</td>
+      </tr>
+      <tr>
+         <td>learner.py</td>
+         <td>File to define the RL Agent Training with Selenium.</td>
+      </tr>
+      <tr>
+         <td>/backend/__init__.py</td>
+         <td>File to register all the blueprints and connect to the MySQL Server.</td>
+      </tr>
+      <tr>
+         <td>/backend/models.py</td>
+         <td>File that defines all the tables for MySQL using Flask-SQL ALchemy.</td>
+      </tr>
+      <tr>
+         <td>/backend/auth.py</td>
+         <td>Blueprint that deals with user authentication APIs.</td>
+      </tr>
+      <tr>
+         <td>/backend/agent.py</td>
+         <td>Blueprint that deals with the RL Agent training and Inference APIs.</td>
+      </tr>
+   </tbody>
+</table>
+
+<p align="justify">We also use MySQL Database which interacts with the Flask App using Flask-SQL Alchemy. The database currently only has a Users Table for storing the information of registered users.</p> 
+
+<p align="justify">The RL Agent is defined in the learner.py and leraner.1.2.py files. We're still experimenting and improving the RL agent as we move forward.</p>
+
+**Tech Stack**
+
+Frontend : ReactJS, TypeScript  
+Backend  : Python, Flask, Selenium, Numpy, MySQL  
 
 ## Q Learning:
 
@@ -152,29 +211,6 @@ In the case of the robot game, to reiterate the scoring/reward structure is:
 
 <p align="justify">After the model is trained for a set number of episodes we'll have an updated Q-Table wherein the action with the highest Q-Value for each state will be the appropriate action to achieve the goal. We can use the updated Q-Table to run the agent on this login page, or generate Automated Test Cases for quality testing of the page.</p>
 <p align="center"><a href="https://imgur.com/OeR2m1D"><img src="https://i.imgur.com/OeR2m1D.png" title="source: imgur.com" /></a></p>  
-
-### Work-Flow:
-
-The App is divided into Two sections --> 
-1. Frontend
-2. Backend
-	
-### Frontend: 
-
-<p align="justify">The frontend folder defines the UI/UX of the app. ReactJS and TypeScript are the primary tools used here.</p>
-
-### Backend:
-
-<p align="justify">The backend defines the API layer which the frontend will use to interact with the app. The API's are hosted on a Flask Server and we have plans to move it to FAST API for faster API calls and better documentation. We use Bluprints in Flask to better structure our projects and combine it with our Flask App by registering them.</p>
-
-<p align="justify">We also use MySQL Database which interacts with the Flask App using Flask-SQL Alchemy. The database currently only has a Users Table for storing the information of registered users.</p> 
-
-<p align="justify">The RL Agent is defined in the learner.py and leraner.1.2.py files. We're still experimenting and improving the RL agent as we move forward.</p>
-
-**Tech Stack**
-
-Frontend : ReactJS, TypeScript  
-Backend  : Python, Flask, Selenium, Numpy, MySQL  
 
 **References:**
 - [Q Learning Fundamentals](https://www.youtube.com/watch?v=yMk_XtIEzH8&list=PLQVvvaa0QuDezJFIOU5wDdfy4e9vdnx-)
