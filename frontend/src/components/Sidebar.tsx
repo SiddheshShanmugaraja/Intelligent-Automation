@@ -10,12 +10,12 @@ const Sidebar = (props: any) => {
         <div className="container">
             <div className={sidebar ? "sidebar" : "side-bar-hidden"}>
                 <ul className="side-bar-list">
-                    <Link to='/home'><li>Home</li></Link>
-                    {props.loggedUser['is_admin'] && <Link to='/search'><li>Search</li></Link>}
-                    <Link to='/profile'><li>Profile</li></Link>
-                    <Link to='/settings'><li>Settings</li></Link>
-                    <Link to='/project'><li>Project</li></Link>
-                    <div className="side-bar-button">{sidebar ? <KeyboardArrowLeftIcon onClick={() => setSidebar(false)} /> : < KeyboardArrowRightIcon onClick={() => setSidebar(true)} />}</div>
+                    <Link id ="home" to='/home'><li>Home</li></Link>
+                    {props.loggedUser['is_admin'] && <Link id ="search" to='/search'><li>Search</li></Link>}
+                    <Link id ="profile" to='/profile'><li>Profile</li></Link>
+                    <Link id="settings" to='/settings'><li>Settings</li></Link>
+                    <Link id="project" to='/project'><li>Project</li></Link>
+                    <div id="side-toggle" className="side-bar-button">{sidebar ? <KeyboardArrowLeftIcon onClick={() => setSidebar(false)} /> : < KeyboardArrowRightIcon onClick={() => setSidebar(true)} />}</div>
                 </ul>
             </div>
         </div>

@@ -27,18 +27,20 @@ const Navbar = (props: any) => {
                 <Link to='/sign-up' />
                 <Link to='/profile' />
                 <Link to='/search' />
+                <Link to='/home' />
+
             </div>
             <Sidebar loggedUser={loggeduser} />
-            <div className="navbar">
+        <div className="navbar">
                 <p>{props.title}</p>
                 {loggeduser &&
                     <div className="navbar-right-items">
-                        <div className="navbar-right-items-profile cpointer" onClick={() => history.push('/profile')}  >
-                            <Avatar name={loggeduser['username']} src={baseUrl + "/" + loggeduser['photo']} size="40" round={true} color="#009999" />
-                            <p className="navbar-profile-name">{loggeduser['username']}</p>
+                        <div className="navbar-right-items-profile cpointer" id="profile-pic" onClick={() => history.push('/profile')}  >
+                            <Avatar name={loggeduser['username']}  src={baseUrl + "/" + loggeduser['photo']} size="40" round={true} color="#009999" />
+                            <p className="navbar-profile-name" id="profile-name">{loggeduser['username']}</p>
                         </div>
-                        <SettingsIcon className="cpointer" onClick={() => history.push('/settings')} />
-                        <ExitToAppIcon className="cpointer" onClick={() => logout()} />
+                        <SettingsIcon id="settings-nav" className="cpointer" onClick={() => history.push('/settings')} />
+                        <ExitToAppIcon id="logout-nav" className="cpointer" onClick={() => logout()} />
                     </div>
                 }
             </div>
