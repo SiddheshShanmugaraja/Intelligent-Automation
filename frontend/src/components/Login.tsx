@@ -62,10 +62,11 @@ const Login = () => {
         <title>Login</title>
       </Helmet>
       <div className="d-none" >
-        <Link to='/' />
-        <Link to='/sign-up' />
-        <Link to='/profile' />
-        <Link to='/search' />
+      <Link to='/' />
+                <Link to='/sign-up' />
+                <Link to='/profile' />
+                <Link to='/search' />
+                <Link to='/home' />
       </div>
       <div className="login-navbar-container">
         <div className="login-navbar-content">

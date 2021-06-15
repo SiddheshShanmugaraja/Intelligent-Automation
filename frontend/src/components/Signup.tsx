@@ -64,6 +64,7 @@ const Signup = () => {
         <Link to='/sign-up' />
         <Link to='/profile' />
         <Link to='/search' />
+        <Link to='/home' />
       </div>
       <Helmet>
         <title>Sign Up</title>
