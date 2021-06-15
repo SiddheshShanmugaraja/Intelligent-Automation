@@ -1,45 +1,38 @@
-from . import db
-from sqlalchemy.sql import func
-from flask_login import UserMixin
+import json
+from . import database
+from .utils import calculate_age
 from datetime import datetime, date
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean, ForeignKey
 
-def calculate_age(born):
-    """[summary]
+with open("backend/config.json", "r") as f:
+    config = json.load(f)
 
-    Args:
-        born ([type]): [description]
+DELIMITER = config.get("DELIMITER") 
 
-    Returns:
-        [type]: [description]
-    """
-    if not born:
-        return None
-    today = date.today()
-    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, nullable=False, primary_key=True)
-    username = db.Column(db.String(25), unique=True, nullable=False)
-    email = db.Column(db.String(500), unique=True, nullable=False)
-    name = db.Column(db.String(500), nullable=True)
-    dob = db.Column(db.Date, nullable=True)
-    country = db.Column(db.String(50), nullable=True)
-    credit = db.Column(db.Integer, nullable=False, default=100)
-    gender = db.Column(db.String(10), nullable=True)
-    device = db.Column(db.String(50), nullable=True)
-    phone = db.Column(db.String(15), nullable=True)
-    about = db.Column(db.String(1000), nullable=True)
-    photo = db.Column(db.String(55), nullable=False, default="static/profile_pictures/default.jpg")
-    password = db.Column(db.String(94), nullable=False)
-    is_admin = db.Column(db.Boolean, nullable=False, default=True)
-    projects = db.relationship('Project', backref='creator', lazy=True)
+class User(database.Base):
+    __tablename__ = 'users'
+    id = Column(Integer, nullable=False, primary_key=True)
+    username = Column(String(25), unique=True, nullable=False)
+    email = Column(String(254), unique=True, nullable=False)
+    name = Column(String(254), nullable=True)
+    dob = Column(Date, nullable=True)
+    country = Column(String(55), nullable=True)
+    credit = Column(Integer, nullable=False, default=1000)
+    gender = Column(String(10), nullable=True)
+    device = Column(String(25), nullable=True)
+    phone = Column(String(15), nullable=True)
+    about = Column(String(1000), nullable=True)
+    photo = Column(String(55), nullable=False, default="static/profile_pictures/default.jpg")
+    password = Column(String(94), nullable=False)
+    is_admin = Column(Boolean, nullable=False, default=True)
+    projects = relationship('Project', backref='creator', lazy=True)
 
     def __repr__(self):
         return f"User(User ID: '{self.id}', Username: '{self.username}', Email: '{self.email}', Gender: '{self.gender}', Device: '{self.device}', is_Admin: {user.is_admin})"
 
     def to_dict(self):
         return dict(
-                    id = self.id,
                     username = self.username,
                     email = self.email,
                     name = self.name,
@@ -56,63 +49,61 @@ class User(db.Model, UserMixin):
                     projects = list(map(lambda x: x.to_dict(), self.projects))
                 )
 
-class Project(db.Model):
-    id = db.Column(db.Integer, nullable=False, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    url = db.Column(db.String(200), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    pages = db.relationship('Page', backref='task', lazy=True)
-    goals = db.relationship('Goal', backref='priority', lazy=True)
+class Project(database.Base):
+    __tablename__ = 'projects'
+    id = Column(Integer, nullable=False, primary_key=True)
+    name = Column(String(50), nullable=False)
+    url = Column(String(200), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    date_created = Column(DateTime, nullable=False, default=datetime.utcnow)
+    goals = relationship('Goal', backref='project_associated', lazy=True)
 
     def __repr__(self):
         return f"Project(Project ID: '{self.id}', Creator ID: '{self.user_id}', Project Name: '{self.name}', Project URL: '{self.url}', Date Created: '{self.date_created}')"
 
     def to_dict(self):
         return dict(
-                    id = self.id,
                     name = self.name,
                     url = self.url,
-                    user_id = self.user_id,
+                    creator = self.creator.username,
                     date_created = self.date_created.strftime("%d/%m/%Y %H:%M:%S"),
-                    pages = list(map(lambda x: x.to_dict(), self.pages)),
                     goals = list(map(lambda x: x.to_dict(), self.goals))
                 )
 
-class Page(db.Model):
-    id = db.Column(db.Integer, nullable=False, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    url = db.Column(db.String(200), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
-    goals = db.relationship('Goal', backref='target', lazy=True)
+class Goal(database.Base):
+    __tablename__ = 'goals'
+    id = Column(Integer, nullable=False, primary_key=True)
+    name = Column(String(50), nullable=False)
+    project_id = Column(Integer, ForeignKey('projects.id'), nullable=False)
+    pages = relationship('Page', backref='goal_associated', lazy=True)
 
     def __repr__(self):
-        return f"Page(Page ID: '{self.id}', Project ID: '{self.project_id}', Page Name: '{self.name}', Page URL: '{self.url}')"
+        return f"Goal(Goal ID: '{self.id}', Project ID: '{self.project_id}', Name: '{self.name}')"
 
     def to_dict(self):
         return dict(
-                    id = self.id,
+                    name = self.name,
+                    project = self.project_assiciated.name,
+                    pages = list(map(lambda x: x.to_dict(), self.pages))
+                )
+
+class Page(database.Base):
+    __tablename__ = 'pages'
+    id = Column(Integer, nullable=False, primary_key=True)
+    name = Column(String(50), nullable=False)
+    url = Column(String(200), nullable=False)
+    inputs = Column(String(1024), nullable=False)
+    terminal_state = Column(String(100), nullable=False)
+    goal_id = Column(Integer, ForeignKey('goals.id'), nullable=False)
+
+    def __repr__(self):
+        return f"Page(Page ID: '{self.id}', Goal ID: '{self.project_id}', Name: '{self.name}', URL: '{self.url}')"
+
+    def to_dict(self):
+        return dict(
                     name = self.name,
                     url = self.url,
-                    project_id = self.project_id,
-                    goals = list(map(lambda x: x.to_dict(), self.goals))
-                )
-
-class Goal(db.Model):
-    id = db.Column(db.Integer, nullable=False, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    training_status = db.Column(db.Boolean, default=False)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
-    page_id = db.Column(db.Integer, db.ForeignKey('page.id'), nullable=False)
-
-    def __repr__(self):
-        return f"Goal(Goal ID: '{self.id}', Project ID: '{self.project_id}', Page ID: '{self.page_id}',  Goal Name: '{self.name}', Training Status: {self.training_status})"
-
-    def to_dict(self):
-        return dict(
-                    id = self.id,
-                    name = self.name,
-                    training_status = self.training_status,
-                    project_id = self.project_id,
-                    page_id = self.page_id,
+                    inputs = self.inputs.split(DELIMITER),
+                    terminal_state = self.terminal_state,
+                    goal = self.goal_associated.name
                 )

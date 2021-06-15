@@ -35,7 +35,7 @@ $npm start
 
 Given a State recommend/predict an action based on Q Values. When the RL Agent Interacts with the environment while training, we have to update the Q Values such that, running a certain chain of actions gives us a desirable outcome. We achieve that by giving rewards to the agent for achieveing a certain long term goal.
 
-## Problem Statement:
+## How do we translate it to our Use Case?:
 
 The Intelligent Automation App utilizes Q-Learning to create bots that can do Automation Testing, Form Filling and much more. The concept of environment, state, action and reward csn be easily translated to a Webpage setting where the elements of the page can be defined as measureable state. The actions are the ways in which a user can potentially interact with the Webpage. Rewards can be assigned to a certain success messages appearing on the Webpage
 

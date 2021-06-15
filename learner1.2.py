@@ -1,10 +1,12 @@
 import gc
+import json
 import time
 import random
 import selenium
 import numpy as np
 import pandas as pd
 from numpy.linalg import norm
+from argparse import ArgumentParser
 from selenium import webdriver as wb 
 from typing import List, Dict, Tuple, Optional, Type
 from urllib3.exceptions import ProtocolError, MaxRetryError
@@ -12,7 +14,11 @@ from requests.exceptions import ConnectionError
 from selenium.common.exceptions import NoSuchElementException, InvalidElementStateException, StaleElementReferenceException
 
 pd.set_option('display.max_columns', None)
-pd.set_option('display.max_rows', None)
+
+with open("./backend/config.json", "r") as f:
+    config = json.load(f)
+
+DATA_FILE = config.get("DATA_FILE")
 
 N_EPISODES = 10
 LEARNING_RATE = 0.1
@@ -27,7 +33,7 @@ NEGATIVE_REWARD = -5
 
 class Webpage: 
 
-    def __init__(self, url: str, inputs: List, assertion_message: str, driver: Optional[Type[ selenium.webdriver.chrome.webdriver.WebDriver]] = None): 
+    def __init__(self, url: str, inputs: List, assertion_message: str, driver: Optional[Type[selenium.webdriver.chrome.webdriver.WebDriver]] = None): 
         """[summary]
 
         Args:
@@ -36,7 +42,7 @@ class Webpage:
             assertion_message (str): [description]
             driver (Optional[Type[ selenium.webdriver.chrome.webdriver.WebDriver]], optional): [description]. Defaults to None.
         """
-        self.url = url
+        self.url = url.replace('localhost', '127.0.0.1') if 'localhost' in url else url
         if driver:
             self.driver = driver
         else:
@@ -60,31 +66,30 @@ class Webpage:
         states = [element.get_attribute('id') for element in elements if element.get_attribute('id') not in ['', 'root']]
         return states
 
-    def set_value(self, element_id, value):
+    def set_value(self, element_id: str, value: str):
         self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)
         element = self.driver.find_element_by_id(element_id)
         element.clear()
         element.send_keys(value)
 
-    def click_button(self, element_id): 
+    def click_button(self, element_id: str): 
         self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)
         element = self.driver.find_element_by_id(element_id)
         try:
             element.clear()
         except InvalidElementStateException:
             pass
+        # click on element
         self.driver.execute_script("arguments[0].click();", element)
 
-    def take_action(self, state, action):
-        if self.driver.current_url != self.url:
-            self.driver.get(self.url)
+    def take_action(self, state: str, action: str):
         if 'set_value' in action:
             value = action.split('=')[-1]
             self.set_value(state, value)
         elif 'click_button' in action:
             self.click_button(state)
 
-    def learn(self, state_index, action_index, reward):
+    def learn(self, state_index: int, action_index: int, reward: int):
         current_q = self.q_table[state_index, action_index]
         if state_index < len(self.states) - 1:
             max_future_q = self.q_table[state_index + 1, :].max()
@@ -94,8 +99,9 @@ class Webpage:
         self.q_table[state_index, action_index] = new_q
         return self.q_table
 
-    def episode(self, epsilon):
+    def episode(self, epsilon: float):
         success = False
+        # self.driver.get(self.url)
         while not success:
             history = list()
             self.driver.get(self.url)
@@ -115,7 +121,7 @@ class Webpage:
                 self.learn(state_index, action_index, MOVE_REWARD)
                 history.append((state_index, action_index))
             try:
-                self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)# * 4)
+                self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS * 4)
                 self.driver.find_element_by_class_name('Toastify__toast Toastify__toast--success')
             except NoSuchElementException:
                 pass
@@ -136,12 +142,11 @@ class Webpage:
                         f.write(log)
         self.driver.delete_all_cookies()
 
-    def train(self, n_episodes):
+    def train(self, n_episodes: int):
         epsilon = INITIAL_EPSILON
         episode = 0
         while episode < n_episodes:
             try:
-                print(f'\nEpisode: {episode + 1}')
                 self.episode(epsilon)
                 epsilon -= INITIAL_EPSILON / N_EPISODES
                 episode += 1
@@ -160,7 +165,14 @@ class Webpage:
 
 class Domain:
 
-    def __init__(self, urls: List, inputs: List[List], assertion_messages: List):
+    def __init__(self, urls: List[str], inputs: List[List[str]], assertion_messages: List[str]):
+        """[summary]
+
+        Args:
+            urls (List[str]): [description]
+            inputs (List[List[str]]): [description]
+            assertion_messages (List[str]): [description]
+        """
         self.environment = dict()
         self.initialize_driver()
         for url_, input_, assertion_message_ in zip(urls, inputs, assertion_messages):
@@ -169,15 +181,26 @@ class Domain:
     def initialize_driver(self):
         self.driver = wb.Chrome('./backend/chromedriver')
 
-    def train(self, n_episodes=N_EPISODES):
-        for url in self.environment:
-            print(self.environment[url])
-            print(f"Training - '{self.environment[url].url}'")
-            self.environment[url].train(n_episodes=n_episodes)
+    def train(self, n_episodes: int = N_EPISODES):
+        print('\n'.join([str(self.environment[url]) for url in self.environment]))
+        for episode in range(n_episodes):
+            print(f'Episode: {episode + 1}')
+            for url in self.environment:
+                self.environment[url].train(n_episodes=1)
 
 if __name__ == '__main__':
-    URLS = ['http://127.0.0.1:3000/', 'http://127.0.0.1:3000/search/']
-    INPUTS = [['admin', 'password'], ['10']]
-    ASSERTION_MESSAGES = ['Login Success', 'Credits transferred from admin to user1 successfully!']
+    parser = ArgumentParser()
+    parser.add_argument("-u", "--user", help="Username of the creator for the project", required=True, type=str)
+    parser.add_argument("-p", "--project", help="Project name", required=True, type=str)
+    args = parser.parse_args()
+    try:
+        with open(DATA_FILE, 'r') as f:
+            DATA = json.load(f)[args.user][args.project]
+    except KeyError:
+        print(f"Username - '{args.user}' or/and Project - {args.project} do not exist!")
+        exit()
+    URLS = [d['url'] for d in DATA]
+    INPUTS = [d['actions'] for d in DATA]
+    ASSERTION_MESSAGES = [d['terminalState'] for d in DATA]
     domain = Domain(urls=URLS, inputs=INPUTS, assertion_messages=ASSERTION_MESSAGES)
     domain.train()

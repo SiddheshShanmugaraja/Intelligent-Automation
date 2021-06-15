@@ -4,11 +4,12 @@
     "DB_PASSWORD": "DaqKuc42@",
     "DB_HOST": "localhost",
     "DB_NAME": "intelligent_automation",
-    "RL_SCRIPT": "./learner.py",
+    "RL_SCRIPT": "./learner1.2.py",
     "EXCEL_DIR": "./domains",
     "CONFIG_FILE": "./config/yamlConfig.yml",
     "LOG_FILE": "./../logs/app.log",
     "CHROME_DRIVER": "./backend/chromedriver",
     "MODELS_DIR": "./models",
-    "DATA_FILE": "./data.json"
+    "DATA_FILE": "./data.json",
+    "DELIMITER": "./."
 }
