@@ -34,9 +34,8 @@ class TrainingModel extends Component {
             galleryItems: [1, 2, 3].map((i) => (<h2 key={i}>{i}</h2>)),
             openEditPopup: false,
             createDomainPopup: false,
-            selectors: [""],
-            actions: [""],
-            terminalState: "",
+            inputs: [""],
+            terminal_state: "",
             mainSelector: "",
             goalDomainName: "",
             optisolbusiness: "",
@@ -72,66 +71,115 @@ class TrainingModel extends Component {
         this.setState({ loggeduser })
         let formData = new FormData();
         formData.append('username', loggeduser['username'])
-        axios.post(baseUrl + '/projects', formData).then(res => {
+        axios.post(baseUrl + '/get-projects', formData).then(res => {
             if (res.data.status === 200) {
-                res.data.data && this.initializeState(res.data.data)
+                if (res.data.data === null || res.data.data.length < 0) {
+                    toast.success(res.data.message, {
+                        position: toast.POSITION.TOP_RIGHT
+                    });
+                }
+                else {
+                    this.initializeState(res.data.data)
+                }
                 this.setState({ showLoader: false })
+
             }
             else {
                 toast.error(res.data.message, {
                     position: toast.POSITION.TOP_RIGHT
                 });
+                this.setState({ showLoader: false })
             }
         }).catch(e => {
+            console.log(e)
             toast.error("Network Error", {
                 position: toast.POSITION.TOP_RIGHT
             });
+            this.setState({ showLoader: false })
 
         })
     }
     initializeState = (data) => {
+        data = data.reverse()
         let domainList = []
         let tree = []
-        Object.keys(data.domains).forEach((key, ind) => {
+        data.forEach((obj, ind) => {
             let Domain = {
-                domainName: key,
-                domainURL: data.domains[key].crawled_urls.url,
+                domainName: obj.name,
+                domainURL: obj.url,
                 expand: ind === 0 ? true : false,
-                pages: data.domains[key].crawled_urls,
-                extractedPage: data.domains[key].crawled_urls,
+                pages: obj.sub_domains,
+                extractedPage: obj.sub_domains,
             }
             domainList.push(Domain)
-            tree.push(data.domains[key].crawled_urls)
+            tree.push(obj.sub_domains)
         })
 
         let goalList = []
-        Object.keys(data.pages).forEach((key, ind) => {
-            let selectedPages = []
-            data.pages[key].forEach((el) => {
-                let temppage = {
-                    startUrl: el.url,
-                    pageName: el.pageName,
-                    terminalState: el.terminalState,
-                    selectors: el.selectors,
-                    actions: el.actions,
+        data.forEach((obj, ind) => {
+            console.log(obj.goals)
+            obj.goals.forEach((goal, ind2) => {
+                let selectedPages = []
+                goal.pages.forEach((el) => {
+                    let temppage = {
+                        startUrl: el.url,
+                        pageName: el.name,
+                        terminal_state: el.terminal_state,
+                        inputs: el.inputs,
+                    }
+                    selectedPages.push(temppage)
+                })
+                let domainInd = _.findIndex(domainList, { domainName: obj.name })
+                let Goal = {
+                    goalName: goal.name,
+                    expand: ind2 === 0 ? true : false,
+                    selectedPages: selectedPages,
+                    goalDomains: domainList[domainInd],
+                    treeData: domainList[domainInd].pages,
                 }
-                selectedPages.push(temppage)
+                goalList.push(Goal)
             })
-            let domainInd = _.findIndex(domainList, { domainName: key })
-            let Goal = {
-                goalName: data.pages[key][0].goal,
-                expand: ind === 0 ? true : false,
-                selectedPages: selectedPages,
-                goalDomains: domainList[domainInd],
-                treeData: domainList[domainInd].pages,
-            }
-            goalList.push(Goal)
-
         })
-        console.log(domainList, goalList)
         this.setState({ domainIndex: 0, myTreeData: tree, domainList, goalList, currentGoalIndex: 0, collapseOne: true })
     }
 
+    createProject = (domainList) => {
+        if (this.state.URL && this.state.domainName) {
+            this.setState({ showLoader: true })
+            var formData = new FormData();
+            formData.append("username", this.state.loggeduser['username'])
+            formData.append("project_name", this.state.domainName)
+            formData.append("url", this.state.URL)
+            axios.post(baseUrl + '/create-project', formData).then(res => {
+                if (res.data.status === 200) {
+                    this.extractSitemap(this.state.URL, domainList)
+                    this.setState({
+                        domainName: "", domainList, openPopup: false, goalDomainIndex: 0, openEditPopup: false, collapseOne: true, pageName: this.state.domainName,
+                        projectName: this.state.domainName, startUrl: this.state.URL, domainIndex: 0, mainSelector: "", minorGoal: "", startUrlType: "domain"
+                    })
+                }
+                else {
+                    toast.error(res.data.message, {
+                        position: toast.POSITION.TOP_RIGHT
+                    });
+                    this.setState({ showLoader: false })
+                }
+            }).catch(e => {
+                console.log(e)
+                toast.error("Network Error", {
+                    position: toast.POSITION.TOP_RIGHT
+                });
+                this.setState({ showLoader: false })
+
+            })
+        }
+        else {
+            toast.error("Project Name and Domain is required", {
+                position: toast.POSITION.TOP_RIGHT
+            });
+        }
+
+    }
     loadUrl = (type) => {
         let domainList = [...this.state.domainList]
         domainList.forEach(element => {
@@ -152,11 +200,8 @@ class TrainingModel extends Component {
                     domainName: this.state.domainName, domainURL: this.state.URL, expand: true,
                     pages: [], extractedPage: []
                 })
-                this.extractSitemap(this.state.URL, domainList)
-                this.setState({
-                    domainName: "", domainList, openPopup: false, goalDomainIndex: 0, openEditPopup: false, collapseOne: true, pageName: this.state.domainName,
-                    projectName: this.state.domainName, startUrl: this.state.URL, domainIndex: 0, mainSelector: "", minorGoal: "", startUrlType: "domain"
-                })
+                this.createProject(domainList)
+
 
             } else {
                 toast.error("Domain already exist ", {
@@ -229,17 +274,17 @@ class TrainingModel extends Component {
     handleChangeSelector(e, ind, select, selectpageIndex) {
         if (selectpageIndex > -1) {
             let { goalList, currentGoalIndex } = { ...this.state }
-            if (select !== "terminalState") {
+            if (select !== "terminal_state") {
                 goalList[currentGoalIndex].selectedPages[selectpageIndex][select][ind] = e.target.value
             }
             else {
-                goalList[currentGoalIndex].selectedPages[selectpageIndex].terminalState = e.target.value
+                goalList[currentGoalIndex].selectedPages[selectpageIndex].terminal_state = e.target.value
             }
             this.setState({ goalList })
         }
         else {
             let val = this.state[select]
-            if (select !== "terminalState") {
+            if (select !== "terminal_state") {
                 val[ind] = e.target.value
             }
             else {
@@ -268,6 +313,9 @@ class TrainingModel extends Component {
                 myTreeData.unshift(treedata)
                 this.setState({ myTreeData: myTreeData, showLoader: false })
                 this.getSiteMaps(res.data.data, domain)
+                toast.success("Project Created", {
+                    position: toast.POSITION.TOP_RIGHT
+                });
             }
             else {
                 let treedata = []
@@ -299,12 +347,12 @@ class TrainingModel extends Component {
     getDomainPopup = () => {
         return (
             <div id="modalForm" className="modal-block modal-block-primary mfp-hide">
-                <section className="card">
-                    <header className="card-header">
+                <section className="card project-card">
+                    <header className="card-header ">
                         <h2 className="card-title ">{this.state.openEditPopup === true ? "Edit Project" : "New Project"}</h2>
                         <b className="close text-right text" onClick={e => { this.setState({ openPopup: false, openEditPopup: false }) }}>
                             &times;
-                          </b>
+                        </b>
                     </header>
                     <div className="card-body">
                         <form>
@@ -335,13 +383,8 @@ class TrainingModel extends Component {
 
     createGoal = () => {
         let { goalDomainIndex, domainList } = { ...this.state }
-        domainList.forEach(element => {
-            element.expand = false
-        });
         let goalList = this.state.goalList
-        goalList.forEach(element => {
-            element.expand = false
-        });
+
         if (this.state.goalName === "") {
             toast.error("Please enter goal name", {
                 position: toast.POSITION.TOP_RIGHT
@@ -349,60 +392,129 @@ class TrainingModel extends Component {
 
         } else {
             if (!_.find(goalList, { goalName: this.state.goalName })) {
-                let tempObj = {
-                    goalName: this.state.goalName,
-                    goalDomains: domainList[goalDomainIndex],
-                    treeData: domainList[goalDomainIndex].pages,
-                    expand: true
-                }
-                goalList.unshift(tempObj)
-                this.setState({
-                    currentGoalIndex: 0, goalList, modeUrl: "", mode_name: "", cssSelector: "",
-                    goalName: "", goalDomainName: "", goalDomainIndex: 0, pageList: [],
-                    showPopup: false, domainUrls: [], pdfBlob: "", openPopup: false, createDomainPopup: false, startUrl: domainList[goalDomainIndex].domainURL, startUrlType: "goal", pageName: "",
-                })
 
+                var formData = new FormData();
+                formData.append("username", this.state.loggeduser['username'])
+                formData.append("project_name", domainList[goalDomainIndex].domainName)
+                formData.append("goal_name", this.state.goalName)
+                axios.post(baseUrl + '/create-goal', formData).then(res => {
+                    if (res.data.status === 200) {
+                        domainList.forEach(element => {
+                            element.expand = false
+                        });
+                        goalList.forEach(element => {
+                            element.expand = false
+                        });
+
+                        let tempObj = {
+                            goalName: this.state.goalName,
+                            goalDomains: domainList[goalDomainIndex],
+                            treeData: domainList[goalDomainIndex].pages,
+                            expand: true
+                        }
+                        goalList.unshift(tempObj)
+                        this.setState({
+                            currentGoalIndex: 0, goalList, modeUrl: "", mode_name: "", cssSelector: "",
+                            goalName: "", goalDomainName: "", goalDomainIndex: 0, pageList: [], showLoader: false,
+                            showPopup: false, domainUrls: [], pdfBlob: "", openPopup: false, createDomainPopup: false, startUrl: domainList[goalDomainIndex].domainURL, startUrlType: "goal", pageName: "",
+                        }, () =>
+                            toast.success(res.data.message, {
+                                position: toast.POSITION.TOP_RIGHT
+                            }))
+                    }
+                    else {
+                        toast.error(res.data.message, {
+                            position: toast.POSITION.TOP_RIGHT
+                        });
+                        this.setState({ showLoader: false })
+                    }
+                }).catch(e => {
+                    console.log(e)
+                    toast.error("Network Error", {
+                        position: toast.POSITION.TOP_RIGHT
+                    });
+                    this.setState({ showLoader: false })
+                })
             } else {
                 toast.error("Goal name already exist", {
                     position: toast.POSITION.TOP_RIGHT
                 });
             }
-
-
         }
+
     }
 
     savePage = (selectpageIndex) => {
         if (selectpageIndex === -1) {
-            let { goalList, currentGoalIndex, mainSelector, minorGoal, startUrl, pageName, actions, selectors, terminalState } = { ...this.state }
-            let tempPage = {
-                startUrl: startUrl,
-                pageName: pageName,
-                minorGoal: minorGoal,
-                mainSelector: mainSelector,
-                terminalState: terminalState,
-                selectors: selectors,
-                actions: actions
+            let { goalList, currentGoalIndex, mainSelector, minorGoal, startUrl, pageName, inputs, terminal_state, loggeduser } = { ...this.state }
+            console.log(goalList[currentGoalIndex].goalDomains.domainName)
+
+            let jsonData = {
+                projectName: goalList[currentGoalIndex].goalDomains.domainName,
+                username: loggeduser["username"],
+                data: [
+                    {
+                        goal: goalList[currentGoalIndex].goalName,
+                        pages: [
+                            {
+                                actions: inputs,
+                                terminalState: terminal_state,
+                                pageName: pageName,
+                                url: startUrl,
+                            }
+                        ]
+                    }
+                ]
             }
-            if (goalList[currentGoalIndex].selectedPages) {
-                let findIndex = _.findIndex(goalList[currentGoalIndex].selectedPages, { startUrl: startUrl, pageName: pageName })
-                if (findIndex >= 0) {
-                    goalList[currentGoalIndex].selectedPages[findIndex] = tempPage
-                } else {
-                    goalList[currentGoalIndex].selectedPages = [...goalList[currentGoalIndex].selectedPages, tempPage]
+            axios.post(baseUrl + '​/create-page', jsonData).then(res => {
+                console.log(res.data)
+                if (res.data.status === 200) {
+                    let tempPage = {
+                        startUrl: startUrl,
+                        pageName: pageName,
+                        minorGoal: minorGoal,
+                        mainSelector: mainSelector,
+                        terminal_state: terminal_state,
+                        inputs: inputs
+                    }
+                    if (goalList[currentGoalIndex].selectedPages) {
+                        let findIndex = _.findIndex(goalList[currentGoalIndex].selectedPages, { startUrl: startUrl, pageName: pageName })
+                        if (findIndex >= 0) {
+                            goalList[currentGoalIndex].selectedPages[findIndex] = tempPage
+                        } else {
+                            goalList[currentGoalIndex].selectedPages = [...goalList[currentGoalIndex].selectedPages, tempPage]
+                        }
+
+                        this.setState({ goalList })
+                    } else {
+                        goalList[currentGoalIndex].selectedPages = [tempPage]
+                        this.setState({ goalList })
+                    }
+                    toast.success(res.data.message, {
+                        position: toast.POSITION.TOP_RIGHT,
+                        autoClose: 3000,
+                    });
                 }
+                else {
+                    toast.error(res.data.message, {
+                        position: toast.POSITION.TOP_RIGHT,
+                        autoClose: 3000,
+                    });
+                    this.setState({ showLoader: false })
+                }
+            }).catch((e) => {
+                console.log(e)
+                toast.error("Network Error", {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+                this.setState({ showLoader: false })
+            })
 
-                this.setState({ goalList })
-            } else {
-                goalList[currentGoalIndex].selectedPages = [tempPage]
-                this.setState({ goalList })
-            }
         }
-        toast.success("Selectors saved ", {
-            position: toast.POSITION.TOP_RIGHT
-        });
-
-
+        else {
+            console.log("Edit Page")
+        }
     }
 
     expand = (type, index, pageIndex) => {
@@ -474,7 +586,7 @@ class TrainingModel extends Component {
         let newGoalData = goalList[goalDomainIndex];
         newGoalData.treeData = Object.assign({}, newGoalData.treeData);
         this.setState({
-            selectors: [""], actions: [""], terminalState: "",
+            inputs: [""], terminal_state: "",
             iSuccessSelector, iErrorSelector,
             mainSelector, minorGoal,
             goalExpand: true,
@@ -495,9 +607,37 @@ class TrainingModel extends Component {
                     label: 'Yes',
                     onClick: () => {
                         const { goalList } = this.state;
-                        goalList[goalIndex].selectedPages.splice(pageIndex, 1)
-                        this.setState({ goalList })
+                        let formData = new FormData();
+                        formData.append('username', this.state.loggeduser['username'])
+                        formData.append('project_name', goalList[goalIndex].goalDomains.domainName)
+                        formData.append('goal_name', goalList[goalIndex].goalName)
+                        formData.append('page_name', goalList[goalIndex].selectedPages[pageIndex].pageName)
+                        axios.delete(baseUrl + '​/delete-page', { data: formData }).then(res => {
+                            if (res.data.status === 200) {
+                                goalList[goalIndex].selectedPages.splice(pageIndex, 1)
+                                this.setState({ goalList, showLoader: false }, () => toast.success(res.data.message, {
+                                    position: toast.POSITION.TOP_RIGHT,
+                                    autoClose: 3000,
+                                }))
+
+                            }
+                            else {
+                                toast.error(res.data.message, {
+                                    position: toast.POSITION.TOP_RIGHT,
+                                    autoClose: 3000,
+                                });
+                                this.setState({ showLoader: false })
+                            }
+                        }).catch((e) => {
+                            console.log(e)
+                            toast.error("Network Error", {
+                                position: toast.POSITION.TOP_RIGHT,
+                                autoClose: 3000,
+                            });
+                            this.setState({ showLoader: false })
+                        })
                     }
+
                 },
                 {
                     label: 'No',
@@ -514,11 +654,37 @@ class TrainingModel extends Component {
                 {
                     label: 'Yes',
                     onClick: () => {
-                        goalList.splice(index, 1)
-                        if (index === currentGoalIndex && startUrlType === "goal") {
-                            this.setState({ startUrl: "", startUrlType: "", pageName: "", currentGoalIndex: 0 })
-                        }
-                        this.setState({ goalList })
+                        let formData = new FormData();
+                        formData.append('username', this.state.loggeduser['username'])
+                        formData.append('project_name', goalList[index].goalDomains.domainName)
+                        formData.append('goal_name', goalList[index].goalName)
+                        axios.delete(baseUrl + '/delete-goal', { data: formData }).then(res => {
+                            if (res.data.status === 200) {
+                                goalList.splice(index, 1)
+                                if (index === currentGoalIndex && startUrlType === "goal") {
+                                    this.setState({ startUrl: "", startUrlType: "", pageName: "", currentGoalIndex: 0 })
+                                }
+                                this.setState({ goalList, showLoader: false }, () => toast.success(res.data.message, {
+                                    position: toast.POSITION.TOP_RIGHT,
+                                    autoClose: 3000,
+                                }))
+
+                            }
+                            else {
+                                toast.error(res.data.message, {
+                                    position: toast.POSITION.TOP_RIGHT,
+                                    autoClose: 3000,
+                                });
+                                this.setState({ showLoader: false })
+                            }
+                        }).catch((e) => {
+                            console.log(e)
+                            toast.error("Network Error", {
+                                position: toast.POSITION.TOP_RIGHT,
+                                autoClose: 3000,
+                            });
+                            this.setState({ showLoader: false })
+                        })
                     }
                 },
                 {
@@ -530,35 +696,60 @@ class TrainingModel extends Component {
     deleteDomain = (obj, index) => {
         let { domainList, myTreeData, startUrlType, domainIndex, goalList, currentGoalIndex } = { ...this.state }
         confirmAlert({
-            message: `Are you sure you want to delete the domain '${domainList[index].domainName}' ? This action will also remove the goals under this domain.`,
+            message: `Are you sure you want to delete the project '${domainList[index].domainName}' ? This will also remove the goals under this domain.`,
             buttons: [
                 {
                     label: 'Yes',
                     onClick: () => {
-                        let list = _.cloneDeep(goalList)
-                        let removed = _.remove(goalList, { goalDomains: { domainName: domainList[index].domainName } })
-                        let goalindexes = []
-                        removed.forEach((ele) => {
-                            let temp = _.findIndex(list, { goalName: ele.goalName })
-                            if (temp !== -1) {
-                                goalindexes.push(temp)
-                            }
-                        })
-                        domainList.splice(index, 1)
-                        myTreeData.splice(index, 1)
-                        if (index === domainIndex && startUrlType === "domain") {
-                            this.setState({
-                                URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false, goalList,
-                                projectName: "", startUrl: "", startUrlType: "", pageName: "", domainIndex: 0, mainSelector: "", minorGoal: "", iErrorSelector: "", iSuccessSelector: ""
-                            })
-                        }
-                        else if (currentGoalIndex in goalindexes && startUrlType === "goal") {
-                            this.setState({ startUrl: "", startUrlType: "", pageName: "", domainList, goalList, currentGoalIndex: 0 })
+                        let formData = new FormData();
+                        formData.append('username', this.state.loggeduser['username'])
+                        formData.append('project_name', domainList[index].domainName)
+                        axios.delete(baseUrl + '/delete-project', { data: formData }).then(res => {
+                            console.log(res)
+                            if (res.data.status === 200) {
+                                let list = _.cloneDeep(goalList)
+                                let removed = _.remove(goalList, { goalDomains: { domainName: domainList[index].domainName } })
+                                let goalindexes = []
+                                removed.forEach((ele) => {
+                                    let temp = _.findIndex(list, { goalName: ele.goalName })
+                                    if (temp !== -1) {
+                                        goalindexes.push(temp)
+                                    }
+                                })
+                                domainList.splice(index, 1)
+                                myTreeData.splice(index, 1)
+                                if (index === domainIndex && startUrlType === "domain") {
+                                    this.setState({
+                                        URL: "", domainName: "", domainList, openPopup: false, goalDomainIndex: "", openEditPopup: false, goalList,
+                                        projectName: "", startUrl: "", startUrlType: "", pageName: "", domainIndex: 0, mainSelector: "", minorGoal: "", iErrorSelector: "", iSuccessSelector: ""
+                                    })
+                                }
+                                else if (currentGoalIndex in goalindexes && startUrlType === "goal") {
+                                    this.setState({ startUrl: "", startUrlType: "", pageName: "", domainList, goalList, currentGoalIndex: 0 })
 
-                        }
-                        else {
-                            this.setState({ domainList, goalList })
-                        }
+                                }
+                                else {
+                                    this.setState({ domainList, goalList })
+                                }
+                                toast.success(res.data.message, {
+                                    position: toast.POSITION.TOP_RIGHT,
+                                    autoClose: 3000,
+                                });
+                            }
+                            else {
+                                toast.error(res.data.message, {
+                                    position: toast.POSITION.TOP_RIGHT,
+                                    autoClose: 3000,
+                                });
+                            }
+                        }).catch((e) => {
+                            console.log(e)
+                            toast.error("Network Error", {
+                                position: toast.POSITION.TOP_RIGHT,
+                                autoClose: 3000,
+                            });
+                        })
+
                     }
                 },
                 {
@@ -575,9 +766,8 @@ class TrainingModel extends Component {
         if (data.selectedPages && data.selectedPages.length > 0) {
             data.selectedPages.forEach((ele) => {
                 let tempobj = {
-                    actions: ele.actions,
-                    selectors: ele.selectors,
-                    terminalState: ele.terminalState,
+                    inputs: ele.inputs,
+                    terminal_state: ele.terminal_state,
                     url: ele.startUrl,
                     pageName: ele.pageName,
                     goal: data.goalName,
@@ -631,8 +821,8 @@ class TrainingModel extends Component {
                 <Helmet>
                     <title>Project</title>
                 </Helmet>
-                { showLoader &&
-                    <div class="loading">
+                {showLoader &&
+                    <div className="loading">
                         <Loader className="spinner" type="Oval" color="#00BFFF" height={100} width={100} />
                     </div>}
                 <Popup className="custom-modal"
@@ -647,13 +837,13 @@ class TrainingModel extends Component {
                     closeOnDocumentClick={false}
                     onClose={e => this.setState({ createDomainPopup: false })}
                 >
-                    <div id="modalForm" className="modal-block modal-block-primary mfp-hide">
-                        <section className="card">
+                    <div id="modalForm" className="modal-block  modal-block-primary mfp-hide ">
+                        <section className="card project-card">
                             <header className="card-header">
                                 <h2 className="card-title ">Create Goal</h2>
                                 <b className="close text-right text" onClick={e => { this.setState({ createDomainPopup: false }) }}>
                                     &times;
-                          </b>
+                                </b>
                             </header>
                             <div className="card-body">
                                 <form>
@@ -750,9 +940,9 @@ class TrainingModel extends Component {
                                                             <div>
                                                                 <span className="pt-1 pb-1 mt-1 text-center">
                                                                     {goal.selectedPages && goal.selectedPages.map((page, pageIndex) =>
-                                                                        <form classname="position-relative tm-form c-pointer   w-100">
-                                                                            <div class="btn-group mt-1 w-80" role="group" aria-label="Basic example">
-                                                                                <button type="button" class="btn btn-default w-80 overflow-hidden" onClick={e => {
+                                                                        <form className="position-relative tm-form c-pointer   w-100">
+                                                                            <div className="btn-group mt-1 w-80" role="group" aria-label="Basic example">
+                                                                                <button type="button" className="btn btn-default w-80 overflow-hidden" onClick={e => {
                                                                                     this.setState({
                                                                                         mainSelector: page.mainSelector,
                                                                                         minorGoal: page.minorGoal,
@@ -763,7 +953,7 @@ class TrainingModel extends Component {
                                                                                         goalExpand: true
                                                                                     })
                                                                                 }}><span className="text-wrap">{page.pageName}</span></button>
-                                                                                <button type="button" class="btn btn-secondary" onClick={e => { this.deletePage(page, index, pageIndex) }}><i class="fas fa-trash fas-lg"></i></button>
+                                                                                <button type="button" className="btn btn-secondary" onClick={e => { this.deletePage(page, index, pageIndex) }}><i className="fas fa-trash fas-lg"></i></button>
                                                                             </div>
                                                                         </form>
                                                                     )}
@@ -824,7 +1014,7 @@ class TrainingModel extends Component {
                                                                                         <span className='col-md-12 h5'> Please Add Page Properties</span>
                                                                                         <div className="row row">
                                                                                             <div className="col-md-6 row p-0">
-                                                                                                <div className="col-6">
+                                                                                                {/* <div className="col-6">
                                                                                                     {
                                                                                                         (selectpageIndex && selectpageIndex) > -1 ?
                                                                                                             goalList[currentGoalIndex].selectedPages[selectpageIndex].selectors.map((ele, n) =>
@@ -846,25 +1036,25 @@ class TrainingModel extends Component {
                                                                                                                 </div>
                                                                                                             )
                                                                                                     }
-                                                                                                </div>
-                                                                                                <div className="col-6">
+                                                                                                </div> */}
+                                                                                                <div className="col">
                                                                                                     {
                                                                                                         (selectpageIndex && selectpageIndex) > -1 ?
-                                                                                                            goalList[currentGoalIndex].selectedPages[selectpageIndex].actions.map((ele, n) =>
+                                                                                                            goalList[currentGoalIndex].selectedPages[selectpageIndex].inputs.map((ele, n) =>
                                                                                                                 <div className="mt-2">
-                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action" id="mainSelector"
-                                                                                                                        name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "actions", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].actions[n]} />
-                                                                                                                    {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("actions", selectpageIndex) }}>  <i className="fas fa-plus text-default "></i></span>
-                                                                                                                        : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("actions", n, selectpageIndex) }} >  <i className="fas fa-minus text-default "></i></span>}
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Input" id="mainSelector"
+                                                                                                                        name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "inputs", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].inputs[n]} />
+                                                                                                                    {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("inputs", selectpageIndex) }}>  <i className="fas fa-plus text-default "></i></span>
+                                                                                                                        : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("inputs", n, selectpageIndex) }} >  <i className="fas fa-minus text-default "></i></span>}
 
                                                                                                                 </div>
                                                                                                             ) :
-                                                                                                            this.state.selectors && this.state.actions.map((ele, n) =>
+                                                                                                            this.state.inputs.map((ele, n) =>
                                                                                                                 <div className="mt-2">
-                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Action" id="mainSelector"
-                                                                                                                        name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "actions")} value={this.state.actions[n]} />
-                                                                                                                    {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("actions") }}>  <i className="fas fa-plus text-default "></i></span>
-                                                                                                                        : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("actions", n) }} >  <i className="fas fa-minus text-default "></i></span>}
+                                                                                                                    <input type="text" className="form-control  col-md-8 d-inline  " placeholder="Input" id="mainSelector"
+                                                                                                                        name="mainSelector" onChange={e => this.handleChangeSelector(e, n, "inputs")} value={this.state.inputs[n]} />
+                                                                                                                    {n === 0 ? <span className="btn btn-success col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.addSelectors("inputs") }}>  <i className="fas fa-plus text-default "></i></span>
+                                                                                                                        : <span className="btn btn-danger col-md-2 d-inline ml-1 mr-1 " onClick={() => { this.deleteSelectors("inputs", n) }} >  <i className="fas fa-minus text-default "></i></span>}
 
                                                                                                                 </div>
                                                                                                             )
@@ -873,10 +1063,10 @@ class TrainingModel extends Component {
                                                                                             </div>
                                                                                             <div className="col-md-6">
                                                                                                 {selectpageIndex > -1 ?
-                                                                                                    <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State" id="terminalState"
-                                                                                                        name="terminalState" onChange={e => this.handleChangeSelector(e, -1, "terminalState", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].terminalState} />
-                                                                                                    : <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State" id="terminalState"
-                                                                                                        name="terminalState" onChange={e => this.handleChangeSelector(e, -1, "terminalState")} value={this.state.terminalState} />}
+                                                                                                    <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State" id="terminal_state"
+                                                                                                        name="terminal_state" onChange={e => this.handleChangeSelector(e, -1, "terminal_state", selectpageIndex)} value={goalList[currentGoalIndex].selectedPages[selectpageIndex].terminal_state} />
+                                                                                                    : <input type="text" className="form-control  col-md-5 d-inline ml-1 " placeholder="Terminal State" id="terminal_state"
+                                                                                                        name="terminal_state" onChange={e => this.handleChangeSelector(e, -1, "terminal_state")} value={this.state.terminal_state} />}
                                                                                                 <button className="btn btn-success col-md-3 ml-1" onClick={e => { this.savePage(selectpageIndex) }}>Save</button>
                                                                                             </div>
                                                                                         </div>
