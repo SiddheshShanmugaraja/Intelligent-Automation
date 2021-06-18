@@ -10,27 +10,24 @@ import { Link } from 'react-router-dom'
 const Signup = () => {
 
   const history = useHistory();
-  const [email, setEmail] = useState('')
-  const [name, setName] = useState('')
-  const [password, setPassword] = useState('')
-  const [cnfpassword, setCnfPassword] = useState('')
+  const [values, setValues] = useState({ name: "", password: "", email: "", cnfpassword: "" })
   const [error, setError] = useState({} as any)
 
   const validate = () => {
     let valid = {} as any
-    valid.name = name.length > 0 ? "" : "*Name is Required"
-    valid.email = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email) ? "" : "*Enter a valid email"
-    valid.password = password.length >= 5 && password.length < 10 ? "" : "*Password should be between 5 to 10 characters"
-    valid.cnfpassword = cnfpassword.length > 0 && password !== cnfpassword ? "*Password mismatch " : ""
+    valid.name = values.name.length > 0 ? "" : "Name is Required"
+    valid.email = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(values.email) ? "" : "Enter a valid email"
+    valid.password = values.password.length >= 5 && values.password.length <= 10 ? "" : "Password should be between 5 to 10 characters"
+    valid.cnfpassword = values.cnfpassword.length > 0 && values.cnfpassword.length <= 10 ? values.password !== values.cnfpassword ? "Password mismatch " : "" : "Confirm password should be between 5 to 10 characters"
     return valid;
   }
   const handleSubmit = () => {
     const formData = new FormData();
     let obj = validate();
     if (Object.values(obj).every(item => item === "")) {
-      formData.append('email', email)
-      formData.append('username', name)
-      formData.append('password', password)
+      formData.append('email', values.email)
+      formData.append('username', values.name)
+      formData.append('password', values.password)
       axios.post(baseUrl + '/sign-up', formData).then(res => {
         if (res.data.status === 200) {
           toast.success(res.data.message, {
@@ -55,6 +52,35 @@ const Signup = () => {
     else {
       setError(obj);
     }
+  }
+  const validateOnChange = (field, val) => {
+    let err, temp, tempField
+    switch (field) {
+      case "name":
+        err = val.length > 0 ? "" : "Name is Required";
+        break;
+      case "email":
+        err = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(val) ? "" : "Enter a valid email";
+        break;
+      case "password":
+        err = val.length >= 5 && val.length <= 10 ? "" : "Password should be between 5 to 10 characters"
+        temp = values.cnfpassword.length >= 5 && values.cnfpassword.length <= 10 ? val !== values.cnfpassword ? "Password mismatch " : "" : "Confirm password should be between 5 to 10 characters"
+        tempField = "cnfpassword"
+        break;
+      case "cnfpassword":
+        err = val.length >= 5 && val.length <= 10 ? val !== values.password ? "Password mismatch " : "" : "Confirm password should be between 5 to 10 characters"
+        break;
+    }
+    if (tempField) {
+      setError({ ...error, [field]: err, [tempField]: temp })
+    }
+    else {
+      setError({ ...error, [field]: err })
+    }
+  }
+  const handleChange = (e) => {
+    validateOnChange(e.target.name, e.target.value);
+    setValues({ ...values, [e.target.name]: e.target.value })
   }
 
   return (
@@ -83,7 +109,7 @@ const Signup = () => {
             type="text"
             name='name'
             id='name'
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleChange(e)}
           />
           {error.name && <p className="Error-text"> {error.name}</p>}
         </div>
@@ -93,7 +119,7 @@ const Signup = () => {
             type="text"
             name='email'
             id='email'
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => handleChange(e)}
           />
           {error.email && <p className="Error-text"> {error.email}</p>}
 
@@ -104,7 +130,7 @@ const Signup = () => {
             type="password"
             name='password'
             id='password'
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => handleChange(e)}
           />
           {error.password && <p className="Error-text"> {error.password}</p>}
         </div>
@@ -114,13 +140,13 @@ const Signup = () => {
             type="password"
             name='cnfpassword'
             id='cnfpassword'
-            onChange={(e) => setCnfPassword(e.target.value)}
+            onChange={(e) => handleChange(e)}
           />
           {error.cnfpassword && <p className="Error-text"> {error.cnfpassword}</p>}
         </div>
         <button name="signup" id="signup" className="signup-button" onClick={() => handleSubmit()} >
           SignUp
-          </button>
+        </button>
       </div>
       <div className="text-center text-white mt-4">
         <p>By signing up I accept the <span>Terms & Conditions </span> and the  <span>Privacy Policy </span></p>

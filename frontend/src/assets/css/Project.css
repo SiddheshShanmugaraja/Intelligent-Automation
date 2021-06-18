@@ -18392,3 +18392,7 @@ justify-content: center !important;
   .react-confirm-alert-button-group  :nth-child(2) {
 	background-color: red;
 }
+
+.project-card{
+	width: 500px;
+}

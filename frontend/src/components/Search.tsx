@@ -224,7 +224,7 @@ const Search = () => {
                                 </tr></thead>
                             <tbody>
                                 {table_values && table_values.length > 0 ? table_values.map((arr,ind) =>
-                                    <tr key={arr.id}>
+                                    <tr key={arr.email}>
                                         <td className={field === 'id' ? "selected-values" : ""}>{arr.id}</td>
                                         <td className={field === 'username' ? "selected-values" : ""}>{arr.username}</td>
                                         <td className={field === 'email' ? "selected-values" : ""}>{arr.email}</td>

@@ -9,16 +9,13 @@ import { Helmet } from 'react-helmet-async';
 
 const Login = () => {
   const history = useHistory();
-  // const [email, setEmail] = useState('')
-  const [name, setName] = useState('')
-  const [password, setPassword] = useState('')
+  const [values, setValues] = useState({ name: "", password: "" })
   const [error, setError] = useState({} as any)
 
   const validate = () => {
     let valid = {} as any
-    valid.name = name.length > 0 ? "" : "*Name is Required"
-    // valid.email = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email) ? "" : " Enter a valid email"
-    valid.password = password.length >= 5 && password.length < 10 ? "" : " password should be between 5 to 10 characters"
+    valid.name = values.name.length > 0 ? "" : "Name is Required"
+    valid.password = values.password.length >= 5 && values.password.length < 10 ? "" : "Password should be between 5 to 10 characters"
     return valid;
   }
 
@@ -26,9 +23,10 @@ const Login = () => {
     const formData = new FormData();
     let obj = validate();
     if (Object.values(obj).every(item => item === "")) {
-      formData.append('username', name)
-      formData.append('password', password)
+      formData.append('username', values.name)
+      formData.append('password', values.password)
       axios.post(baseUrl + '/login', formData).then(res => {
+        console.log(res)
         if (res.data.status === 200) {
           toast.success("Login Success", {
             position: toast.POSITION.TOP_RIGHT,
@@ -56,17 +54,33 @@ const Login = () => {
       setError(obj);
     }
   }
+  const validateOnChange = (field, val) => {
+    let err
+    switch (field) {
+      case "name":
+        err = val.length > 0 ? "" : "Name is Required";
+        break;
+      case "password":
+        err = val.length >= 5 && val.length < 10 ? "" : "Password should be between 5 to 10 characters";
+        break;
+    }
+    setError({ ...error, [field]: err })
+  }
+  const handleChange = (e) => {
+    validateOnChange(e.target.name, e.target.value);
+    setValues({ ...values, [e.target.name]: e.target.value })
+  }
   return (
     <div className="container">
       <Helmet>
         <title>Login</title>
       </Helmet>
       <div className="d-none" >
-      <Link to='/' />
-                <Link to='/sign-up' />
-                <Link to='/profile' />
-                <Link to='/search' />
-                <Link to='/home' />
+        <Link to='/' />
+        <Link to='/sign-up' />
+        <Link to='/profile' />
+        <Link to='/search' />
+        <Link to='/home' />
       </div>
       <div className="login-navbar-container">
         <div className="login-navbar-content">
@@ -84,7 +98,7 @@ const Login = () => {
             name='name'
             id='name'
             autoComplete='on'
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleChange(e)}
           />
           {error.name && <p className="Error-text"> {error.name}</p>}
         </div>
@@ -95,13 +109,13 @@ const Login = () => {
             name='password'
             id='password'
             autoComplete='off'
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => handleChange(e)}
           />
           {error.password && <p className="Error-text"> {error.password}</p>}
         </div>
         <button name="login" id="login" className="login-button" onClick={() => handleSubmit()}>
           LOGIN
-      </button>
+        </button>
       </div>
     </div>
   )

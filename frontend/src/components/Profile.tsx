@@ -23,22 +23,19 @@ const Profile = () => {
     const history = useHistory();
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
-    const [name, setName] = useState('')
     const [username, setUsername] = useState('')
-    const [country, setCountry] = useState('')
     const [dob, setdob] = useState('')
     const [formatdob, setformatdob] = useState('')
     const [gender, setGender] = useState('')
-    const [about, setAbout] = useState('')
     const [check, setCheck] = React.useState({
         Mobile: false,
         Computer: false,
         Tablet: false,
     });
     const [photo, setPhoto] = React.useState('')
-    const [phone, setPhone] = useState('')
     const [file, setFile] = React.useState('')
     const [error, setError] = useState({} as any)
+    const [values, setValues] = useState({ name: "", about: "", country: "", phone: "" })
 
     const formatdate = (date: any) => {
         let month = String(date.getMonth() + 1);
@@ -49,26 +46,51 @@ const Profile = () => {
         var formated = `${day}/${month}/${year}`;
         setformatdob(formated)
     }
-
     const validate = () => {
         let valid = {} as any
-        valid.name = name && (name.length > 2 && name.length < 21) ? /^[a-zA-Z ]*$/.test(name) ? "" : "*Name should contain only alphabets" : "*Name should contain between 3 to 20 characters"
-        valid.about = about && about.length > 0 ? about.length < 501 ? about.length > 30 ? "" : "*About should be greater than 30 characters" : "*About should be within 500 characters" : "* About is required"
-        valid.country = country && country.length > 0 ? /^[a-zA-Z ]*$/.test(country) ? countriesList.includes(country.toLowerCase()) ? "" : "*Country name not recogonized" : "*Country name should contain only alphabets" : "*Country name is required"
-        valid.phone = phone && phone.length > 0 ? /^\d+$/.test(phone) && phone.length === 10 ? "" : "*Invalid Phone number" : "*Phone number is required"
+        valid.name = values.name && (values.name.length > 2 && values.name.length < 21) ? /^[a-zA-Z ]*$/.test(values.name) ? "" : "Name should contain only alphabets" : "Name should contain between 3 to 20 characters"
+        valid.about = values.about && values.about.length > 0 ? values.about.length < 501 ? values.about.length > 30 ? "" : "About should be greater than 30 characters" : "About should be within 500 characters" : "About is required"
+        valid.country = values.country && values.country.length > 0 ? /^[a-zA-Z ]*$/.test(values.country) ? countriesList.includes(values.country.toLowerCase()) ? "" : "Country name not recogonized" : "Country name should contain only alphabets" : "Country name is required"
+        valid.phone = values.phone && values.phone.length > 0 ? /^\d+$/.test(values.phone) && values.phone.length === 10 ? "" : "Invalid Phone number" : "Phone number is required"
         return valid;
     }
+    const validateOnChange = (field, val) => {
+        let err
+        switch (field) {
+            case "name":
+                err = val && (val.length > 2 && val.length < 21) ? /^[a-zA-Z ]*$/.test(val) ? "" : "Name should contain only alphabets" : "Name should contain between 3 to 20 characters";
+                break;
+            case "about":
+                err = val && val.length > 0 ? val.length < 501 ? val.length > 30 ? "" : "About should be greater than 30 characters" : "About should be within 500 characters" : "About is required";
+                break;
+            case "country":
+                err = val && val.length > 0 ? /^[a-zA-Z ]*$/.test(val) ? countriesList.includes(val.toLowerCase()) ? "" : "Country name not recogonized" : "Country name should contain only alphabets" : "Country name is required";
+                break;
+            case "phone":
+                err = val && val.length > 0 ? /^\d+$/.test(val) && val.length === 10 ? "" : "Invalid Phone number" : "Phone number is required";
+                break;
+        }
+        setError({ ...error, [field]: err })
+    }
+    const handleChange = (e) => {
+        validateOnChange(e.target.name, e.target.value);
+        setValues({ ...values, [e.target.name]: e.target.value })
+    }
+
 
     useEffect(() => {
         let loggeduser = JSON.parse(sessionStorage.getItem('loggeduser') || '{}')
         setUsername(loggeduser['username'])
-        setName(loggeduser['name'])
+        let temp = {
+            name: loggeduser['name'],
+            country: loggeduser['country'],
+            about: loggeduser['about'],
+            phone: loggeduser['phone'],
+        }
+        setValues(temp)
         setEmail(loggeduser['email'])
-        setCountry(loggeduser['country'])
         setGender(loggeduser['gender'])
         loggeduser['dob'] && setdob(loggeduser['dob'].replaceAll("/", "-").split("-").reverse().join("-"))
-        setAbout(loggeduser['about'])
-        setPhone(loggeduser['phone'])
         setPhoto(baseUrl + '/' + loggeduser['photo'])
         let device = loggeduser['device']
         if (loggeduser['device']) {
@@ -149,12 +171,12 @@ const Profile = () => {
         setError(obj);
         if (Object.values(obj).every(item => item === "")) {
             formData.append('username', username)
-            formData.append('name', name)
-            formData.append('country', country)
+            formData.append('name', values.name)
+            formData.append('country', values.country)
             formData.append('gender', gender)
             formatdob && formData.append('dob', formatdob)
-            formData.append('about', about)
-            formData.append('phone', phone)
+            formData.append('about', values.about)
+            formData.append('phone', values.phone)
             formData.append("photo", file);
             var device = []
             Object.keys(check).forEach(function (key) {
@@ -232,11 +254,11 @@ const Profile = () => {
                         <p>Name*</p>
                         <input
                             className={"profile-text-input " + (error.name ? "input-error" : "")}
-                            value={name}
+                            value={values.name}
                             type="text"
                             name='name'
-                            id= "name"
-                            onChange={(e) => setName(e.target.value)}
+                            id="name"
+                            onChange={(e) => handleChange(e)}
                         />
                         {error.name && <p className="Error-text"> {error.name}</p>}
                     </div>
@@ -259,35 +281,36 @@ const Profile = () => {
                     <div className="profile-text">
                         <p>Country*</p>
                         <input
-                            className={"profile-text-input " + (error.country ? "input-error" : "")} value={country}
+                            className={"profile-text-input " + (error.country ? "input-error" : "")}
+                            value={values.country}
                             type="text"
                             name='country'
                             id='country'
-                            onChange={(e) => setCountry(e.target.value)}
+                            onChange={(e) => handleChange(e)}
                         />
                         {error.country && <p className="Error-text"> {error.country}</p>}
                     </div>
                     <div className="profile-text">
                         <p>Gender</p>
                         <RadioGroup row name="gender" id="gender" value={gender} onChange={(e) => setGender(e.target.value)}>
-                            <FormControlLabel value="female" name="female" id="female"  control={<Radio />} label="Female" />
-                            <FormControlLabel value="male" name="male" id="male"  control={<Radio />} label="Male" />
-                            <FormControlLabel value="other" name="other" id="other"  control={<Radio />} label="Other" />
+                            <FormControlLabel value="female" name="female" id="female" control={<Radio />} label="Female" />
+                            <FormControlLabel value="male" name="male" id="male" control={<Radio />} label="Male" />
+                            <FormControlLabel value="other" name="other" id="other" control={<Radio />} label="Other" />
                         </RadioGroup>
                     </div>
                     <div className="profile-text">
                         <p>Devices</p>
                         <FormGroup aria-label="position" id="devices" row>
                             <FormControlLabel
-                                control={<Checkbox name="Mobile" id="Mobile" checked={check['Mobile']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }}  />}
+                                control={<Checkbox name="Mobile" id="Mobile" checked={check['Mobile']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} />}
                                 label="Mobile"
                             />
                             <FormControlLabel
-                                control={<Checkbox name="Computer" id="Computer" checked={check['Computer']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }}  />}
+                                control={<Checkbox name="Computer" id="Computer" checked={check['Computer']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} />}
                                 label="Computer"
                             />
                             <FormControlLabel
-                                control={<Checkbox name="Tablet" id="Tablet" checked={check['Tablet']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }}  />}
+                                control={<Checkbox name="Tablet" id="Tablet" checked={check['Tablet']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} />}
                                 label="Tablet"
                             />
                         </FormGroup>
@@ -296,11 +319,11 @@ const Profile = () => {
                         <p>Phone Number*</p>
                         <input
                             className={"profile-text-input " + (error.phone ? "input-error" : "")}
-                            value={phone}
+                            value={values.phone}
                             type="text"
                             name='phone'
                             id='phone'
-                            onChange={(e) => setPhone(e.target.value)}
+                            onChange={(e) => handleChange(e)}
                         />
                         {error.phone && <p className="Error-text"> {error.phone}</p>}
 
@@ -310,7 +333,7 @@ const Profile = () => {
                         <div className="container">
                             <div className="dropzone-outer">
                                 <div className="dropzone-inner"{...getRootProps({ style })}>
-                                    <input name="profilepicture" id="profilepicture" {...getInputProps()}/>
+                                    <input name="profilepicture" id="profilepicture" {...getInputProps()} />
                                     <p>Drag 'n' drop, or click to select </p>
                                 </div>
                             </div>
@@ -319,19 +342,19 @@ const Profile = () => {
                     {photo &&
                         <div className="profile-text">
                             <p>Preview</p>
-                            <div className="profile-preview"> <Avatar name={name} src={photo} size="300" round={true} color="#009999" />
+                            <div className="profile-preview"> <Avatar name={values.name} src={photo} size="300" round={true} color="#009999" />
                             </div>
                         </div>
                     }
                     <div className="profile-text">
                         <p>About*</p>
                         <textarea
-                            className={"profile-text-textarea " + (error.about ? "input-error" : "")} name="description"
+                            className={"profile-text-textarea " + (error.about ? "input-error" : "")} name="about"
                             rows={10}
                             maxLength={500}
-                            value={about}
-                            id="description"
-                            onChange={(e) => setAbout(e.target.value)}
+                            value={values.about}
+                            id="about"
+                            onChange={(e) => handleChange(e)}
                         >
                         </textarea>
                         {error.about && <p className="Error-text"> {error.about}</p>}
@@ -343,7 +366,7 @@ const Profile = () => {
                         </button> :
                         <button className="signup-button" name="update" id="update" onClick={() => handleSubmit()} >
                             Update
-       </button>
+                        </button>
                     }
 
 
