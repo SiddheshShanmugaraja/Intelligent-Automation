@@ -11,6 +11,10 @@ from selenium import webdriver as wb
 from typing import List, Dict, Tuple, Optional, Type
 from urllib3.exceptions import ProtocolError, MaxRetryError
 from requests.exceptions import ConnectionError
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, InvalidElementStateException, StaleElementReferenceException
 
 pd.set_option('display.max_columns', None)
@@ -48,9 +52,11 @@ class Webpage:
         else:
             self.initialize_driver()
         self.states = self.get_states()
-        self.actions = ['skip', 'click_button'] + [f'set_value={i}' for i in inputs] 
+        self.actions = ['skip', 'click_button'] + [f'set_value={i}' for i in inputs] + [f'slide_button={i}' for i in inputs] + [f'drag_and_drop={i}' for i in self.states] 
         self.assertion_message = assertion_message
         self.q_table = np.zeros((len(self.states), len(self.actions)))
+        self.wait = WebDriverWait(self.driver, 2)
+        self.action_chain = ActionChains(driver)
         with open('test_cases.txt', 'a') as f:
             f.write(str(self))
 
@@ -66,21 +72,28 @@ class Webpage:
         states = [element.get_attribute('id') for element in elements if element.get_attribute('id') not in ['', 'root']]
         return states
 
+    def click_button(self, element_id: str): 
+        element = self.wait.until(EC.element_to_be_clickable((By.ID, element_id)))
+        try:
+            element.clear()
+        except InvalidElementStateException:
+            pass
+        self.driver.execute_script("arguments[0].click();", element)
+
     def set_value(self, element_id: str, value: str):
         self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)
         element = self.driver.find_element_by_id(element_id)
         element.clear()
         element.send_keys(value)
 
-    def click_button(self, element_id: str): 
-        self.driver.implicitly_wait(SLEEP_BETWEEN_INTERVALS)
-        element = self.driver.find_element_by_id(element_id)
-        try:
-            element.clear()
-        except InvalidElementStateException:
-            pass
-        # click on element
-        self.driver.execute_script("arguments[0].click();", element)
+    def slide_button(self, element_id: str, x_offset: int, y_offset: int):
+        element = self.wait.until(EC.element_to_be_clickable((By.ID, element_id)))
+        self.action_chain.click_and_hold(element).move_by_offset(x_offset, y_offset).release().perform()
+
+    def drag_and_drop(self, source_element_id: str, target_element_id: str): 
+        source = self.wait.until(EC.element_to_be_clickable((By.ID, source_element_id)))
+        target = self.wait.until(EC.element_to_be_clickable((By.ID, target_element_id)))
+        self.action_chain.drag_and_drop(source, target).perform()
 
     def take_action(self, state: str, action: str):
         if 'set_value' in action:
@@ -88,6 +101,12 @@ class Webpage:
             self.set_value(state, value)
         elif 'click_button' in action:
             self.click_button(state)
+        elif 'slide_button' in action:
+            value = action.split('=')[-1]
+            self.slide_button(state, value, value)
+        elif 'drag_and_drop' in action:
+            target_element_id = action.split('=')[-1]
+            self.drag_and_drop(state, target_element_id)
 
     def learn(self, state_index: int, action_index: int, reward: int):
         current_q = self.q_table[state_index, action_index]
@@ -101,12 +120,11 @@ class Webpage:
 
     def episode(self, epsilon: float):
         success = False
-        # self.driver.get(self.url)
         while not success:
             history = list()
             self.driver.get(self.url)
             for state_index, state in enumerate(self.states):
-                if np.random.random() > epsilon:
+                if np.random.random() > epsilon == 0.9:
                     action = self.actions[self.q_table[state_index].argmax()]
                 else:
                     action = random.choice(self.actions)
@@ -199,8 +217,8 @@ if __name__ == '__main__':
     except KeyError:
         print(f"Username - '{args.user}' or/and Project - {args.project} do not exist!")
         exit()
-    URLS = [d['url'] for d in DATA]
-    INPUTS = [d['actions'] for d in DATA]
-    ASSERTION_MESSAGES = [d['terminalState'] for d in DATA]
+    URLS = ['http://localhost:3000']# [d['url'] for d in DATA]
+    INPUTS = [['admin', 'password']]# [d['actions'] for d in DATA]
+    ASSERTION_MESSAGES = ['Login Success']# [d['terminalState'] for d in DATA]
     domain = Domain(urls=URLS, inputs=INPUTS, assertion_messages=ASSERTION_MESSAGES)
     domain.train()

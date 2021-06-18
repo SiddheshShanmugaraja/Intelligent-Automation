@@ -27,11 +27,11 @@ def sign_up(response: Response, email: str = Form(...), username: str = Form(...
     user1 = db.query(models.User).filter_by(email=email).first()
     user2 = db.query(models.User).filter_by(username=username).first()
     if user1:
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = 'Email already exists!'
         data = None
     elif user2:
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = 'Username already exists!'
         data = None
     else:
@@ -64,11 +64,11 @@ def login(response: Response, username: str = Form(...), password: str = Form(..
             message = 'Login successful!'
             data = user.to_dict()
         else:
-            status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+            status = response.status_code = STATUS.HTTP_201_CREATED
             message = 'Incorrect Password!'
             data = None
     else:
-        status = response.status_code = STATUS.HTTP_404_NOT_FOUND 
+        status = response.status_code = STATUS.HTTP_201_CREATED 
         message = f'No account registered with username: {username}!'
         data = None
     return dict(status=status, message=message, data=data)
@@ -92,12 +92,12 @@ def delete_user(response: Response, username: str, db: Session = Depends(databas
         status = response.status_code = STATUS.HTTP_200_OK
         message = 'Account deleted successfully!'
     else:
-        status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = 'User not found!'
     return dict(status=status, message=message)
 
-@auth.put('/update-password', status_code=STATUS.HTTP_200_OK, tags=['Users'])
-def change_password(response: Response, username: str, old_password: str, new_password: str, db: Session = Depends(database.get_db)) -> Dict:
+@auth.post('/change-password', status_code=STATUS.HTTP_200_OK, tags=['Users'])
+def change_password(response: Response, username: str = Form(...), old_password: str = Form(...), new_password: str = Form(...), db: Session = Depends(database.get_db)) -> Dict:
     '''[summary]
 
     Args:
@@ -119,13 +119,13 @@ def change_password(response: Response, username: str, old_password: str, new_pa
             message = 'Password updated successfully!'
         else:
             message = 'Incorrect password!'
-            status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+            status = response.status_code = STATUS.HTTP_201_CREATED
     else:
         message = f'Incorrect username {username}!'
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
     return dict(status=status, message=message)
 
-@auth.put('/update-profile', status_code=STATUS.HTTP_200_OK, tags=['Users'])
+@auth.post('/update-profile', status_code=STATUS.HTTP_200_OK, tags=['Users'])
 def update_profile(response: Response, username: str = Form(...), name: Optional[str] = Form(None), dob: Optional[str] = Form(None), country: Optional[str] = Form(None), gender: Optional[str] = Form(None), device: Optional[str] = Form(None), phone: Optional[str] = Form(None), about: Optional[str] = Form(None), photo: Optional[UploadFile] = File(None), db: Session = Depends(database.get_db)) -> Dict:
     '''[summary]
 
@@ -159,11 +159,12 @@ def update_profile(response: Response, username: str = Form(...), name: Optional
         if dob:
             user.dob = datetime.strptime(dob, '%d/%m/%Y').date()
         db.commit()
+        db.refresh(user)
         status = response.status_code = STATUS.HTTP_200_OK
         message = 'Profile update successful!'
         data = user.to_dict()
     else:
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = f'No user with username: {username}!'
         data = None
     return dict(status=status, message=message, data=data)
@@ -230,11 +231,11 @@ def transfer_credits(response: Response, amount: int = Form(...), sender_usernam
             message = f'Credits transferred from {sender.username} to {reciever.username} successfully!'
         else:
             data = None
-            status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+            status = response.status_code = STATUS.HTTP_201_CREATED
             message = 'Insufficient credits'
     else:
         data = None
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
         if (not sender) and (not reciever):
             message = f'No users with usernames - {sender_username}, {reciever_username}!'
         elif not sender:

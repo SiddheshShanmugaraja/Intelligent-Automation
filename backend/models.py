@@ -1,8 +1,8 @@
 import json
 from . import database
-from .utils import calculate_age
 from datetime import datetime, date
 from sqlalchemy.orm import relationship
+from .utils import calculate_age, get_crawled_urls
 from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean, ForeignKey
 
 with open("backend/config.json", "r") as f:
@@ -67,6 +67,7 @@ class Project(database.Base):
                     url = self.url,
                     creator = self.creator.username,
                     date_created = self.date_created.strftime("%d/%m/%Y %H:%M:%S"),
+                    sub_domains = get_crawled_urls(self.url),
                     goals = list(map(lambda x: x.to_dict(), self.goals))
                 )
 
@@ -83,7 +84,7 @@ class Goal(database.Base):
     def to_dict(self):
         return dict(
                     name = self.name,
-                    project = self.project_assiciated.name,
+                    project = self.project_associated.name,
                     pages = list(map(lambda x: x.to_dict(), self.pages))
                 )
 

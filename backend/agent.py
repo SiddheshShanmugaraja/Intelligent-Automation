@@ -48,11 +48,11 @@ def extract_subdomains(response: Response, domain: str = Form(...)) -> Dict:
                 message = 'Sites extracted!'
                 data = utils.create_tree(data, page_titles)
             else:
-                status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+                status = response.status_code = STATUS.HTTP_201_CREATED
                 message = 'No data found!'
                 data = None
     else:
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = 'Domain is missing!'
         data = None
     return dict(status=status, message=message, data=data)
@@ -63,7 +63,9 @@ def create_project(response: Response, username: str = Form(...), project_name: 
 
     Args:
         response (Response): [description]
-        train_info (schemas.Project): [description]
+        username (str, optional): [description]. Defaults to Form(...).
+        project_name (str, optional): [description]. Defaults to Form(...).
+        url (str, optional): [description]. Defaults to Form(...).
         db (Session, optional): [description]. Defaults to Depends(database.get_db).
 
     Returns:
@@ -73,7 +75,7 @@ def create_project(response: Response, username: str = Form(...), project_name: 
     if user:
         for project in user.projects:
             if project.name == project_name:
-                status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+                status = response.status_code = STATUS.HTTP_201_CREATED
                 message = f'The user - {username} already has a project with name - {project_name}'
                 return dict(status=status, message=message) 
         new_project = models.Project(name=project_name, url=url, user_id=user.id)
@@ -82,7 +84,7 @@ def create_project(response: Response, username: str = Form(...), project_name: 
         status = response.status_code = STATUS.HTTP_200_OK
         message = f'Project created successfully!'
     else:
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message)
 
@@ -104,7 +106,7 @@ def create_goal(response: Response, username: str = Form(...), project_name: str
         if project:
             for goal in project.goals:
                 if goal.name == goal_name:
-                    status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+                    status = response.status_code = STATUS.HTTP_201_CREATED
                     message = f'The project - {project_name} already has a goal with name - {goal_name}'
                     return dict(status=status, message=message) 
             new_goal = models.Goal(name=goal_name, project_id=project.id)
@@ -113,10 +115,10 @@ def create_goal(response: Response, username: str = Form(...), project_name: str
             status = response.status_code = STATUS.HTTP_200_OK
             message = f'Goal created successfully!'
         else:
-            status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+            status = response.status_code = STATUS.HTTP_201_CREATED
             message = PROJECT_NOT_FOUND_ERROR
     else:
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message)
 
@@ -152,13 +154,13 @@ def create_page(response: Response,  pages: schemas.Project, db: Session = Depen
                         message = f'Pages created successfully!'
                         break
                 else:
-                    status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+                    status = response.status_code = STATUS.HTTP_201_CREATED
                     message = GOAL_NOT_FOUND_ERROR
         else:
-            status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+            status = response.status_code = STATUS.HTTP_201_CREATED
             message = PROJECT_NOT_FOUND_ERROR
     else:
-        status = response.status_code = STATUS.HTTP_400_BAD_REQUEST
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message)
 
@@ -186,7 +188,7 @@ def get_projects(response: Response, username: str = Form(...), db: Session = De
             message = f'No projects found for user - {username}'
     else:
         data = None
-        status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message, data=data)
 
@@ -218,10 +220,10 @@ def delete_project(response: Response, username: str = Form(...), project_name: 
             status = response.status_code = STATUS.HTTP_200_OK
             message = 'Project deleted successfully!'
         else:
-            status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+            status = response.status_code = STATUS.HTTP_201_CREATED
             message = PROJECT_NOT_FOUND_ERROR
     else:
-        status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message)
 
@@ -253,13 +255,13 @@ def delete_goal(response: Response, username: str = Form(...), project_name: str
                 status = response.status_code = STATUS.HTTP_200_OK
                 message = 'Goal deleted successfully!'
             else:
-                status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+                status = response.status_code = STATUS.HTTP_201_CREATED
                 message = GOAL_NOT_FOUND_ERROR
         else:
-            status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+            status = response.status_code = STATUS.HTTP_201_CREATED
             message = PROJECT_NOT_FOUND_ERROR
     else:
-        status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message)
 
@@ -291,15 +293,15 @@ def delete_page(response: Response, username: str = Form(...), project_name: str
                     status = response.status_code = STATUS.HTTP_200_OK
                     message = 'Page deleted successfully!'
                 else:
-                    status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+                    status = response.status_code = STATUS.HTTP_201_CREATED
                     message = PAGE_NOT_FOUND_ERROR
             else:
-                status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+                status = response.status_code = STATUS.HTTP_201_CREATED
                 message = GOAL_NOT_FOUND_ERROR
         else:
-            status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+            status = response.status_code = STATUS.HTTP_201_CREATED
             message = PROJECT_NOT_FOUND_ERROR
     else:
-        status = response.status_code = STATUS.HTTP_404_NOT_FOUND
+        status = response.status_code = STATUS.HTTP_201_CREATED
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message)
