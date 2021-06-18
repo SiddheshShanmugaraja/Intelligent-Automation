@@ -11,16 +11,14 @@ import { Helmet } from 'react-helmet-async';
 
 const Settings = () => {
     const [username, setusername] = useState('')
-    const [oldpassword, setoldpassword] = useState('')
-    const [newpassword, setnewpassword] = useState('')
-    const [newpasswordconfirm, setnewpasswordconfirm] = useState('')
+    const [values, setValues] = useState({ oldpassword: "", newpassword: "", newpasswordconfirm: "" })
+    const [error, setError] = useState({} as any)
 
     const validate = () => {
         let valid = {} as any
-        valid.oldpassword = oldpassword.length >= 5 && oldpassword.length < 10 ? "" : " old password should be between 5 to 10 characters"
-        valid.newpassword = newpassword.length >= 5 && newpassword.length < 10 ? "" : " new password should be between 5 to 10 characters"
-        valid.newpasswordconfirm = newpasswordconfirm.length >= 5 && newpasswordconfirm.length < 10 ? "" : " confirm new  password should be between 5 to 10 characters"
-        valid.matched = newpassword === newpasswordconfirm ? "" : "new passwords did not match"
+        valid.oldpassword = values.oldpassword.length >= 5 && values.oldpassword.length <= 10 ? "" : "Old password should be between 5 to 10 characters"
+        valid.newpassword = values.newpassword.length >= 5 && values.newpassword.length <= 10 ? values.newpassword === values.oldpassword ? "New password and old password cannot be the same" : "" : "New password should be between 5 to 10 characters"
+        valid.newpasswordconfirm = values.newpasswordconfirm.length >= 5 && values.newpasswordconfirm.length < 10 ? values.newpassword !== values.newpasswordconfirm ? "Password mismatch" : "" : " Confirm new  password should be between 5 to 10 characters"
         return valid;
     }
 
@@ -30,8 +28,8 @@ const Settings = () => {
         if (Object.values(obj).every(item => item === "")) {
             // username, old_password and new_password
             formData.append('username', username)
-            formData.append('old_password', oldpassword)
-            formData.append('new_password', newpassword)
+            formData.append('old_password', values.oldpassword)
+            formData.append('new_password', values.newpassword)
             axios.post(baseUrl + '/change-password', formData).then(res => {
                 console.log(res, res.status)
                 if (res.data.status === 200) {
@@ -59,17 +57,36 @@ const Settings = () => {
         else {
             console.log("found some error")
             console.log(obj)
-            Object.keys(obj).map(function (key) {
-                if (obj[key] !== "") {
-                    toast.error(obj[key], {
-                        position: toast.POSITION.TOP_RIGHT,
-                        autoClose: 3000,
-                    });
-                }
-                return 0
-            });
+            setError(obj);
         }
 
+    }
+    const validateOnChange = (field, val) => {
+        let err, temp, tempField
+        switch (field) {
+            case "oldpassword":
+                err = val.length >= 5 && val.length <= 10 ? "" : "Old Password should be between 5 to 10 characters"
+                break;
+            case "newpassword":
+                err = val.length >= 5 && val.length <= 10 ? val === values.oldpassword ? "New password and old password cannot be the same" : "" : "New  Password should be between 5 to 10 characters"
+                temp = values.newpasswordconfirm.length >= 5 && values.newpasswordconfirm.length <= 10 ? val !== values.newpasswordconfirm ? "Password mismatch " : "" : "Confirm new  password should be between 5 to 10 characters"
+                tempField = "newpasswordconfirm"
+                break;
+
+            case "newpasswordconfirm":
+                err = val.length >= 5 && val.length <= 10 ? val !== values.newpassword ? "Password mismatch " : "" : "Confirm new  password should be between 5 to 10 characters"
+                break;
+        }
+        if (tempField) {
+            setError({ ...error, [field]: err, [tempField]: temp })
+        }
+        else {
+            setError({ ...error, [field]: err })
+        }
+    }
+    const handleChange = (e) => {
+        validateOnChange(e.target.name, e.target.value);
+        setValues({ ...values, [e.target.name]: e.target.value })
     }
 
 
@@ -91,35 +108,40 @@ const Settings = () => {
                         <p>Current Password</p>
                         <input
                             type="password"
-                            name='currpassword'
-                            id='currpassword'
-                            onChange={(e) => setoldpassword(e.target.value)}
+                            name='oldpassword'
+                            id='oldpassword'
+                            onChange={(e) => handleChange(e)}
 
                         />
+                        {error.oldpassword && <p className="Error-text"> {error.oldpassword}</p>}
+
                     </div>
                     <div className="signup-password">
                         <p>New Password</p>
                         <input
                             type="password"
                             name='newpassword'
-                            id ="newpassword"
-                            onChange={(e) => setnewpassword(e.target.value)}
+                            id="newpassword"
+                            onChange={(e) => handleChange(e)}
 
                         />
+                        {error.newpassword && <p className="Error-text"> {error.newpassword}</p>}
                     </div>
                     <div className="signup-password">
                         <p>Confirm New Password</p>
                         <input
                             type="password"
-                            name='cnfnewpassword'
-                            id ="cnfnewpassword"    
-                            onChange={(e) => setnewpasswordconfirm(e.target.value)}
+                            name='newpasswordconfirm'
+                            id="newpasswordconfirm"
+                            onChange={(e) => handleChange(e)}
 
                         />
+                        {error.newpasswordconfirm && <p className="Error-text"> {error.newpasswordconfirm}</p>}
+
                     </div>
                     <button className="signup-button" id="signup" name="signup" onClick={() => handleSubmit()} >
                         Reset password
-          </button>
+                    </button>
 
                 </div>
 

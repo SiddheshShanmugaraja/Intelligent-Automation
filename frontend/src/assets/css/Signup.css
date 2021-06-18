@@ -55,6 +55,9 @@
   border-radius: 4px;
   color: #fff;
 }
+.signup-email{
+  margin-top:10px
+}
 .signup-password {
   margin-top: 10px;
 }
