@@ -36,7 +36,15 @@ const Profile = () => {
     const [file, setFile] = React.useState('')
     const [error, setError] = useState({} as any)
     const [values, setValues] = useState({ name: "", about: "", country: "", phone: "" })
-
+    const staticData = {
+        name: "James Bourne",
+        country: "UK",
+        gender: "male",
+        devices: ["Mobile", "Tablet"],
+        about: "World class spy at British Secret Service",
+        dob: "1998-07-05",
+        phone: "1000000008"
+    }
     const formatdate = (date: any) => {
         let month = String(date.getMonth() + 1);
         let day = String(date.getDate());
@@ -48,27 +56,88 @@ const Profile = () => {
     }
     const validate = () => {
         let valid = {} as any
-        valid.name = values.name && (values.name.length > 2 && values.name.length < 21) ? /^[a-zA-Z ]*$/.test(values.name) ? "" : "Name should contain only alphabets" : "Name should contain between 3 to 20 characters"
-        valid.about = values.about && values.about.length > 0 ? values.about.length < 501 ? values.about.length > 30 ? "" : "About should be greater than 30 characters" : "About should be within 500 characters" : "About is required"
-        valid.country = values.country && values.country.length > 0 ? /^[a-zA-Z ]*$/.test(values.country) ? countriesList.includes(values.country.toLowerCase()) ? "" : "Country name not recogonized" : "Country name should contain only alphabets" : "Country name is required"
-        valid.phone = values.phone && values.phone.length > 0 ? /^\d+$/.test(values.phone) && values.phone.length === 10 ? "" : "Invalid Phone number" : "Phone number is required"
+        // valid.name = values.name && (values.name.length > 2 && values.name.length < 21) ? /^[a-zA-Z ]*$/.test(values.name) ? "" : "Name should contain only alphabets" : "Name should contain between 3 to 20 characters"
+        // valid.about = values.about && values.about.length > 0 ? values.about.length < 501 ? values.about.length > 30 ? "" : "About should be greater than 30 characters" : "About should be within 500 characters" : "About is required"
+        // valid.country = values.country && values.country.length > 0 ? /^[a-zA-Z ]*$/.test(values.country) ? countriesList.includes(values.country.toLowerCase()) ? "" : "Country name not recogonized" : "Country name should contain only alphabets" : "Country name is required"
+        // valid.phone = values.phone && values.phone.length > 0 ? /^\d+$/.test(values.phone) && values.phone.length === 10 ? "" : "Invalid Phone number" : "Phone number is required"
+        valid.name = values.name === staticData.name ? "" : "Data mismatch"
+        valid.about = values.about === staticData.about ? "" : "Data mismatch"
+        valid.country = values.country === staticData.country ? "" : "Data mismatch"
+        valid.phone = values.phone === staticData.phone ? "" : "Data mismatch"
+        valid.gender = gender === staticData.gender ? "" : "Data mismatch"
+
+        Object.keys(check).forEach(element => {
+            console.log(check[element], element, staticData.devices.includes(element))
+            if (check[element] === true) {
+                if (!staticData.devices.includes(element)) {
+                    valid.devices = "Data mismatch"
+                }
+            }
+            else {
+                if (staticData.devices.includes(element)) {
+
+                    valid.devices = "Data mismatch"
+
+                }
+            }
+        });
+        console.log(valid.devices)
+        valid.dob = dob === staticData.dob ? "" : "Data mismatch"
         return valid;
     }
     const validateOnChange = (field, val) => {
         let err
         switch (field) {
+            // case "name":
+            //     err = val && (val.length > 2 && val.length < 21) ? /^[a-zA-Z ]*$/.test(val) ? "" : "Name should contain only alphabets" : "Name should contain between 3 to 20 characters";
+            //     break;
+            // case "about":
+            //     err = val && val.length > 0 ? val.length < 501 ? val.length > 30 ? "" : "About should be greater than 30 characters" : "About should be within 500 characters" : "About is required";
+            //     break;
+            // case "country":
+            //     err = val && val.length > 0 ? /^[a-zA-Z ]*$/.test(val) ? countriesList.includes(val.toLowerCase()) ? "" : "Country name not recogonized" : "Country name should contain only alphabets" : "Country name is required";
+            //     break;
+            // case "phone":
+            //     err = val && val.length > 0 ? /^\d+$/.test(val) && val.length === 10 ? "" : "Invalid Phone number" : "Phone number is required";
+            //     break;
+
             case "name":
-                err = val && (val.length > 2 && val.length < 21) ? /^[a-zA-Z ]*$/.test(val) ? "" : "Name should contain only alphabets" : "Name should contain between 3 to 20 characters";
-                break;
-            case "about":
-                err = val && val.length > 0 ? val.length < 501 ? val.length > 30 ? "" : "About should be greater than 30 characters" : "About should be within 500 characters" : "About is required";
+                err = val === staticData.name ? "" : "Data mismatch"
                 break;
             case "country":
-                err = val && val.length > 0 ? /^[a-zA-Z ]*$/.test(val) ? countriesList.includes(val.toLowerCase()) ? "" : "Country name not recogonized" : "Country name should contain only alphabets" : "Country name is required";
+                err = val === staticData.country ? "" : "Data mismatch"
                 break;
             case "phone":
-                err = val && val.length > 0 ? /^\d+$/.test(val) && val.length === 10 ? "" : "Invalid Phone number" : "Phone number is required";
+                err = val === staticData.phone ? "" : "Data mismatch"
                 break;
+            case "about":
+                err = val === staticData.about ? "" : "Data mismatch"
+                break;
+            case "gender":
+                err = val === staticData.gender ? "" : "Data mismatch"
+                break;
+            case "devices":
+                Object.keys(val).forEach(element => {
+                    if (val[element] === true) {
+                        if (!staticData.devices.includes(element)) {
+                            err = "Data mismatch"
+                            return
+                        }
+                    }
+                    else {
+                        if (staticData.devices.includes(element)) {
+                            err = "Data mismatch"
+                            return
+                        }
+                    }
+                });
+                break;
+
+            case "dob":
+                console.log(val, staticData.dob)
+                err = val === staticData.dob ? "" : "Data mismatch"
+                break;
+
         }
         setError({ ...error, [field]: err })
     }
@@ -218,6 +287,7 @@ const Profile = () => {
 
         }
     }
+
     return (
         <>
             <Helmet>
@@ -264,7 +334,9 @@ const Profile = () => {
                     </div>
                     <div className="profile-text ">
                         <p>Date of Birth</p>
-                        <div className="profile-text-input">
+                        <div
+                            className={"profile-text-input " + (error.dob ? "input-error" : "")}
+                        >
                             <TextField
                                 value={dob}
                                 id="dob"
@@ -273,9 +345,10 @@ const Profile = () => {
                                 InputProps={{ disableUnderline: true }}
                                 style={{ width: '100%', color: "white" }}
                                 onChange={(e) => {
-                                    formatdate(new Date(e.target.value)); setdob(e.target.value)
+                                    formatdate(new Date(e.target.value)); setdob(e.target.value); validateOnChange("dob", e.target.value)
                                 }}
                             />
+                            {error.dob && <p className="Error-text"> {error.dob}</p>}
                         </div>
                     </div>
                     <div className="profile-text">
@@ -292,28 +365,33 @@ const Profile = () => {
                     </div>
                     <div className="profile-text">
                         <p>Gender</p>
-                        <RadioGroup row name="gender" id="gender" value={gender} onChange={(e) => setGender(e.target.value)}>
-                            <FormControlLabel value="female" name="female" id="female" control={<Radio />} label="Female" />
-                            <FormControlLabel value="male" name="male" id="male" control={<Radio />} label="Male" />
-                            <FormControlLabel value="other" name="other" id="other" control={<Radio />} label="Other" />
+                        <RadioGroup row name="gender" id="gender" value={gender}
+                            className={"profile-text-input " + (error.gender ? "input-error" : "")}
+                            onChange={(e) => { setGender(e.target.value); validateOnChange(e.target.name, e.target.value) }}>
+                            <FormControlLabel value="female" name="gender" id="female" control={<Radio />} label="Female" />
+                            <FormControlLabel value="male" name="gender" id="male" control={<Radio />} label="Male" />
+                            <FormControlLabel value="other" name="gender" id="other" control={<Radio />} label="Other" />
                         </RadioGroup>
+                        {error.gender && <p className="Error-text"> {error.gender}</p>}
                     </div>
                     <div className="profile-text">
                         <p>Devices</p>
-                        <FormGroup aria-label="position" id="devices" row>
+                        <FormGroup aria-label="position" id="devices" row
+                            className={"profile-text-input " + (error.devices ? "input-error" : "")}                                                    >
                             <FormControlLabel
-                                control={<Checkbox name="Mobile" id="Mobile" checked={check['Mobile']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} />}
+                                control={<Checkbox name="Mobile" id="Mobile" checked={check['Mobile']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }); validateOnChange("devices", { ...check, [e.target.name]: e.target.checked }) }} />}
                                 label="Mobile"
                             />
                             <FormControlLabel
-                                control={<Checkbox name="Computer" id="Computer" checked={check['Computer']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} />}
+                                control={<Checkbox name="Computer" id="Computer" checked={check['Computer']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }); validateOnChange("devices", { ...check, [e.target.name]: e.target.checked }) }} />}
                                 label="Computer"
                             />
                             <FormControlLabel
-                                control={<Checkbox name="Tablet" id="Tablet" checked={check['Tablet']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }) }} />}
+                                control={<Checkbox name="Tablet" id="Tablet" checked={check['Tablet']} onChange={(e) => { setCheck({ ...check, [e.target.name]: e.target.checked }); validateOnChange("devices", { ...check, [e.target.name]: e.target.checked }) }} />}
                                 label="Tablet"
                             />
                         </FormGroup>
+                        {error.devices && <p className="Error-text"> {error.devices}</p>}
                     </div>
                     <div className={"profile-text " + (error.phone ? "text-red" : "")}>
                         <p>Phone Number*</p>
