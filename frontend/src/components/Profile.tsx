@@ -40,7 +40,7 @@ const Profile = () => {
         name: "James Bourne",
         country: "UK",
         gender: "male",
-        devices: ["Mobile", "Tablet"],
+        devices: ["Mobile"],
         about: "World class spy at British Secret Service",
         dob: "1998-07-05",
         phone: "1000000008"
@@ -65,9 +65,7 @@ const Profile = () => {
         valid.country = values.country === staticData.country ? "" : "Data mismatch"
         valid.phone = values.phone === staticData.phone ? "" : "Data mismatch"
         valid.gender = gender === staticData.gender ? "" : "Data mismatch"
-
         Object.keys(check).forEach(element => {
-            console.log(check[element], element, staticData.devices.includes(element))
             if (check[element] === true) {
                 if (!staticData.devices.includes(element)) {
                     valid.devices = "Data mismatch"
@@ -75,13 +73,10 @@ const Profile = () => {
             }
             else {
                 if (staticData.devices.includes(element)) {
-
                     valid.devices = "Data mismatch"
-
                 }
             }
         });
-        console.log(valid.devices)
         valid.dob = dob === staticData.dob ? "" : "Data mismatch"
         return valid;
     }
@@ -132,12 +127,10 @@ const Profile = () => {
                     }
                 });
                 break;
-
             case "dob":
                 console.log(val, staticData.dob)
                 err = val === staticData.dob ? "" : "Data mismatch"
                 break;
-
         }
         setError({ ...error, [field]: err })
     }
@@ -348,8 +341,9 @@ const Profile = () => {
                                     formatdate(new Date(e.target.value)); setdob(e.target.value); validateOnChange("dob", e.target.value)
                                 }}
                             />
-                            {error.dob && <p className="Error-text"> {error.dob}</p>}
                         </div>
+                        {error.dob && <p className="Error-text"> {error.dob}</p>}
+
                     </div>
                     <div className="profile-text">
                         <p>Country*</p>
