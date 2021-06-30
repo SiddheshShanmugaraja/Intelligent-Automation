@@ -9,7 +9,6 @@ with open("backend/config.json", "r") as f:
     config = json.load(f)
 
 DELIMITER = config.get("DELIMITER") 
-
 class User(database.Base):
     __tablename__ = 'users'
     id = Column(Integer, nullable=False, primary_key=True)
