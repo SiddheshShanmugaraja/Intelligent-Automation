@@ -29,6 +29,9 @@ def timeit(func):
         return result
     return wrap_func
 
+def not_found_error(name): 
+    return f'{name} not found!'
+
 def convert_to_float(string): 
     try: 
         float(string)
