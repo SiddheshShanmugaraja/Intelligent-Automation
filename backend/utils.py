@@ -1,11 +1,10 @@
-import json, os, re, itertools
+import json, os, re, time
 import pandas as pd
-import urllib.request
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from datetime import datetime, date
+from datetime import date
 from typing import List, Dict, Tuple, Optional
-from urllib.request import Request, urlopen, urlparse
+from urllib.request import urlopen, urlparse
 from selenium.webdriver.chrome.options import Options
 
 options = Options()
@@ -17,6 +16,25 @@ with open('backend/config.json', 'r') as f:
 EXCEL_DIR = config.get('EXCEL_DIR') 
 CHROME_DRIVER = webdriver.Chrome(executable_path=config.get('CHROME_DRIVER'), options=options)
 CSV_EXTENSION = '.csv'
+
+def timeit(func):
+    """Wraps a given function and logs its execution time to the console."""
+    name = func.__name__.title()
+    def wrap_func(*args, **kwargs):
+        n_job = [arg for arg in args if isinstance(arg, int)][0]
+        t1 = time.time()
+        result = func(*args, **kwargs)
+        t2 = time.time()
+        print(f'{name} executed in process - {n_job} in {(t2-t1):.4f}s')
+        return result
+    return wrap_func
+
+def convert_to_float(string): 
+    try: 
+        float(string)
+        return float
+    except ValueError:
+        return str
 
 def get_filename(url: str) -> str:
     '''[summary]

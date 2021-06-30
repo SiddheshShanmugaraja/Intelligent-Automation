@@ -21,6 +21,11 @@ Base = declarative_base()
 session = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 def get_db():
+    """[summary]
+
+    Yields:
+        [type]: [description]
+    """
     db = session()
     try:
         yield db 
