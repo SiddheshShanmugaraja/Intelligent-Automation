@@ -165,34 +165,6 @@ def create_page(response: Response,  pages: schemas.Project, db: Session = Depen
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message)
 
-@agent.post('/get-projects', status_code=STATUS.HTTP_200_OK, tags=['Projects'])
-def get_projects(response: Response, username: str = Form(...), db: Session = Depends(database.get_db)) -> Dict:
-    '''[summary]
-
-    Args:
-        response (Response): [description]
-        username (str): [description]
-        db (Session, optional): [description]. Defaults to Depends(database.get_db).
-
-    Returns:
-        Dict: [description]
-    '''
-    user = db.query(models.User).filter_by(username=username).first()
-    if user:
-        data = [project.to_dict() for project in user.projects]
-        if len(data):
-            status = response.status_code = STATUS.HTTP_200_OK
-            message = 'Projects queried successfully!'
-        else:
-            data = None
-            status = response.status_code = STATUS.HTTP_200_OK
-            message = f'No projects found for user - {username}'
-    else:
-        data = None
-        status = response.status_code = STATUS.HTTP_201_CREATED
-        message = USER_NOT_FOUND_ERROR
-    return dict(status=status, message=message, data=data)
-
 @agent.delete('/delete-project', status_code=STATUS.HTTP_200_OK, tags=['Projects'])
 def delete_project(response: Response, username: str = Form(...), project_name: str = Form(...), db: Session = Depends(database.get_db)) -> Dict:
     '''[summary]
@@ -306,3 +278,31 @@ def delete_page(response: Response, username: str = Form(...), project_name: str
         status = response.status_code = STATUS.HTTP_201_CREATED
         message = USER_NOT_FOUND_ERROR
     return dict(status=status, message=message)
+
+@agent.post('/get-projects', status_code=STATUS.HTTP_200_OK, tags=['Projects'])
+def get_projects(response: Response, username: str = Form(...), db: Session = Depends(database.get_db)) -> Dict:
+    '''[summary]
+
+    Args:
+        response (Response): [description]
+        username (str): [description]
+        db (Session, optional): [description]. Defaults to Depends(database.get_db).
+
+    Returns:
+        Dict: [description]
+    '''
+    user = db.query(models.User).filter_by(username=username).first()
+    if user:
+        data = [project.to_dict() for project in user.projects]
+        if len(data):
+            status = response.status_code = STATUS.HTTP_200_OK
+            message = 'Projects queried successfully!'
+        else:
+            data = None
+            status = response.status_code = STATUS.HTTP_200_OK
+            message = f'No projects found for user - {username}'
+    else:
+        data = None
+        status = response.status_code = STATUS.HTTP_201_CREATED
+        message = USER_NOT_FOUND_ERROR
+    return dict(status=status, message=message, data=data)
