@@ -22,29 +22,30 @@ class InvalidDatabaseEngine(Exception):
 with open("backend/config.json", "r") as f:
     config = json.load(f)
 
-DB_ENGINE = config.get("DB_ENGINE")
+MODE = config.get("MODE")
 
 # Choose a database engine, wither MySQL or SQLite
-# MySQL Database configuration
-if DB_ENGINE.upper() == 'MYSQL':
-    MYSQL_DB_HOST = config.get("MYSQL_DB_HOST")
-    MYSQL_DB_NAME = config.get("MYSQL_DB_NAME")
-    MYSQL_SECRET_KEY = config.get("SECRET_KEY")
-    MYSQL_DB_USERNAME = config.get("MYSQL_DB_USERNAME")
-    MYSQL_DB_PASSWORD = config.get("MYSQL_DB_PASSWORD")
-    DATABASE_URI = f'mysql+mysqlconnector://{MYSQL_DB_USERNAME}:{MYSQL_DB_PASSWORD}@{MYSQL_DB_HOST}/{MYSQL_DB_NAME}'
-# SQLite Database configuration 
-elif DB_ENGINE.upper() == 'SQLITE':
+# SQLite configuration
+if MODE.upper() == 'TEST':
     SQLITE_DB_FILE_NAME = config.get("SQLITE_DB_FILE_NAME")
     if os.path.isfile(SQLITE_DB_FILE_NAME):
         os.remove(SQLITE_DB_FILE_NAME)
     if not os.path.isfile(SQLITE_DB_FILE_NAME):
         os.mknod(SQLITE_DB_FILE_NAME)
     DATABASE_URI = f'sqlite:///./{SQLITE_DB_FILE_NAME}'
-else:
-    raise InvalidDatabaseEngine(DB_ENGINE)
+    connect_args = dict(check_same_thread=False)
 
-engine = create_engine(DATABASE_URI, connect_args=dict(check_same_thread=False))
+# MySQL Database configuration
+else:
+    MYSQL_DB_HOST = config.get("MYSQL_DB_HOST")
+    MYSQL_DB_NAME = config.get("MYSQL_DB_NAME")
+    MYSQL_SECRET_KEY = config.get("SECRET_KEY")
+    MYSQL_DB_USERNAME = config.get("MYSQL_DB_USERNAME")
+    MYSQL_DB_PASSWORD = config.get("MYSQL_DB_PASSWORD")
+    DATABASE_URI = f'mysql+mysqlconnector://{MYSQL_DB_USERNAME}:{MYSQL_DB_PASSWORD}@{MYSQL_DB_HOST}/{MYSQL_DB_NAME}'
+    connect_args = dict()
+
+engine = create_engine(DATABASE_URI, connect_args=connect_args)
 
 Base = declarative_base()
 
