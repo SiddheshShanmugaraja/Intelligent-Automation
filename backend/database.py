@@ -4,11 +4,28 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base
 
+class InvalidDatabaseEngine(Exception):
+    """Exception raised for errors in the database engine name.
+
+    Attributes:
+        db_engine (str): Input databse engine name which caused the error.
+        message (str): Explanation of the error.
+    """
+    def __init__(self, db_engine: str, message: str = "Invalid Database engine selected, select either MySQL or SQLite and update it in the backend/config.json file"):
+        self.db_engine = db_engine
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.db_engine} -> {self.message}'
+
 with open("backend/config.json", "r") as f:
     config = json.load(f)
 
 DB_ENGINE = config.get("DB_ENGINE")
 
+# Choose a database engine, wither MySQL or SQLite
+# MySQL Database configuration
 if DB_ENGINE.upper() == 'MYSQL':
     MYSQL_DB_HOST = config.get("MYSQL_DB_HOST")
     MYSQL_DB_NAME = config.get("MYSQL_DB_NAME")
@@ -16,13 +33,14 @@ if DB_ENGINE.upper() == 'MYSQL':
     MYSQL_DB_USERNAME = config.get("MYSQL_DB_USERNAME")
     MYSQL_DB_PASSWORD = config.get("MYSQL_DB_PASSWORD")
     DATABASE_URI = f'mysql+mysqlconnector://{MYSQL_DB_USERNAME}:{MYSQL_DB_PASSWORD}@{MYSQL_DB_HOST}/{MYSQL_DB_NAME}'
+# SQLite Database configuration 
 elif DB_ENGINE.upper() == 'SQLITE':
     SQLITE_DB_FILE_NAME = config.get("SQLITE_DB_FILE_NAME")
     if not os.path.isfile(SQLITE_DB_FILE_NAME):
         os.mknod(SQLITE_DB_FILE_NAME)
     DATABASE_URI = f'sqlite:///./{SQLITE_DB_FILE_NAME}'
 else:
-    print('Invalid Database engine selected, select either MySQL or SQLite')
+    raise InvalidDatabaseEngine(DB_ENGINE)
 
 engine = create_engine(DATABASE_URI)
 
