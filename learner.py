@@ -9,11 +9,11 @@ from backend.utils import timeit
 from selenium import webdriver as wb 
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-from typing import List, Tuple, Optional, Type
+from typing import List, Tuple, Optional, Type, Dict
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, InvalidElementStateException, StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException, InvalidElementStateException, StaleElementReferenceException, TimeoutException
 
 # Training constants
 GAMMA = 0.9
@@ -23,14 +23,14 @@ INITIAL_EPSILON = 1
 SLEEP_BETWEEN_INTERVALS = 0.25
 
 # Reward schemes
-MICRO_REWARD = 1
-MINOR_REWARD = 6
+MICRO_REWARD = 2
+MINOR_REWARD = 20
 MOVE_PENALTY = -4
-POSITIVE_REWARD = 12
+POSITIVE_REWARD = 32
 NEGATIVE_REWARD = -5
 
 # Toggle this to train with or without the browser 
-HEADLESS_BROWSING = True
+HEADLESS_BROWSING = False
 options = Options()
 if HEADLESS_BROWSING:
     options.add_argument('--headless') 
@@ -79,7 +79,7 @@ class Website:
         """
         return f'\n\nURLS\t: {self.urls}\n\nSTATES\t: {list(map(lambda x: x.split("@")[-1], self.states))}\n\nACTIONS\t: {self.actions}\n\n'
 
-    def get_ids(self, url: str) -> List[str]:
+    def get_ids(self, url: str, n_job: int = 0) -> List[str]:
         """Extracts DOM element IDs and shadow DOM element IDs for a given URL. 
 
         Args:
@@ -89,11 +89,11 @@ class Website:
             List[str]: List of the DOM element IDs ectracted from the URL.
         """
         def expand_shadow_element(element: Type[selenium.webdriver.remote.webelement.WebElement]):
-            shadow_root = self.drivers[0].execute_script('return arguments[0].shadowRoot', element)
+            shadow_root = self.drivers[n_job].execute_script('return arguments[0].shadowRoot', element)
             return shadow_root
 
-        self.drivers[0].get(url)
-        elements = self.drivers[0].find_elements_by_xpath('//*[@id]')
+        self.drivers[n_job].get(url)
+        elements = self.drivers[n_job].find_elements_by_xpath('//*[@id]')
         element_ids = list()
         for element in elements:
             element_ids.append(f'{url}@{element.get_attribute("id")}')
@@ -124,12 +124,16 @@ class Website:
         Returns:
             Type[selenium.webdriver.remote.webelement.WebElement]: Returns the element object.
         """
-        element = self.waits[n_job].until(EC.element_to_be_clickable((By.ID, element_id)))
         try:
-            element.clear()
+            element = self.waits[n_job].until(EC.element_to_be_clickable((By.ID, element_id)))
+        except TimeoutException:
+            element = self.drivers[n_job].find_element_by_id(element_id)
+        
+        try:
             element.click()
         except InvalidElementStateException:
             self.action_chains[n_job].move_to_element(element).click().perform()
+        
         return element
 
     def set_value(self, element_id: str, value: str, n_job: int) -> Type[selenium.webdriver.remote.webelement.WebElement]:
@@ -204,7 +208,14 @@ class Website:
             target_element_id = action.split('=')[-1]
             return self.drag_and_drop(state, target_element_id, n_job)
 
-    def step(self, state: str, epsilon: float, n_job: int) -> Tuple[Type[selenium.webdriver.remote.webelement.WebElement],int]:
+    def choose_action(self, epsilon: float, state: Optional[str] = None):
+        if (np.random.random() > epsilon) and (state != None):
+            action = self.actions[self.q_table[self.states.index(state)].argmax()]
+        else:
+            action = random.choice(self.actions)
+        return action
+
+    def step(self, state: str, epsilon: float, n_job: int, action: Optional[str] = None) -> Tuple[Type[selenium.webdriver.remote.webelement.WebElement],int]:
         """Performs one step in the Website environment while training.
 
         Args:
@@ -212,15 +223,13 @@ class Website:
             state_index (int): Index of the state from the self.states attribute
             epsilon (float): Epsilon value for the E-Greedy algorithm.
             n_job (int): The process id to choose the correct browser for running the action. 
+            action (str, optional): Action to be conducted if not assigned will use the self.choose_action() function.
 
         Returns:
             Tuple[Type[selenium.webdriver.remote.webelement.WebElement],int]:  Returns the element object and the index for the action conducted.
         """
-        if np.random.random() > epsilon:
-            action = self.actions[self.q_table[self.states.index(state)].argmax()]
-        else:
-            action = random.choice(self.actions)
-        
+        if not action:
+            action = self.choose_action(epsilon, state)
         action_index = self.actions.index(action)
         try:
             print(f'\nstate \t-->\t {state}\naction \t-->\t {action}')
@@ -231,7 +240,7 @@ class Website:
         return element, action_index
 
     def learn(self, state_index: int, action_index: int, reward: int) -> Type[np.ndarray]:
-        """Updates the Q-Table with the appropriate rewards by using the Bellman algorithm.
+        """Updates the Q-Table with the appropriate rewards by using the Bellman's algorithm.
 
         Args:
             state_index (int): Index of the state where the action was performed w.r.t to the Q-Table.
@@ -259,7 +268,7 @@ class Website:
             element (Optional[Type[selenium.webdriver.remote.webelement.WebElement]], optional): Element whose sub tree would be checked for the data mismatch error. Defaults to None, if None checks for the Data Mismatch error from the page source.
 
         Returns:
-            bool: Returns False is Data Mismatch error exists else True.
+            bool: Returns False if Data Mismatch error exists in the element else True.
         """
         if element != None:
             return True if (isinstance(element, selenium.webdriver.remote.webelement.WebElement) and ('Data mismatch' not in element.get_attribute('innerHTML'))) else False
@@ -318,6 +327,7 @@ class Website:
                 state_url, state = state.split('@')
                 
                 if state_url != self.drivers[n_job].current_url:
+                    print('URL Does not match', state_url, self.drivers[n_job].current_url)
                     continue
                 
                 element, action_index = self.step(state, epsilon, n_job)
@@ -325,24 +335,23 @@ class Website:
                 micro_success = self.micro_assertion(n_job, element)
                 if micro_success:
                     print('Micro Assertion Passed!')
-                self.learn(state_index, action_index, MOVE_PENALTY + (micro_success * MICRO_REWARD))
-                history.append((state_index, action_index))
 
                 minor_success = self.minor_assertion(n_job)
                 if minor_success:
                     print('Minor Assertion Passed!')
-                    for state_index, action_index in history:
-                        self.learn(state_index, action_index, MINOR_REWARD)
+
+                history.append((state_index, action_index))
             
                 major_success = self.major_assertion(n_job)
                 if major_success:
                     print('Major Assertion Passed!')
-                    episode_reward = POSITIVE_REWARD 
+                    for state_index, action_index in history:
+                        self.learn(state_index, action_index, (major_success * POSITIVE_REWARD) + (minor_success * MINOR_REWARD) + (micro_success * MICRO_REWARD) + MOVE_PENALTY)
+                    clear_console()
+                    break
                 else:
-                    episode_reward = NEGATIVE_REWARD
-                for state_index, action_index in history:
-                    self.learn(state_index, action_index, episode_reward)
-            clear_console()
+                    for state_index, action_index in history:
+                        self.learn(state_index, action_index, (major_success * POSITIVE_REWARD) + (minor_success * MINOR_REWARD) + (micro_success * MICRO_REWARD) + MOVE_PENALTY)
 
     def train(self, n_episodes: int, n_job: int, epsilon: float = INITIAL_EPSILON) -> None:
         """Performs the training for a given number of episodes.
@@ -378,9 +387,45 @@ class Website:
         for process in processes: 
             process.join()
 
+    def demo(self, data: Dict, n_job: int = 0):
+        self.drivers[n_job].get(self.urls[n_job])
+        for state, action in data:
+            self.step(state=state, action=action, n_job=n_job, epsilon=0)
+            time.sleep(SLEEP_BETWEEN_INTERVALS*4)
+
 if __name__ == '__main__':
-    URLS = ['http://localhost:3000/', 'http://localhost:3000/home/', 'http://localhost:3000/profile/']
+    
+    URLS = ['http://localhost:3000/', 'http://localhost:3000/home', 'http://localhost:3000/profile']
     INPUTS = ['admin', 'password', 'James Bourne', 'UK', 'World class spy at British Secret Service', '05/07/1998', '1000000008']
     ASSERTION_MESSAGES = 'Profile update successful!'
-    app = Website(urls=URLS, inputs=INPUTS, assertion_message=ASSERTION_MESSAGES, n_jobs=2)
+    
+    app = Website(urls=URLS, inputs=INPUTS, assertion_message=ASSERTION_MESSAGES, n_jobs=1)
     app.multi_process()
+    # data = [ 
+    #         ('signup','skip'), 
+    #         ('name','set_value=admin'),
+    #         ('password','set_value=password'), 
+    #         ('login','click_button'), 
+    #         ('side-toggle','click_button'), 
+    #         ('profile','click_button'), 
+    #         ('name','set_value=James Bourne'), 
+    #         ('dob','set_value=05/07/1998'), 
+    #         ('country','set_value=UK'),
+            
+    #         ('female','click_button'), 
+    #         ('other','click_button'), 
+    #         ('male','click_button'), 
+
+    #         ('devices','skip'), 
+    #         ('Mobile','click_button'),
+    #         ('Computer','click_button'), 
+    #         ('Tablet','click_button'), 
+    #         ('Mobile','click_button'),
+    #         ('Computer','click_button'), 
+    #         ('Tablet','click_button'), 
+    #         ('phone','set_value=1000000008'), 
+    #         ('profilepicture','skip'), 
+    #         ('about','set_value=World class spy at British Secret Service'), 
+    #         ('update','click_button')
+    #         ]
+    # app.demo(data)

@@ -154,8 +154,8 @@ def create_page(response: Response,  pages: schemas.Project, db: Session = Depen
                 if goal:
                     for page in d.get('pages'):
                         # Check if a page exists with the given page name.
-                        page = db.query(models.Page).filter(and_(models.Page.name==page.get('pageName'), models.Page.goal_id==goal.id)).first()
-                        if not page:
+                        page_ = db.query(models.Page).filter(and_(models.Page.name==page.get('pageName'), models.Page.goal_id==goal.id)).first()
+                        if not page_:
                             # Create new page and commit to the database.
                             new_page = models.Page(name=page.get('pageName'), url=page.get('url'), inputs=DELIMITER.join(page.get('actions')), terminal_state=page.get('terminalState'), goal_id=goal.id)
                             db.add(new_page);db.commit()
