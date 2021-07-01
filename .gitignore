@@ -3,3 +3,4 @@ frontend/package-lock.json
 .vscode/
 __pycache__/
 backend/__pycache__/
+intelligent_automation.db
