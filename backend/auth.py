@@ -252,7 +252,7 @@ def transfer_credits(response: Response, amount: int = Form(...), sender_usernam
             db.commit(); db.refresh(sender); db.refresh(reciever)
             data = dict(sender=sender.to_dict(), reciever=reciever.to_dict())
             status = response.status_code = STATUS.HTTP_200_OK
-            message = f'Credits transferred from {sender.username} to {reciever.username} successfully!'
+            message = f'{amount} Credits transferred from {sender.username} to {reciever.username} successfully!'
         else:
             data = None
             status = response.status_code = STATUS.HTTP_201_CREATED

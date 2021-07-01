@@ -36,13 +36,15 @@ if DB_ENGINE.upper() == 'MYSQL':
 # SQLite Database configuration 
 elif DB_ENGINE.upper() == 'SQLITE':
     SQLITE_DB_FILE_NAME = config.get("SQLITE_DB_FILE_NAME")
+    if os.path.isfile(SQLITE_DB_FILE_NAME):
+        os.remove(SQLITE_DB_FILE_NAME)
     if not os.path.isfile(SQLITE_DB_FILE_NAME):
         os.mknod(SQLITE_DB_FILE_NAME)
     DATABASE_URI = f'sqlite:///./{SQLITE_DB_FILE_NAME}'
 else:
     raise InvalidDatabaseEngine(DB_ENGINE)
 
-engine = create_engine(DATABASE_URI)
+engine = create_engine(DATABASE_URI, connect_args=dict(check_same_thread=False))
 
 Base = declarative_base()
 
