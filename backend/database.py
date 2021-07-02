@@ -31,7 +31,8 @@ if MODE.upper() == 'TEST':
     if os.path.isfile(SQLITE_TEST_DB_FILE_NAME):
         os.remove(SQLITE_TEST_DB_FILE_NAME)
     if not os.path.isfile(SQLITE_TEST_DB_FILE_NAME):
-        os.mknod(SQLITE_TEST_DB_FILE_NAME)
+        with open(SQLITE_TEST_DB_FILE_NAME, 'w') as f:
+            print(f'{SQLITE_TEST_DB_FILE_NAME} file created!')
     DATABASE_URI = f'sqlite:///./{SQLITE_TEST_DB_FILE_NAME}'
     connect_args = dict(check_same_thread=False)
 
@@ -39,7 +40,8 @@ if MODE.upper() == 'TEST':
 elif MODE.upper() == 'DEVELOPMENT':
     SQLITE_DEV_DB_FILE_NAME = config.get("SQLITE_DEV_DB_FILE_NAME")
     if not os.path.isfile(SQLITE_DEV_DB_FILE_NAME):
-        os.mknod(SQLITE_DEV_DB_FILE_NAME)
+        with open(SQLITE_DEV_DB_FILE_NAME, 'w') as f:
+            print(f'{SQLITE_DEV_DB_FILE_NAME} file created!')
     DATABASE_URI = f'sqlite:///./{SQLITE_DEV_DB_FILE_NAME}'
     connect_args = dict(check_same_thread=False)
 
