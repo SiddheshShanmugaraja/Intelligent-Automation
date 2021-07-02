@@ -192,7 +192,7 @@ def delete_project(response: Response, username: str = Form(...), project_name: 
         project = db.query(models.Project).filter(and_(models.Project.user_id==user.id, models.Project.name==project_name)).first()
         # Check if a project exists with the given project name.
         if project:
-            # Delete everything and commit to the databse.
+            # Delete everything and commit to the database.
             for goal in project.goals:
                 for page in goal.pages:
                     db.delete(page);db.commit()
@@ -321,4 +321,96 @@ def get_projects(response: Response, username: str = Form(...), db: Session = De
         data = None
         status = response.status_code = STATUS.HTTP_201_CREATED
         message = utils.not_found_error('User')
+    return dict(status=status, message=message, data=data)
+
+@agent.post('/get-goals', status_code=STATUS.HTTP_200_OK, tags=['Projects'])
+def get_goals(response: Response, username: str = Form(...),project_name: str = Form(...), db: Session = Depends(database.get_db)) -> Dict:
+    """Get all the goals for given username and projectname
+
+    Args:
+        response (Response): Response object for the FastAPI app.
+        username (str): Unique name of the user. Defaults to Form(...).
+        project_name (str): Unique name of the project. Defaults to Form(...).
+
+    Returns:
+        Dict: Returns a list of goals associated with the user and project.
+    """
+    # Check if the user exists with given username.
+    user = db.query(models.User).filter_by(username=username).first()
+    
+    if user:
+        # Check if the project exists with given projectname.
+        project = db.query(models.Project).filter(models.Project.name==project_name).first()
+
+        if project:
+            # Convert all the goals to a List of Dict.
+            data = [goal.to_dict() for goal in project.goals]
+            if len(data):
+                status = response.status_code = STATUS.HTTP_200_OK
+                message = 'Goals queried successfully!'
+            else:
+                data = None
+                status = response.status_code = STATUS.HTTP_200_OK
+                message = utils.not_found_error('Goals')
+        else:
+            data = None
+            status = response.status_code = STATUS.HTTP_200_OK
+            message = utils.not_found_error('Project')
+    else:
+        data = None
+        status = response.status_code = STATUS.HTTP_200_OK
+        message = utils.not_found_error('User')
+
+    return dict(status=status, message=message, data=data)
+
+
+@agent.post('/get-pages', status_code=STATUS.HTTP_200_OK, tags=['Projects'])
+def get_pages(response: Response, username: str = Form(...),project_name: str = Form(...), goal_name: str = Form(...), db: Session = Depends(database.get_db)) -> Dict:
+    """Get all the pages for given username, projectname, goalname
+
+    Args:
+        response (Response): Response object for the FastAPI app.
+        username (str): Unique username of the user. Defaults to Form(...).
+        project_name (str): Unique name for the project. Defaults to Form(...).
+        goal_name (str): Unique name for the goal. Defaults to Form(...).
+        db (Session): Database session to commit changes to the Database. Defaults to Depends(database.get_db).
+
+    Returns:
+        Dict: Returns a list of pages associated with the user, project and goals.
+    """
+    # Check if the user exists with given username.
+    user = db.query(models.User).filter_by(username=username).first()
+
+    if user:
+        # Check if the project exists with given projectname.
+        project = db.query(models.Project).filter(models.Project.name==project_name).first()
+
+        if project:
+            # Check if the goal exists with given goalname.
+            goal = db.query(models.Goal).filter(models.Goal.name==goal_name).first()
+
+            if goal:
+                # Convert all the pages to a List of Dict.
+                data = [page.to_dict() for page in goal.pages]
+
+                if len(data):
+                    status = response.status_code = STATUS.HTTP_200_OK
+                    message = 'Pages queried successfully!'
+                else:
+                    data = None
+                    status = response.status_code = STATUS.HTTP_200_OK
+                    message = utils.not_found_error('Pages')
+            else:
+                data = None
+                status = response.status_code = STATUS.HTTP_200_OK
+                message = utils.not_found_error('Goal')
+        else:
+            data = None
+            status = response.status_code = STATUS.HTTP_200_OK
+            message = utils.not_found_error('Project')
+    else:
+        data = None
+        status = response.status_code = STATUS.HTTP_200_OK
+        message = utils.not_found_error('User')
+
     return dict(status=status, message=message, data=data)
