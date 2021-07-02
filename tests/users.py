@@ -22,7 +22,7 @@ def main(client):
     suite.addTest(BaseCase.parameters(APITestCase, endpoint=endpoint, method='POST', response='Incorrect password!', status_code=201, data=dict(username='admin', old_password='password1', new_password='password'), data_type='form', client=client))
 
     # Update Profile
-    endpoint = 'update-profile'
+    endpoint = '/update-profile'
     suite.addTest(BaseCase.parameters(APITestCase, endpoint=endpoint, method='POST', response='Profile update successful!', status_code=200, data=dict(username='admin', name='James Bourne', dob='04/07/1998', country='UK', device='Mobile', phone='1000000008', about='World class spy at British Secret Service'), data_type='form', client=client))
 
     # Search API Tests

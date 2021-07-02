@@ -2,7 +2,7 @@ import unittest
 
 class BaseCase(unittest.TestCase):
 
-    def __init__(self, method_name='TEST', endpoint=None, method=None, response=None, status_code=None, data=None, data_type=None, client=None):
+    def __init__(self, method_name='APITests', endpoint=None, method=None, response=None, status_code=None, data=None, data_type=None, client=None):
         super(BaseCase, self).__init__(method_name)
         self.endpoint = endpoint
         self.method = method.lower()
@@ -24,7 +24,7 @@ class BaseCase(unittest.TestCase):
 
     # Query the API and return the response
     def query(self):
-        print(f'Endpoint - {self.endpoint}')
+        print(f'\nEndpoint - {self.endpoint}')
         if self.data:
             if self.data_type == 'json':
                 return eval(f'self.client.{self.method}("{self.endpoint}", json=self.data)')

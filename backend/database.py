@@ -24,19 +24,27 @@ with open("backend/config.json", "r") as f:
 
 MODE = config.get("MODE")
 
-# Choose a database engine, wither MySQL or SQLite
-# SQLite configuration
+# Choose a database engine, either MySQL or SQLite
+# SQLite configuration for Testing
 if MODE.upper() == 'TEST':
-    SQLITE_DB_FILE_NAME = config.get("SQLITE_DB_FILE_NAME")
-    if os.path.isfile(SQLITE_DB_FILE_NAME):
-        os.remove(SQLITE_DB_FILE_NAME)
-    if not os.path.isfile(SQLITE_DB_FILE_NAME):
-        os.mknod(SQLITE_DB_FILE_NAME)
-    DATABASE_URI = f'sqlite:///./{SQLITE_DB_FILE_NAME}'
+    SQLITE_TEST_DB_FILE_NAME = config.get("SQLITE_TEST_DB_FILE_NAME")
+    if os.path.isfile(SQLITE_TEST_DB_FILE_NAME):
+        os.remove(SQLITE_TEST_DB_FILE_NAME)
+    if not os.path.isfile(SQLITE_TEST_DB_FILE_NAME):
+        os.mknod(SQLITE_TEST_DB_FILE_NAME)
+    DATABASE_URI = f'sqlite:///./{SQLITE_TEST_DB_FILE_NAME}'
     connect_args = dict(check_same_thread=False)
 
-# MySQL Database configuration
-else:
+# SQLite Databse configuration for Development
+elif MODE.upper() == 'DEVELOPMENT':
+    SQLITE_DEV_DB_FILE_NAME = config.get("SQLITE_DEV_DB_FILE_NAME")
+    if not os.path.isfile(SQLITE_DEV_DB_FILE_NAME):
+        os.mknod(SQLITE_DEV_DB_FILE_NAME)
+    DATABASE_URI = f'sqlite:///./{SQLITE_DEV_DB_FILE_NAME}'
+    connect_args = dict(check_same_thread=False)
+
+# MySQL Database configuration for Production
+elif MODE.upper() == 'PRODUCTION':
     MYSQL_DB_HOST = config.get("MYSQL_DB_HOST")
     MYSQL_DB_NAME = config.get("MYSQL_DB_NAME")
     MYSQL_SECRET_KEY = config.get("SECRET_KEY")
